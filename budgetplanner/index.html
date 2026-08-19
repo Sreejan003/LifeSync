@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Student Budget Planner</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0d1020] dark:text-slate-100 transition-colors duration-300">
+
+  <div class="min-h-screen flex">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+      class="fixed z-40 inset-y-0 left-0 w-72
+      bg-white/95 dark:bg-[#12162a]/95
+      border-r border-slate-200 dark:border-white/10
+      transform -translate-x-full lg:translate-x-0
+      transition-transform duration-300 glass">
+
+      <div class="h-full flex flex-col p-5">
+
+        <!-- Logo -->
+        <div class="flex items-center gap-3 px-2 py-3 mb-6">
+
+          <div class="w-11 h-11 rounded-2xl
+            bg-gradient-to-br from-violet-500 to-fuchsia-500
+            text-white grid place-items-center
+            font-black text-xl shadow-lg">
+            ₹
+          </div>
+
+          <div>
+            <div class="font-extrabold text-xl tracking-tight">
+              Budget<span class="text-violet-600">Buddy</span>
+            </div>
+
+            <div class="text-xs text-slate-400">
+              Student finance hub
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <nav class="space-y-2">
+
+          <button data-tab="overview"
+            class="nav-btn nav-active w-full flex items-center gap-3
+            px-4 py-3 rounded-xl text-left font-semibold">
+            ⌂
+            <span>Dashboard</span>
+          </button>
+
+          <button data-tab="runway"
+            class="nav-btn w-full flex items-center gap-3
+            px-4 py-3 rounded-xl text-left font-semibold
+            text-slate-600 dark:text-slate-300
+            hover:bg-slate-100 dark:hover:bg-white/5">
+            ◈
+            <span>Financial Runway</span>
+          </button>
+
+          <button data-tab="benchmark"
+            class="nav-btn w-full flex items-center gap-3
+            px-4 py-3 rounded-xl text-left font-semibold
+            text-slate-600 dark:text-slate-300
+            hover:bg-slate-100 dark:hover:bg-white/5">
+            ◎
+            <span>Peer Benchmark</span>
+          </button>
+
+          <button data-tab="night"
+            class="nav-btn w-full flex items-center gap-3
+            px-4 py-3 rounded-xl text-left font-semibold
+            text-slate-600 dark:text-slate-300
+            hover:bg-slate-100 dark:hover:bg-white/5">
+            ☾
+            <span>Late-Night Safe</span>
+          </button>
+
+          <button data-tab="split"
+            class="nav-btn w-full flex items-center gap-3
+            px-4 py-3 rounded-xl text-left font-semibold
+            text-slate-600 dark:text-slate-300
+            hover:bg-slate-100 dark:hover:bg-white/5">
+            ⇄
+            <span>Bills & Goals</span>
+          </button>
+
+        </nav>
+
+        <!-- Student streak -->
+        <div class="mt-auto">
+
+          <div class="rounded-2xl p-4
+            bg-violet-50 dark:bg-violet-500/10
+            border border-violet-100 dark:border-violet-400/10">
+
+            <div class="text-xs font-bold uppercase tracking-wider
+              text-violet-600 dark:text-violet-300">
+              Student streak
+            </div>
+
+            <div class="mt-2 flex items-end justify-between">
+
+              <div class="text-3xl font-black">
+                12
+                <span class="text-base">days</span>
+              </div>
+
+              <div class="text-2xl">🔥</div>
+
+            </div>
+
+            <div class="mt-3 h-2 bg-violet-100
+              dark:bg-white/10 rounded-full overflow-hidden">
+
+              <div class="h-full w-[78%]
+                bg-gradient-to-r from-violet-500 to-fuchsia-500
+                rounded-full">
+              </div>
+
+            </div>
+
+          </div>
+
+          <button class="mt-4 w-full px-4 py-3 rounded-xl
+            text-slate-500 hover:bg-slate-100
+            dark:hover:bg-white/5 text-left">
+            ⚙ Settings
+          </button>
+
+        </div>
+
+      </div>
+    </aside>
+
+
+    <!-- MOBILE BACKDROP -->
+    <div id="backdrop"
+      class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden">
+    </div>
+
+
+    <!-- MAIN -->
+    <main class="lg:ml-72 w-full min-h-screen">
+
+      <!-- HEADER -->
+      <header
+        class="sticky top-0 z-20 h-20 px-5 sm:px-8
+        flex items-center justify-between
+        border-b border-slate-200 dark:border-white/10
+        bg-white/80 dark:bg-[#0d1020]/80 glass">
+
+        <div class="flex items-center gap-3">
+
+          <button id="menuBtn"
+            class="lg:hidden w-10 h-10 rounded-xl
+            hover:bg-slate-100 dark:hover:bg-white/5 text-xl">
+            ☰
+          </button>
+
+          <div>
+            <div class="font-bold">
+              Student Budget Planner
+            </div>
+
+            <div class="text-xs text-slate-400">
+              Semester control center
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-4">
+
+          <div class="hidden sm:flex items-center gap-2
+            bg-slate-100 dark:bg-white/5
+            rounded-xl px-3 py-2 text-sm text-slate-400">
+            ⌕
+            <span>Search anything...</span>
+          </div>
+
+          <button id="darkToggle"
+            class="w-10 h-10 rounded-xl
+            border border-slate-200 dark:border-white/10
+            hover:bg-slate-100 dark:hover:bg-white/5">
+            ☾
+          </button>
+
+          <div class="w-10 h-10 rounded-full
+            bg-gradient-to-br from-violet-500 to-pink-400
+            text-white grid place-items-center font-bold">
+            A
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <div class="p-5 sm:p-8 max-w-7xl mx-auto">
+
+        <!-- ================= DASHBOARD ================= -->
+        <section id="overview" class="tab-panel active">
+
+          <div class="flex flex-col md:flex-row md:items-end
+            justify-between gap-4 mb-7">
+
+            <div>
+
+              <p class="text-sm font-semibold
+                text-violet-600 dark:text-violet-300">
+                Wednesday · 19 August
+              </p>
+
+              <h1 class="text-3xl sm:text-4xl font-black mt-1">
+                Good morning, Ananya! 👋
+              </h1>
+
+              <p class="text-slate-500 dark:text-slate-400 mt-2">
+                Your money has a plan. Let's keep it that way.
+              </p>
+
+            </div>
+
+            <button
+              onclick="showToast('Nice! Your budget review is complete.')"
+              class="px-5 py-3 rounded-xl
+              bg-slate-900 text-white
+              dark:bg-white dark:text-slate-900
+              font-bold hover:scale-[1.02] transition">
+              ✓ Review budget
+            </button>
+
+          </div>
+
+
+          <!-- STAT CARDS -->
+          <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+
+            <div class="rounded-2xl p-5
+              bg-gradient-to-br from-violet-50 to-white
+              dark:from-violet-500/10 dark:to-transparent
+              border border-violet-100
+              dark:border-violet-400/10 shadow-soft">
+
+              <div class="text-sm text-slate-500 dark:text-slate-400">
+                Available balance
+              </div>
+
+              <div class="text-2xl sm:text-3xl font-black mt-2">
+                ₹8,450
+              </div>
+
+              <div class="text-xs text-emerald-600 mt-2 font-semibold">
+                ↑ 8.4% this month
+              </div>
+
+            </div>
+
+
+            <div class="rounded-2xl p-5
+              bg-gradient-to-br from-emerald-50 to-white
+              dark:from-emerald-500/10 dark:to-transparent
+              border border-emerald-100
+              dark:border-emerald-400/10 shadow-soft">
+
+              <div class="text-sm text-slate-500 dark:text-slate-400">
+                Spent this month
+              </div>
+
+              <div class="text-2xl sm:text-3xl font-black mt-2">
+                ₹5,550
+              </div>
+
+              <div class="text-xs text-amber-600 mt-2 font-semibold">
+                72% of budget
+              </div>
+
+            </div>
+
+
+            <div class="rounded-2xl p-5
+              bg-gradient-to-br from-amber-50 to-white
+              dark:from-amber-500/10 dark:to-transparent
+              border border-amber-100
+              dark:border-amber-400/10 shadow-soft">
+
+              <div class="text-sm text-slate-500 dark:text-slate-400">
+                Bills due
+              </div>
+
+              <div class="text-2xl sm:text-3xl font-black mt-2">
+                ₹1,920
+              </div>
+
+              <div class="text-xs text-slate-500 mt-2">
+                Next 10 days
+              </div>
+
+            </div>
+
+
+            <div class="rounded-2xl p-5
+              bg-gradient-to-br from-pink-50 to-white
+              dark:from-pink-500/10 dark:to-transparent
+              border border-pink-100
+              dark:border-pink-400/10 shadow-soft">
+
+              <div class="text-sm text-slate-500 dark:text-slate-400">
+                Money streak
+              </div>
+
+              <div class="text-2xl sm:text-3xl font-black mt-2">
+                12 🔥
+              </div>
+
+              <div class="text-xs text-pink-600 mt-2 font-semibold">
+                Keep it going!
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- DASHBOARD CONTENT -->
+          <div class="grid lg:grid-cols-3 gap-5">
+
+            <div class="lg:col-span-2 rounded-3xl p-6
+              bg-slate-900 text-white
+              dark:bg-[#171c34] shadow-soft">
+
+              <div class="flex justify-between items-start">
+
+                <div>
+                  <div class="text-sm text-slate-300">
+                    Financial runway
+                  </div>
+
+                  <div class="text-3xl font-black mt-1">
+                    ₹18,000
+                    <span class="text-sm font-medium text-emerald-300">
+                      secured
+                    </span>
+                  </div>
+                </div>
+
+                <button data-tab="runway"
+                  class="nav-jump text-sm text-violet-300 font-semibold">
+                  Open visualizer →
+                </button>
+
+              </div>
+
+
+              <div class="grid grid-cols-4 gap-2 mt-7">
+
+                <div>
+                  <div class="h-28 rounded-xl bg-violet-500/30
+                    border border-violet-300/20 relative overflow-hidden">
+                    <div class="absolute bottom-0 w-full h-[85%]
+                      bg-violet-500"></div>
+                  </div>
+                  <div class="text-xs mt-2 text-slate-300">Sep</div>
+                </div>
+
+                <div>
+                  <div class="h-28 rounded-xl bg-violet-500/30
+                    border border-violet-300/20 relative overflow-hidden">
+                    <div class="absolute bottom-0 w-full h-[65%]
+                      bg-violet-500"></div>
+                  </div>
+                  <div class="text-xs mt-2 text-slate-300">Oct</div>
+                </div>
+
+                <div>
+                  <div class="h-28 rounded-xl bg-violet-500/30
+                    border border-violet-300/20 relative overflow-hidden">
+                    <div class="absolute bottom-0 w-full h-[48%]
+                      bg-violet-500"></div>
+                  </div>
+                  <div class="text-xs mt-2 text-slate-300">Nov</div>
+                </div>
+
+                <div>
+                  <div class="h-28 rounded-xl bg-violet-500/30
+                    border border-violet-300/20 relative overflow-hidden">
+                    <div class="absolute bottom-0 w-full h-[30%]
+                      bg-violet-500"></div>
+                  </div>
+                  <div class="text-xs mt-2 text-slate-300">Dec</div>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="rounded-3xl p-6
+              bg-white dark:bg-[#151a30]
+              border border-slate-200 dark:border-white/10
+              shadow-soft">
+
+              <div class="flex items-center justify-between">
+
+                <h2 class="font-black">
+                  Quick wins
+                </h2>
+
+                <span class="text-2xl">🏆</span>
+
+              </div>
+
+              <div class="space-y-4 mt-5">
+
+                <div class="flex gap-3">
+                  <span>🥤</span>
+                  <div>
+                    <b>Skipped 2 cafés</b>
+                    <div class="text-xs text-slate-400">
+                      Saved ₹180
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex gap-3">
+                  <span>🍱</span>
+                  <div>
+                    <b>Cooked 3 meals</b>
+                    <div class="text-xs text-slate-400">
+                      Saved ₹420
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex gap-3">
+                  <span>🎯</span>
+                  <div>
+                    <b>Goal is 64% funded</b>
+                    <div class="text-xs text-slate-400">
+                      ₹1,280 to go
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ================= RUNWAY ================= -->
+        <section id="runway" class="tab-panel">
+
+          <div class="mb-7">
+
+            <span class="inline-flex px-3 py-1 rounded-full
+              bg-violet-100 dark:bg-violet-500/10
+              text-violet-700 dark:text-violet-300
+              text-xs font-bold">
+              01 · Financial Aid Runway
+            </span>
+
+            <h1 class="text-3xl sm:text-4xl font-black mt-3">
+              Make one lump sum last
+              <span class="gradient-text">4 months.</span>
+            </h1>
+
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
+              Drag the sliders to create a realistic semester spending runway.
+            </p>
+
+          </div>
+
+
+          <div class="grid lg:grid-cols-5 gap-5">
+
+            <div class="lg:col-span-2 rounded-3xl p-6
+              bg-white dark:bg-[#151a30]
+              border border-slate-200 dark:border-white/10
+              shadow-soft">
+
+              <label class="text-sm font-bold">
+                Financial aid / lump sum
+              </label>
+
+              <div class="flex items-end gap-2 mt-3">
+
+                <span class="text-4xl font-black">
+                  ₹
+                </span>
+
+                <input
+                  id="sumInput"
+                  type="number"
+                  value="18000"
+                  min="1000"
+                  step="500"
+                  class="w-full text-4xl font-black
+                  bg-transparent outline-none
+                  border-b border-slate-200
+                  dark:border-white/10 pb-2"
+                />
+
+              </div>
+
+
+              <div class="mt-7">
+
+                <label class="text-sm font-bold">
+                  Monthly safety buffer
+                </label>
+
+                <input
+                  id="bufferRange"
+                  type="range"
+                  min="0"
+                  max="40"
+                  value="15"
+                  class="w-full mt-4"
+                />
+
+                <div class="flex justify-between text-sm mt-2">
+
+                  <span class="text-slate-400">
+                    0%
+                  </span>
+
+                  <b id="bufferLabel">
+                    15%
+                  </b>
+
+                  <span class="text-slate-400">
+                    40%
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <div class="mt-7 p-4 rounded-2xl
+                bg-violet-50 dark:bg-violet-500/10">
+
+                <div class="text-xs uppercase font-bold
+                  text-violet-600 dark:text-violet-300">
+                  Recommended monthly cap
+                </div>
+
+                <div id="monthlyCap"
+                  class="text-2xl font-black mt-1">
+                  ₹3,825
+                </div>
+
+                <div class="text-xs text-slate-500 mt-1">
+                  Leaves a safety cushion for surprises.
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="lg:col-span-3 rounded-3xl p-6
+              bg-slate-900 text-white
+              dark:bg-[#171c34] shadow-soft">
+
+              <div class="flex justify-between items-center">
+
+                <div>
+
+                  <div class="text-sm text-slate-400">
+                    4-month runway
+                  </div>
+
+                  <div id="runwayTotal"
+                    class="text-2xl font-black mt-1">
+                    ₹18,000
+                  </div>
+
+                </div>
+
+                <div class="px-3 py-2 rounded-xl
+                  bg-emerald-400/10 text-emerald-300
+                  text-xs font-bold">
+                  ON TRACK
+                </div>
+
+              </div>
+
+
+              <div id="monthBars"
+                class="grid grid-cols-4 gap-3
+                mt-7 items-end h-56">
+              </div>
+
+
+              <div class="mt-6 grid grid-cols-2
+                sm:grid-cols-4 gap-3 text-xs text-slate-400">
+
+                <div>
+                  Sep<br>
+                  <b class="text-white">Essentials</b>
+                </div>
+
+                <div>
+                  Oct<br>
+                  <b class="text-white">Academics</b>
+                </div>
+
+                <div>
+                  Nov<br>
+                  <b class="text-white">Lifestyle</b>
+                </div>
+
+                <div>
+                  Dec<br>
+                  <b class="text-white">Buffer</b>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ================= BENCHMARK ================= -->
+        <section id="benchmark" class="tab-panel">
+
+          <div class="mb-7">
+
+            <span class="inline-flex px-3 py-1 rounded-full
+              bg-cyan-100 dark:bg-cyan-500/10
+              text-cyan-700 dark:text-cyan-300
+              text-xs font-bold">
+              02 · Peer Benchmarking
+            </span>
+
+            <h1 class="text-3xl sm:text-4xl font-black mt-3">
+              How does your spending compare?
+            </h1>
+
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
+              Anonymous classmate averages help you spot easy wins — no judgment.
+            </p>
+
+          </div>
+
+
+          <div class="grid lg:grid-cols-3 gap-5">
+
+            <div class="lg:col-span-2 rounded-3xl p-6
+              bg-white dark:bg-[#151a30]
+              border border-slate-200 dark:border-white/10
+              shadow-soft">
+
+              <div class="flex justify-between items-center mb-6">
+
+                <h2 class="font-black text-lg">
+                  Monthly category comparison
+                </h2>
+
+                <span class="text-xs px-3 py-1 rounded-full
+                  bg-emerald-100 dark:bg-emerald-500/10
+                  text-emerald-700 dark:text-emerald-300
+                  font-bold">
+                  You vs. peers
+                </span>
+
+              </div>
+
+              <div id="benchmarkList"
+                class="space-y-6">
+              </div>
+
+            </div>
+
+
+            <div class="rounded-3xl p-6
+              bg-gradient-to-br from-violet-600 to-fuchsia-600
+              text-white shadow-soft">
+
+              <div class="text-sm text-violet-100">
+                Your money personality
+              </div>
+
+              <div class="text-3xl font-black mt-2">
+                The Planner 🎯
+              </div>
+
+              <p class="text-sm text-violet-100 mt-3 leading-6">
+                You're below the peer average in 3 of 5 categories.
+                That's a strong sign of intentional spending.
+              </p>
+
+              <div class="mt-7 p-4 rounded-2xl
+                bg-white/10 border border-white/10">
+
+                <div class="text-xs text-violet-100">
+                  Potential monthly save
+                </div>
+
+                <div class="text-2xl font-black">
+                  ₹650
+                </div>
+
+                <div class="text-xs text-violet-100 mt-1">
+                  if you keep your current habits
+                </div>
+
+              </div>
+
+              <button
+                onclick="showToast('Badge unlocked: Peer Smart 🏅')"
+                class="mt-5 w-full py-3 rounded-xl
+                bg-white text-violet-700 font-bold">
+                Claim badge 🏅
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ================= LATE NIGHT ================= -->
+        <section id="night" class="tab-panel">
+
+          <div class="mb-7">
+
+            <span class="inline-flex px-3 py-1 rounded-full
+              bg-orange-100 dark:bg-orange-500/10
+              text-orange-700 dark:text-orange-300
+              text-xs font-bold">
+              03 · Late-Night Food Safe
+            </span>
+
+            <h1 class="text-3xl sm:text-4xl font-black mt-3">
+              Protect tomorrow's money
+              <span class="gradient-text">tonight.</span>
+            </h1>
+
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
+              A playful budget lock for late-night food spending.
+            </p>
+
+          </div>
+
+
+          <div class="grid lg:grid-cols-3 gap-5">
+
+            <div id="lockCard"
+              class="lg:col-span-2 rounded-3xl p-6
+              bg-white dark:bg-[#151a30]
+              border border-slate-200 dark:border-white/10
+              shadow-soft">
+
+              <div class="flex justify-between items-start">
+
+                <div>
+
+                  <div class="text-sm text-slate-400">
+                    Tonight's food wallet
+                  </div>
+
+                  <div id="nightAmount"
+                    class="text-4xl font-black mt-1">
+                    ₹350
+                  </div>
+
+                </div>
+
+                <div id="lockIcon"
+                  class="w-14 h-14 rounded-2xl
+                  bg-emerald-100 dark:bg-emerald-500/10
+                  grid place-items-center text-2xl">
+                  🔓
+                </div>
+
+              </div>
+
+
+              <div class="mt-7 h-4 rounded-full
+                bg-slate-100 dark:bg-white/10 overflow-hidden">
+
+                <div id="nightBar"
+                  class="h-full w-[32%]
+                  bg-gradient-to-r from-emerald-400 to-cyan-400
+                  rounded-full progress-fill">
+                </div>
+
+              </div>
+
+
+              <div class="flex justify-between text-xs
+                text-slate-400 mt-2">
+
+                <span>Spent ₹112</span>
+                <span>Limit ₹350</span>
+
+              </div>
+
+
+              <div class="mt-7 grid sm:grid-cols-3 gap-3">
+
+                <button
+                  onclick="nightSpend(80)"
+                  class="p-4 rounded-2xl
+                  border border-slate-200 dark:border-white/10
+                  hover:border-violet-400 text-left">
+
+                  <b>🍜 Quick bite</b>
+
+                  <div class="text-xs text-slate-400 mt-1">
+                    − ₹80
+                  </div>
+
+                </button>
+
+
+                <button
+                  onclick="nightSpend(140)"
+                  class="p-4 rounded-2xl
+                  border border-slate-200 dark:border-white/10
+                  hover:border-violet-400 text-left">
+
+                  <b>🍕 Full meal</b>
+
+                  <div class="text-xs text-slate-400 mt-1">
+                    − ₹140
+                  </div>
+
+                </button>
+
+
+                <button
+                  onclick="nightSpend(220)"
+                  class="p-4 rounded-2xl
+                  border border-slate-200 dark:border-white/10
+                  hover:border-violet-400 text-left">
+
+                  <b>🧋 Treat combo</b>
+
+                  <div class="text-xs text-slate-400 mt-1">
+                    − ₹220
+                  </div>
+
+                </button>
+
+              </div>
+
+
+              <button id="lockBtn"
+                onclick="toggleLock()"
+                class="mt-5 w-full py-3 rounded-xl
+                bg-slate-900 text-white
+                dark:bg-white dark:text-slate-900
+                font-bold">
+                🔒 Lock wallet
+              </button>
+
+            </div>
+
+
+            <div class="rounded-3xl p-6
+              bg-gradient-to-br from-orange-50 to-pink-50
+              dark:from-orange-500/10 dark:to-pink-500/10
+              border border-orange-100
+              dark:border-orange-400/10">
+
+              <div class="text-3xl">
+                🌙
+              </div>
+
+              <h2 class="font-black text-xl mt-3">
+                Night owl score
+              </h2>
+
+              <div class="text-5xl font-black mt-4">
+                92
+              </div>
+
+              <div class="text-sm text-slate-500
+                dark:text-slate-400">
+                / 100 responsible
+              </div>
+
+              <div class="mt-5 text-sm leading-6
+                text-slate-600 dark:text-slate-300">
+                You've stayed under your late-night limit
+                6 nights in a row.
+              </div>
+
+              <div class="mt-5 font-bold text-orange-600">
+                +120 XP earned ✨
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ================= BILL SPLITTER ================= -->
+        <section id="split" class="tab-panel">
+
+          <div class="mb-7">
+
+            <span class="inline-flex px-3 py-1 rounded-full
+              bg-emerald-100 dark:bg-emerald-500/10
+              text-emerald-700 dark:text-emerald-300
+              text-xs font-bold">
+              04 · Bills & Shared Goals
+            </span>
+
+            <h1 class="text-3xl sm:text-4xl font-black mt-3">
+              Split fairly. Save together.
+            </h1>
+
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
+              Calculate shared bills and track your apartment goal
+              in one place.
+            </p>
+
+          </div>
+
+
+          <div class="grid lg:grid-cols-2 gap-5">
+
+            <!-- Bill splitter -->
+            <div class="rounded-3xl p-6
+              bg-white dark:bg-[#151a30]
+              border border-slate-200 dark:border-white/10
+              shadow-soft">
+
+              <div class="flex justify-between">
+
+                <h2 class="font-black text-lg">
+                  Bill splitter
+                </h2>
+
+                <span class="text-2xl">
+                  🧾
+                </span>
+
+              </div>
+
+
+              <div class="grid sm:grid-cols-2 gap-4 mt-6">
+
+                <label class="text-sm font-semibold">
+
+                  Bill amount
+
+                  <input
+                    id="bill"
+                    type="number"
+                    value="2400"
+                    class="mt-2 w-full p-3 rounded-xl
+                    bg-slate-50 dark:bg-white/5
+                    border border-slate-200
+                    dark:border-white/10 outline-none"
+                  />
+
+                </label>
+
+
+                <label class="text-sm font-semibold">
+
+                  People
+
+                  <input
+                    id="people"
+                    type="number"
+                    value="3"
+                    min="1"
+                    class="mt-2 w-full p-3 rounded-xl
+                    bg-slate-50 dark:bg-white/5
+                    border border-slate-200
+                    dark:border-white/10 outline-none"
+                  />
+
+                </label>
+
+              </div>
+
+
+              <button
+                onclick="splitBill()"
+                class="mt-5 w-full py-3 rounded-xl
+                bg-emerald-500 hover:bg-emerald-600
+                text-white font-bold">
+                Split equally
+              </button>
+
+
+              <div class="mt-5 p-5 rounded-2xl
+                bg-emerald-50 dark:bg-emerald-500/10">
+
+                <div class="text-xs text-slate-500">
+                  Each person pays
+                </div>
+
+                <div id="splitResult"
+                  class="text-3xl font-black mt-1">
+                  ₹800
+                </div>
+
+              </div>
+
+
+              <div class="mt-4 text-sm text-slate-400">
+                👥 Roomies: Ananya · Riya · Meera
+              </div>
+
+            </div>
+
+
+            <!-- Shared Goal -->
+            <div class="rounded-3xl p-6
+              bg-slate-900 text-white
+              dark:bg-[#171c34] shadow-soft">
+
+              <div class="flex justify-between">
+
+                <h2 class="font-black text-lg">
+                  Shared apartment goal
+                </h2>
+
+                <span class="text-2xl">
+                  🏠
+                </span>
+
+              </div>
+
+
+              <div class="mt-6 flex justify-between text-sm">
+
+                <span>
+                  Emergency deposit
+                </span>
+
+                <b>
+                  ₹6,400 / ₹10,000
+                </b>
+
+              </div>
+
+
+              <div class="h-4 rounded-full
+                bg-white/10 mt-3 overflow-hidden">
+
+                <div class="h-full w-[64%]
+                  bg-gradient-to-r from-emerald-400
+                  to-cyan-400 rounded-full">
+                </div>
+
+              </div>
+
+
+              <div class="grid grid-cols-3 gap-3 mt-6">
+
+                <div class="p-3 rounded-2xl bg-white/5">
+
+                  <div class="text-xs text-slate-400">
+                    Saved
+                  </div>
+
+                  <b>64%</b>
+
+                </div>
+
+
+                <div class="p-3 rounded-2xl bg-white/5">
+
+                  <div class="text-xs text-slate-400">
+                    Remaining
+                  </div>
+
+                  <b>₹3.6k</b>
+
+                </div>
+
+
+                <div class="p-3 rounded-2xl bg-white/5">
+
+                  <div class="text-xs text-slate-400">
+                    ETA
+                  </div>
+
+                  <b>6 weeks</b>
+
+                </div>
+
+              </div>
+
+
+              <button
+                onclick="showToast('Goal contribution recorded! +80 XP')"
+                class="mt-6 w-full py-3 rounded-xl
+                bg-white text-slate-900 font-bold">
+                + Add contribution
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- Upcoming bills -->
+          <div class="mt-5 rounded-3xl p-6
+            bg-white dark:bg-[#151a30]
+            border border-slate-200 dark:border-white/10
+            shadow-soft">
+
+            <div class="flex flex-col sm:flex-row
+              sm:items-center justify-between gap-3">
+
+              <div>
+
+                <h2 class="font-black">
+                  Upcoming shared bills
+                </h2>
+
+                <p class="text-sm text-slate-400 mt-1">
+                  Stay ahead of the awkward
+                  "who paid?" messages.
+                </p>
+
+              </div>
+
+              <button
+                onclick="showToast('New shared bill added!')"
+                class="px-4 py-2 rounded-xl
+                bg-violet-600 text-white font-bold">
+                + Add bill
+              </button>
+
+            </div>
+
+
+            <div class="mt-5 grid md:grid-cols-3 gap-3">
+
+              <div class="p-4 rounded-2xl
+                border border-slate-200 dark:border-white/10">
+
+                <div class="text-xs text-slate-400">
+                  Aug 22
+                </div>
+
+                <b class="block mt-1">
+                  Wi-Fi
+                </b>
+
+                <span class="text-sm text-emerald-600">
+                  ₹600 · split 3 ways
+                </span>
+
+              </div>
+
+
+              <div class="p-4 rounded-2xl
+                border border-slate-200 dark:border-white/10">
+
+                <div class="text-xs text-slate-400">
+                  Aug 25
+                </div>
+
+                <b class="block mt-1">
+                  Electricity
+                </b>
+
+                <span class="text-sm text-amber-600">
+                  ₹1,200 · estimate
+                </span>
+
+              </div>
+
+
+              <div class="p-4 rounded-2xl
+                border border-slate-200 dark:border-white/10">
+
+                <div class="text-xs text-slate-400">
+                  Sep 01
+                </div>
+
+                <b class="block mt-1">
+                  Cleaning fund
+                </b>
+
+                <span class="text-sm text-violet-600">
+                  ₹300 · shared goal
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+
+  <!-- TOAST -->
+  <div id="toast"
+    class="toast fixed bottom-5 right-5 z-50
+    max-w-sm px-5 py-3 rounded-2xl
+    bg-slate-900 text-white shadow-xl
+    text-sm font-semibold">
+  </div>
+
+
+  <script src="script.js"></script>
+
+</body>
+</html>
