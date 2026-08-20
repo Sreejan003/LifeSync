@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LifeSync - To Do List</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="todo-container">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+
+        <header class="todo-header">
+
+            <div>
+
+                <p class="page-label">
+                    LIFESYNC
+                </p>
+
+                <h1>
+                    To-Do List
+                </h1>
+
+                <p class="subtitle">
+                    Stay organized. Stay focused. You've got this!
+                </p>
+
+            </div>
+
+
+            <!-- Progress Circle -->
+
+            <div class="progress-wrapper">
+
+                <div
+                    class="progress-circle"
+                    id="progressCircle"
+                >
+
+                    <div class="progress-inner">
+
+                        <span id="progressPercent">
+                            0%
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <span class="progress-text">
+                    Completed
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- =========================
+             ADD TASK CARD
+        ========================== -->
+
+        <section class="add-task-card">
+
+            <!-- Task Input -->
+
+            <div class="input-wrapper">
+
+                <span class="plus-icon">
+                    +
+                </span>
+
+                <input
+                    id="task_list"
+                    type="text"
+                    placeholder="What do you need to accomplish today?"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- Priority -->
+
+            <div class="priority-wrapper">
+
+                <label for="prioritySelect">
+                    Priority
+                </label>
+
+                <select id="prioritySelect">
+
+                    <option
+                        value=""
+                        selected
+                        disabled
+                    >
+                        Select Priority
+                    </option>
+
+                    <option value="high">
+                        High Priority
+                    </option>
+
+                    <option value="low">
+                        Low Priority
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Add Button -->
+
+            <button id="addi">
+                Add Task
+            </button>
+
+        </section>
+
+
+        <!-- =========================
+             STATISTICS
+        ========================== -->
+
+        <section class="stats">
+
+
+            <!-- Pending -->
+
+            <div class="stat-card pending-card">
+
+                <div class="stat-icon">
+                    📋
+                </div>
+
+                <div>
+
+                    <span>
+                        Pending
+                    </span>
+
+                    <strong id="pendingCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- Completed -->
+
+            <div class="stat-card completed-card">
+
+                <div class="stat-icon">
+                    ✓
+                </div>
+
+                <div>
+
+                    <span>
+                        Completed
+                    </span>
+
+                    <strong id="completedCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- Total -->
+
+            <div class="stat-card total-card">
+
+                <div class="stat-icon">
+                    ✦
+                </div>
+
+                <div>
+
+                    <span>
+                        Total Tasks
+                    </span>
+
+                    <strong id="totalCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             TASK SECTION
+        ========================== -->
+
+        <section class="tasks-card">
+
+
+            <!-- Heading -->
+
+            <div class="tasks-heading">
+
+                <div>
+
+                    <h2>
+                        Today's Tasks
+                    </h2>
+
+                    <p>
+                        Check off your tasks as you complete them.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="deleteAll"
+                    class="delete-all"
+                >
+                    Delete All
+                </button>
+
+            </div>
+
+
+            <!-- Empty State -->
+
+            <div
+                id="emptyState"
+                class="empty-state"
+            >
+
+                <div class="empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No tasks yet
+                </h3>
+
+                <p>
+                    Add a task above and start organizing your day.
+                </p>
+
+            </div>
+
+
+            <!-- Dynamic Tasks -->
+
+            <div id="taskContainer"></div>
+
+        </section>
+
+
+        <!-- =========================
+             MOTIVATION
+        ========================== -->
+
+        <div class="motivation">
+
+            <div class="quote-icon">
+                ❝
+            </div>
+
+            <div>
+
+                <h2>
+                    Daily Motivation
+                </h2>
+
+                <p id="dailyQuote">
+                    "Small steps every day lead to big changes tomorrow."
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
