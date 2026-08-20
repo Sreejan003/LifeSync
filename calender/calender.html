@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LifeSync Calendar</title>
+
+    <link rel="stylesheet" href="calendar.css">
+</head>
+
+<body>
+
+    <div class="calendar-container">
+
+        <!-- TITLE -->
+        <div class="page-title">
+            <h1>Calendar & Reminders</h1>
+            <p>Plan your schedule and never miss an important task.</p>
+        </div>
+
+
+        <!-- MAIN CONTENT -->
+        <div class="calendar-layout">
+
+
+            <!-- CALENDAR -->
+            <div class="calendar-card">
+
+                <!-- MONTH HEADER -->
+                <div class="month-header">
+
+                    <button id="prevBtn">←</button>
+
+                    <div class="month-title">
+                        <h2 id="monthYear">August 2026</h2>
+                        <div class="purple-line"></div>
+                    </div>
+
+                    <button id="nextBtn">→</button>
+
+                </div>
+
+
+                <!-- WEEK DAYS -->
+                <div class="weekdays">
+
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+
+                </div>
+
+
+                <!-- CALENDAR DATES -->
+                <div
+                    id="calendarDays"
+                    class="calendar-days">
+                </div>
+
+
+                <!-- SELECTED DATE -->
+                <div class="selected-date">
+
+                    Selected Date:
+
+                    <strong id="selectedDate">
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- RIGHT SIDE -->
+            <div class="right-section">
+
+
+                <!-- ADD REMINDER -->
+                <div class="reminder-card">
+
+                    <h2>＋ Add Reminder</h2>
+
+                    <p>Add something important</p>
+
+
+                    <label>Reminder Title</label>
+
+                    <input
+                        type="text"
+                        id="reminderTitle"
+                        placeholder="e.g. Maths Test"
+                    >
+
+
+                    <div class="input-row">
+
+                        <div>
+
+                            <label>Date</label>
+
+                            <input
+                                type="date"
+                                id="reminderDate"
+                            >
+
+                        </div>
+
+
+                        <div>
+
+                            <label>Time</label>
+
+                            <input
+                                type="time"
+                                id="reminderTime"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="input-row">
+
+                        <div>
+
+                            <label>Category</label>
+
+                            <select id="category">
+
+                                <option value="Study">
+                                    📚 Study
+                                </option>
+
+                                <option value="Assignment">
+                                    📝 Assignment
+                                </option>
+
+                                <option value="Exam">
+                                    🎯 Exam
+                                </option>
+
+                                <option value="Project">
+                                    💻 Project
+                                </option>
+
+                                <option value="Personal">
+                                    💜 Personal
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div>
+
+                            <label>Priority</label>
+
+                            <select id="priority">
+
+                                <option value="Low">
+                                    🟢 Low
+                                </option>
+
+                                <option value="Medium">
+                                    🟡 Medium
+                                </option>
+
+                                <option value="High">
+                                    🔴 High
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <button id="addReminderBtn">
+                        Add Reminder ✦
+                    </button>
+
+                </div>
+
+
+
+                <!-- TODAY'S SUMMARY -->
+                <div class="summary-card">
+
+                    <div class="summary-title">
+
+                        <h2>Today's Summary</h2>
+
+                        <span>📅</span>
+
+                    </div>
+
+
+                    <div class="summary-item study">
+
+                        <span>📚 Study</span>
+
+                        <strong id="studyCount">0</strong>
+
+                    </div>
+
+
+                    <div class="summary-item assignment">
+
+                        <span>📝 Assignments</span>
+
+                        <strong id="assignmentCount">0</strong>
+
+                    </div>
+
+
+                    <div class="summary-item exam">
+
+                        <span>🎯 Exams</span>
+
+                        <strong id="examCount">0</strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MOTIVATION -->
+        <div class="motivation-card">
+
+            <div>
+
+                <span>✦ YOUR DAILY REMINDER</span>
+
+                <h2>
+                    Small steps every day lead to big changes tomorrow.
+                </h2>
+
+                <p>
+                    Stay consistent. Stay focused.
+                </p>
+
+            </div>
+
+            <div class="clock">
+
+                <div class="hour-hand"></div>
+
+                <div class="minute-hand"></div>
+
+                <div class="clock-dot"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="calendar.js"></script>
+
+</body>
+
+</html>

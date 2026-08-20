@@ -1,0 +1,687 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #332653;
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            #d8c6ff,
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 5% 90%,
+            #e5d9ff,
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #faf8ff,
+            #eee7ff,
+            #f8f3ff
+        );
+}
+
+
+/* ================= CONTAINER ================= */
+
+.calendar-container {
+    width: 90%;
+    max-width: 1150px;
+
+    margin: 0 auto;
+
+    padding: 45px 0;
+}
+
+
+/* ================= TITLE ================= */
+
+.page-title {
+    margin-bottom: 25px;
+}
+
+.page-title h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.page-title p {
+    color: #817594;
+    font-size: 14px;
+}
+
+
+/* ================= MAIN LAYOUT ================= */
+
+.calendar-layout {
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr;
+
+    gap: 22px;
+}
+
+
+/* ================= CALENDAR CARD ================= */
+
+.calendar-card {
+    background: rgba(255,255,255,0.94);
+
+    border: 1px solid #e2d9f3;
+
+    border-radius: 20px;
+
+    padding: 25px;
+
+    box-shadow:
+        0 15px 35px
+        rgba(76,45,140,0.10);
+}
+
+
+/* ================= MONTH HEADER ================= */
+
+.month-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+.month-header button {
+    width: 42px;
+    height: 42px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #eee7ff;
+
+    color: #7045d1;
+
+    font-size: 22px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.month-header button:hover {
+    background: #7045d1;
+    color: white;
+}
+
+.month-title {
+    text-align: center;
+}
+
+.month-title h2 {
+    font-size: 21px;
+}
+
+.purple-line {
+    width: 40px;
+    height: 3px;
+
+    margin: 6px auto 0;
+
+    border-radius: 5px;
+
+    background: #8050df;
+}
+
+
+/* ================= WEEK DAYS ================= */
+
+.weekdays {
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, 1fr);
+
+    margin-bottom: 6px;
+}
+
+.weekdays div {
+    text-align: center;
+
+    padding: 10px 5px;
+
+    color: #756984;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+
+/* ================= CALENDAR DATES ================= */
+
+.calendar-days {
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, 1fr);
+
+    gap: 6px;
+}
+
+.calendar-days div {
+    min-height: 70px;
+
+    padding: 9px;
+
+    background: white;
+
+    border:
+        1px solid #eee9f6;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.calendar-days div:hover {
+    background: #f3edff;
+
+    border-color: #bca7e9;
+
+    transform: translateY(-2px);
+}
+
+.calendar-days .empty {
+    background: transparent;
+
+    border: none;
+
+    cursor: default;
+}
+
+.calendar-days .empty:hover {
+    transform: none;
+}
+
+
+/* TODAY */
+
+.calendar-days .today {
+    border: 2px solid #8a5be2;
+
+    color: #7045d1;
+
+    font-weight: bold;
+}
+
+
+/* SELECTED DATE */
+
+.calendar-days .selected {
+    background:
+        linear-gradient(
+            135deg,
+            #7144d7,
+            #9867eb
+        );
+
+    color: white;
+
+    border: none;
+
+    box-shadow:
+        0 7px 15px
+        rgba(112,68,215,0.28);
+}
+
+
+/* REMINDER ON DATE */
+
+.event {
+    display: block;
+
+    margin-top: 6px;
+
+    padding: 4px;
+
+    border-radius: 5px;
+
+    background: #eee6ff;
+
+    color: #6840c6;
+
+    font-size: 8px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.selected .event {
+    background: white;
+    color: #7044d4;
+}
+
+
+/* SELECTED DATE */
+
+.selected-date {
+    margin-top: 15px;
+
+    padding: 11px 13px;
+
+    background: #f4efff;
+
+    border-radius: 9px;
+
+    color: #817493;
+
+    font-size: 11px;
+}
+
+.selected-date strong {
+    color: #7044d5;
+
+    margin-left: 5px;
+}
+
+
+/* ================= RIGHT SIDE ================= */
+
+.right-section {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+
+/* ================= REMINDER CARD ================= */
+
+.reminder-card,
+.summary-card {
+    background: rgba(255,255,255,0.95);
+
+    border:
+        1px solid #e2d9f3;
+
+    border-radius: 18px;
+
+    padding: 21px;
+
+    box-shadow:
+        0 12px 28px
+        rgba(76,45,140,0.08);
+}
+
+.reminder-card h2 {
+    font-size: 18px;
+
+    margin-bottom: 5px;
+}
+
+.reminder-card p {
+    color: #887c96;
+
+    font-size: 11px;
+
+    margin-bottom: 18px;
+}
+
+
+/* LABEL */
+
+label {
+    display: block;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    color: #594c6c;
+
+    margin-bottom: 6px;
+}
+
+
+/* INPUT */
+
+input,
+select {
+    width: 100%;
+
+    height: 37px;
+
+    padding: 0 9px;
+
+    margin-bottom: 13px;
+
+    border:
+        1px solid #ddd4ed;
+
+    border-radius: 8px;
+
+    background: #fcfbff;
+
+    outline: none;
+
+    color: #514466;
+
+    font-size: 10px;
+}
+
+input:focus,
+select:focus {
+    border-color: #8655df;
+
+    box-shadow:
+        0 0 0 3px #eee7ff;
+}
+
+
+/* TWO COLUMNS */
+
+.input-row {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 10px;
+}
+
+
+/* ADD BUTTON */
+
+#addReminderBtn {
+    width: 100%;
+
+    height: 40px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7044df,
+            #9860ef
+        );
+
+    cursor: pointer;
+
+    font-size: 11px;
+
+    box-shadow:
+        0 7px 15px
+        rgba(112,68,223,0.22);
+}
+
+#addReminderBtn:hover {
+    transform: translateY(-1px);
+}
+
+
+/* ================= SUMMARY ================= */
+
+.summary-title {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 14px;
+}
+
+.summary-title h2 {
+    font-size: 17px;
+}
+
+.summary-title span {
+    font-size: 18px;
+}
+
+
+.summary-item {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 11px 12px;
+
+    border-radius: 9px;
+
+    margin-bottom: 8px;
+
+    font-size: 11px;
+}
+
+.summary-item strong {
+    color: #6d42ce;
+}
+
+.summary-item.study {
+    background: #eee7ff;
+}
+
+.summary-item.assignment {
+    background: #fff0f6;
+}
+
+.summary-item.exam {
+    background: #edf5ff;
+}
+
+
+/* ================= MOTIVATION ================= */
+
+.motivation-card {
+    margin-top: 20px;
+
+    min-height: 130px;
+
+    padding: 25px 32px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    border-radius: 18px;
+
+    background:
+        radial-gradient(
+            circle at 90% 50%,
+            #cbb8ff,
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #eee5ff,
+            #f8eafa
+        );
+
+    border:
+        1px solid #ddd1f2;
+}
+
+.motivation-card span {
+    color: #7650d3;
+
+    font-size: 10px;
+
+    font-weight: bold;
+}
+
+.motivation-card h2 {
+    margin-top: 9px;
+
+    max-width: 650px;
+
+    font-size: 19px;
+
+    color: #594267;
+}
+
+.motivation-card p {
+    margin-top: 6px;
+
+    color: #8b7d94;
+
+    font-size: 10px;
+}
+
+
+/* ================= CLOCK ================= */
+
+.clock {
+    width: 75px;
+    height: 75px;
+
+    position: relative;
+
+    border-radius: 50%;
+
+    background: white;
+
+    border: 7px solid #8a5be0;
+
+    box-shadow:
+        0 8px 18px
+        rgba(75,45,140,0.18);
+}
+
+.hour-hand,
+.minute-hand {
+    position: absolute;
+
+    left: 50%;
+
+    bottom: 50%;
+
+    width: 3px;
+
+    border-radius: 5px;
+
+    transform-origin: bottom;
+
+    background: #6540ae;
+}
+
+.hour-hand {
+    height: 18px;
+
+    transform: rotate(35deg);
+}
+
+.minute-hand {
+    height: 25px;
+
+    transform: rotate(125deg);
+}
+
+.clock-dot {
+    position: absolute;
+
+    width: 7px;
+    height: 7px;
+
+    left: calc(50% - 3.5px);
+    top: calc(50% - 3.5px);
+
+    border-radius: 50%;
+
+    background: #7044d2;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 850px) {
+
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .right-section {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .reminder-card {
+        grid-column: span 2;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .calendar-container {
+        width: 94%;
+
+        padding: 25px 0;
+    }
+
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .right-section {
+        display: flex;
+    }
+
+    .calendar-card {
+        padding: 15px;
+    }
+
+    .calendar-days {
+        gap: 3px;
+    }
+
+    .calendar-days div {
+        min-height: 52px;
+
+        padding: 6px;
+
+        font-size: 10px;
+    }
+
+    .motivation-card {
+        padding: 20px;
+    }
+
+    .motivation-card h2 {
+        font-size: 15px;
+    }
+
+    .clock {
+        width: 60px;
+        height: 60px;
+    }
+}
