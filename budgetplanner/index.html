@@ -123,7 +123,7 @@
 
             <div class="mt-2 flex items-end justify-between">
 
-              <div class="text-3xl font-black">
+              <div id="sidebarStreakVal" class="text-3xl font-black">
                 12
                 <span class="text-base">days</span>
               </div>
@@ -135,7 +135,7 @@
             <div class="mt-3 h-2 bg-violet-100
               dark:bg-white/10 rounded-full overflow-hidden">
 
-              <div class="h-full w-[78%]
+              <div id="sidebarStreakProgress" class="h-full w-[78%]
                 bg-gradient-to-r from-violet-500 to-fuchsia-500
                 rounded-full">
               </div>
@@ -144,7 +144,7 @@
 
           </div>
 
-          <button class="mt-4 w-full px-4 py-3 rounded-xl
+          <button id="settingsBtn" class="mt-4 w-full px-4 py-3 rounded-xl
             text-slate-500 hover:bg-slate-100
             dark:hover:bg-white/5 text-left">
             ⚙ Settings
@@ -229,13 +229,13 @@
 
             <div>
 
-              <p class="text-sm font-semibold
+              <p id="currentDateStr" class="text-sm font-semibold
                 text-violet-600 dark:text-violet-300">
                 Wednesday · 19 August
               </p>
 
               <h1 class="text-3xl sm:text-4xl font-black mt-1">
-                Good morning, Ananya! 👋
+                Good morning, <span id="greetingName">Ananya</span>! 👋
               </h1>
 
               <p class="text-slate-500 dark:text-slate-400 mt-2">
@@ -244,8 +244,7 @@
 
             </div>
 
-            <button
-              onclick="showToast('Nice! Your budget review is complete.')"
+            <button id="reviewBudgetBtn"
               class="px-5 py-3 rounded-xl
               bg-slate-900 text-white
               dark:bg-white dark:text-slate-900
@@ -269,7 +268,7 @@
                 Available balance
               </div>
 
-              <div class="text-2xl sm:text-3xl font-black mt-2">
+              <div id="dashBalanceVal" class="text-2xl sm:text-3xl font-black mt-2">
                 ₹8,450
               </div>
 
@@ -290,7 +289,7 @@
                 Spent this month
               </div>
 
-              <div class="text-2xl sm:text-3xl font-black mt-2">
+              <div id="dashSpentVal" class="text-2xl sm:text-3xl font-black mt-2">
                 ₹5,550
               </div>
 
@@ -311,7 +310,7 @@
                 Bills due
               </div>
 
-              <div class="text-2xl sm:text-3xl font-black mt-2">
+              <div id="dashBillsDueVal" class="text-2xl sm:text-3xl font-black mt-2">
                 ₹1,920
               </div>
 
@@ -332,7 +331,7 @@
                 Money streak
               </div>
 
-              <div class="text-2xl sm:text-3xl font-black mt-2">
+              <div id="dashStreakVal" class="text-2xl sm:text-3xl font-black mt-2">
                 12 🔥
               </div>
 
@@ -359,7 +358,7 @@
                     Financial runway
                   </div>
 
-                  <div class="text-3xl font-black mt-1">
+                  <div id="dashRunwayTotalVal" class="text-3xl font-black mt-1">
                     ₹18,000
                     <span class="text-sm font-medium text-emerald-300">
                       secured
@@ -375,44 +374,7 @@
               </div>
 
 
-              <div class="grid grid-cols-4 gap-2 mt-7">
-
-                <div>
-                  <div class="h-28 rounded-xl bg-violet-500/30
-                    border border-violet-300/20 relative overflow-hidden">
-                    <div class="absolute bottom-0 w-full h-[85%]
-                      bg-violet-500"></div>
-                  </div>
-                  <div class="text-xs mt-2 text-slate-300">Sep</div>
-                </div>
-
-                <div>
-                  <div class="h-28 rounded-xl bg-violet-500/30
-                    border border-violet-300/20 relative overflow-hidden">
-                    <div class="absolute bottom-0 w-full h-[65%]
-                      bg-violet-500"></div>
-                  </div>
-                  <div class="text-xs mt-2 text-slate-300">Oct</div>
-                </div>
-
-                <div>
-                  <div class="h-28 rounded-xl bg-violet-500/30
-                    border border-violet-300/20 relative overflow-hidden">
-                    <div class="absolute bottom-0 w-full h-[48%]
-                      bg-violet-500"></div>
-                  </div>
-                  <div class="text-xs mt-2 text-slate-300">Nov</div>
-                </div>
-
-                <div>
-                  <div class="h-28 rounded-xl bg-violet-500/30
-                    border border-violet-300/20 relative overflow-hidden">
-                    <div class="absolute bottom-0 w-full h-[30%]
-                      bg-violet-500"></div>
-                  </div>
-                  <div class="text-xs mt-2 text-slate-300">Dec</div>
-                </div>
-
+              <div id="dashMonthBars" class="grid grid-cols-4 gap-2 mt-7">
               </div>
 
             </div>
@@ -1070,7 +1032,7 @@
                   Emergency deposit
                 </span>
 
-                <b>
+                <b id="goalText">
                   ₹6,400 / ₹10,000
                 </b>
 
@@ -1080,9 +1042,9 @@
               <div class="h-4 rounded-full
                 bg-white/10 mt-3 overflow-hidden">
 
-                <div class="h-full w-[64%]
+                <div id="goalProgressBar" class="h-full w-[64%]
                   bg-gradient-to-r from-emerald-400
-                  to-cyan-400 rounded-full">
+                  to-cyan-400 rounded-full transition-all duration-300">
                 </div>
 
               </div>
@@ -1096,7 +1058,7 @@
                     Saved
                   </div>
 
-                  <b>64%</b>
+                  <b id="goalPctText">64%</b>
 
                 </div>
 
@@ -1107,7 +1069,7 @@
                     Remaining
                   </div>
 
-                  <b>₹3.6k</b>
+                  <b id="goalRemainingText">₹3.6k</b>
 
                 </div>
 
@@ -1118,17 +1080,16 @@
                     ETA
                   </div>
 
-                  <b>6 weeks</b>
+                  <b id="goalEtaText">6 weeks</b>
 
                 </div>
 
               </div>
 
 
-              <button
-                onclick="showToast('Goal contribution recorded! +80 XP')"
+              <button id="addContributionBtn"
                 class="mt-6 w-full py-3 rounded-xl
-                bg-white text-slate-900 font-bold">
+                bg-white text-slate-900 font-bold hover:bg-slate-100 transition">
                 + Add contribution
               </button>
 
@@ -1159,71 +1120,16 @@
 
               </div>
 
-              <button
-                onclick="showToast('New shared bill added!')"
+              <button id="addBillBtn"
                 class="px-4 py-2 rounded-xl
-                bg-violet-600 text-white font-bold">
+                bg-violet-600 hover:bg-violet-700 text-white font-bold transition">
                 + Add bill
               </button>
 
             </div>
 
 
-            <div class="mt-5 grid md:grid-cols-3 gap-3">
-
-              <div class="p-4 rounded-2xl
-                border border-slate-200 dark:border-white/10">
-
-                <div class="text-xs text-slate-400">
-                  Aug 22
-                </div>
-
-                <b class="block mt-1">
-                  Wi-Fi
-                </b>
-
-                <span class="text-sm text-emerald-600">
-                  ₹600 · split 3 ways
-                </span>
-
-              </div>
-
-
-              <div class="p-4 rounded-2xl
-                border border-slate-200 dark:border-white/10">
-
-                <div class="text-xs text-slate-400">
-                  Aug 25
-                </div>
-
-                <b class="block mt-1">
-                  Electricity
-                </b>
-
-                <span class="text-sm text-amber-600">
-                  ₹1,200 · estimate
-                </span>
-
-              </div>
-
-
-              <div class="p-4 rounded-2xl
-                border border-slate-200 dark:border-white/10">
-
-                <div class="text-xs text-slate-400">
-                  Sep 01
-                </div>
-
-                <b class="block mt-1">
-                  Cleaning fund
-                </b>
-
-                <span class="text-sm text-violet-600">
-                  ₹300 · shared goal
-                </span>
-
-              </div>
-
+            <div id="upcomingBillsList" class="mt-5 grid md:grid-cols-3 gap-3">
             </div>
 
           </div>
@@ -1245,6 +1151,100 @@
     text-sm font-semibold">
   </div>
 
+  <!-- MODAL: ADD BILL -->
+  <div id="billModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#151a30] text-slate-900 dark:text-slate-100 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-white/10">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-black text-xl">Add Shared Bill</h3>
+        <button id="closeBillModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl">✕</button>
+      </div>
+      <form id="addBillForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Bill Name</label>
+          <input type="text" id="billTitleInput" placeholder="e.g. Wi-Fi or Electricity" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Total Amount (₹)</label>
+            <input type="number" id="billAmountInput" placeholder="600" min="1" required
+              class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Split Count</label>
+            <input type="number" id="billSplitInput" value="3" min="1" required
+              class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1">Due Date</label>
+          <input type="text" id="billDateInput" placeholder="e.g. Sep 05" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" id="cancelBillBtn" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold">Save Bill</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD CONTRIBUTION -->
+  <div id="contributionModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#151a30] text-slate-900 dark:text-slate-100 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-white/10">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-black text-xl">Add Goal Contribution</h3>
+        <button id="closeContributionModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl">✕</button>
+      </div>
+      <form id="addContributionForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Contribution Amount (₹)</label>
+          <input type="number" id="contributionAmountInput" placeholder="500" min="10" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1">Note (Optional)</label>
+          <input type="text" id="contributionNoteInput" placeholder="e.g. Saved from weekend coffee"
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" id="cancelContributionBtn" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold">Add Funds</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS & RESET -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#151a30] text-slate-900 dark:text-slate-100 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-white/10">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-black text-xl">Settings & Profile</h3>
+        <button id="closeSettingsModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl">✕</button>
+      </div>
+      <form id="settingsForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Your Name</label>
+          <input type="text" id="profileNameInput" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1">Night Food Limit (₹)</label>
+          <input type="number" id="nightLimitInput" min="50" step="50" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none" />
+        </div>
+        <div class="pt-4 flex justify-between items-center border-t border-slate-200 dark:border-white/10">
+          <button type="button" id="resetDataBtn" class="px-3 py-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 font-bold hover:bg-red-500/20 text-xs transition">
+            Reset Data
+          </button>
+          <div class="flex gap-2">
+            <button type="button" id="cancelSettingsBtn" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5">Cancel</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold">Save Settings</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 
