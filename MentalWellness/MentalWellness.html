@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LifeSync - Mental Wellness</title>
+
+    <link
+        rel="stylesheet"
+        href="mental-wellness.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="wellness-container">
+
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
+    <header class="wellness-header">
+
+        <div>
+
+            <p class="page-label">
+                LIFESYNC
+            </p>
+
+            <h1>
+                Mental Wellness
+            </h1>
+
+            <p class="subtitle">
+                Take a moment to check in with yourself.
+            </p>
+
+        </div>
+
+
+        <div class="wellness-badge">
+
+            <span>
+                💜
+            </span>
+
+            <div>
+
+                <strong>
+                    Your Mind Matters
+                </strong>
+
+                <small>
+                    Be kind to yourself today.
+                </small>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================
+         TODAY'S CHECK-IN
+    ====================================== -->
+
+    <section class="checkin-card">
+
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>
+                    How are you feeling today?
+                </h2>
+
+                <p>
+                    Choose the emoji that best describes your mood.
+                </p>
+
+            </div>
+
+            <span
+                class="today-date"
+                id="todayDate"
+            >
+            </span>
+
+        </div>
+
+
+
+        <!-- MOOD OPTIONS -->
+
+        <div class="mood-options">
+
+
+            <button
+                class="mood-option"
+                data-mood="happy"
+                data-score="5"
+                type="button"
+            >
+
+                <span class="mood-emoji">
+                    😄
+                </span>
+
+                <span>
+                    Happy
+                </span>
+
+            </button>
+
+
+
+            <button
+                class="mood-option"
+                data-mood="good"
+                data-score="4"
+                type="button"
+            >
+
+                <span class="mood-emoji">
+                    🙂
+                </span>
+
+                <span>
+                    Good
+                </span>
+
+            </button>
+
+
+
+            <button
+                class="mood-option"
+                data-mood="okay"
+                data-score="3"
+                type="button"
+            >
+
+                <span class="mood-emoji">
+                    😐
+                </span>
+
+                <span>
+                    Okay
+                </span>
+
+            </button>
+
+
+
+            <button
+                class="mood-option"
+                data-mood="sad"
+                data-score="2"
+                type="button"
+            >
+
+                <span class="mood-emoji">
+                    😔
+                </span>
+
+                <span>
+                    Sad
+                </span>
+
+            </button>
+
+
+
+            <button
+                class="mood-option"
+                data-mood="stressed"
+                data-score="1"
+                type="button"
+            >
+
+                <span class="mood-emoji">
+                    😟
+                </span>
+
+                <span>
+                    Stressed
+                </span>
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- DESCRIPTION -->
+
+        <div class="description-section">
+
+            <label for="moodDescription">
+
+                Want to tell us more?
+
+            </label>
+
+            <p>
+                You can write what made you feel this way today.
+            </p>
+
+
+            <textarea
+                id="moodDescription"
+                placeholder="For example: I felt happy because I completed my assignment..."
+                maxlength="500"
+            ></textarea>
+
+
+            <div class="character-count">
+
+                <span id="characterCount">
+                    0
+                </span>
+
+                / 500
+
+            </div>
+
+        </div>
+
+
+
+        <!-- SAVE -->
+
+        <button
+            id="saveMood"
+            class="save-button"
+        >
+
+            Save Today's Check-in
+
+        </button>
+
+
+        <p
+            id="saveMessage"
+            class="save-message"
+        ></p>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         TODAY'S STATUS
+    ====================================== -->
+
+    <section
+        class="today-status"
+        id="todayStatus"
+    >
+
+        <div class="status-icon">
+            💜
+        </div>
+
+        <div>
+
+            <h3>
+                Today's check-in
+            </h3>
+
+            <p id="todayStatusText">
+                You haven't checked in today yet.
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================
+         WEEKLY OVERVIEW
+    ====================================== -->
+
+    <section class="weekly-section">
+
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>
+                    Your 7-Day Wellness Overview
+                </h2>
+
+                <p>
+                    See how your mood has changed throughout the week.
+                </p>
+
+            </div>
+
+
+            <div class="week-progress">
+
+                <strong id="daysCompleted">
+                    0/7
+                </strong>
+
+                <span>
+                    Days tracked
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- STATISTICS -->
+
+        <div class="wellness-stats">
+
+
+            <div class="wellness-stat purple">
+
+                <div class="stat-icon">
+                    📊
+                </div>
+
+                <span>
+                    Average Mood
+                </span>
+
+                <strong id="averageMood">
+                    --
+                </strong>
+
+            </div>
+
+
+
+            <div class="wellness-stat green">
+
+                <div class="stat-icon">
+                    🌱
+                </div>
+
+                <span>
+                    Most Common
+                </span>
+
+                <strong id="commonMood">
+                    --
+                </strong>
+
+            </div>
+
+
+
+            <div class="wellness-stat orange">
+
+                <div class="stat-icon">
+                    ⭐
+                </div>
+
+                <span>
+                    Best Day
+                </span>
+
+                <strong id="bestDay">
+                    --
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =====================================
+             MOOD CHART
+        ====================================== -->
+
+        <div class="chart-card">
+
+            <div class="chart-heading">
+
+                <div>
+
+                    <h3>
+                        Mood This Week
+                    </h3>
+
+                    <p>
+                        Your daily mood check-ins
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="mood-chart"
+                id="moodChart"
+            >
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =====================================
+             WEEKLY REPORT
+        ====================================== -->
+
+        <div class="report-card">
+
+
+            <div class="report-icon">
+                🧠
+            </div>
+
+
+            <div class="report-content">
+
+                <span class="report-label">
+                    WEEKLY WELLNESS REPORT
+                </span>
+
+                <h2 id="weeklyStatus">
+                    Start checking in
+                </h2>
+
+                <p id="weeklyMessage">
+                    Track your mood each day to receive your 7-day wellness summary.
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =====================================
+             DAILY ENTRIES
+        ====================================== -->
+
+        <div class="history-card">
+
+
+            <div class="history-heading">
+
+                <div>
+
+                    <h3>
+                        Daily Reflections
+                    </h3>
+
+                    <p>
+                        Your mood and thoughts from the last 7 days.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="historyContainer"
+                class="history-container"
+            >
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         NOTE
+    ====================================== -->
+
+    <div class="wellness-note">
+
+        <span>
+            💡
+        </span>
+
+        <p>
+            Remember: this report reflects your recorded mood patterns
+            and is not a medical diagnosis.
+        </p>
+
+    </div>
+
+
+</div>
+
+
+
+<script src="mental-wellness.js"></script>
+
+</body>
+
+</html>
