@@ -4,222 +4,1181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>LifeSync - To Do List</title>
+    <title>LifeSync - Unified Student Productivity & Life Management</title>
 
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="dashboard-body">
 
-    <!-- Top Navigation Header (Outside To-Do List) -->
+    <!-- Top Navigation Header -->
     <header class="top-navbar">
         <div class="nav-container">
-            <div class="nav-brand">
-                <span class="brand-icon">⚡</span>
-                <span class="brand-name">LifeSync</span>
+            <!-- Left: Mobile Menu Toggle & Brand (mobile only) -->
+            <div class="nav-left">
+                <button type="button" id="btnMobileMenu" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
             </div>
 
-            <!-- User Profile / Auth Actions (Outside To-Do List) -->
-            <div id="userNavArea" class="user-nav-area">
-                <div class="auth-buttons-group">
-                    <a href="auth.html" class="btn-auth-signin">
-                        <span class="auth-icon">🔑</span> Sign In
-                    </a>
-                    <a href="auth.html?tab=signup" class="btn-auth-signup">
-                        <span class="auth-icon">✨</span> Sign Up
-                    </a>
+            <!-- Center: Search Bar -->
+            <div class="nav-center">
+                <div class="topbar-search-wrap">
+                    <input type="text" id="topbarSearchInput" class="topbar-search-input" placeholder="Search anything...">
+                    <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Right: Notifications & User Avatar -->
+            <div class="nav-right">
+                <!-- Notification Bell -->
+                <div class="notification-trigger-wrap">
+                    <button type="button" id="btnNotificationTrigger" class="btn-icon-header" aria-label="Notifications" title="Notifications">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span id="notifBadge" class="notif-badge" style="display:none;">0</span>
+                    </button>
+
+                    <!-- Notifications Dropdown -->
+                    <div id="notifDropdown" class="notif-dropdown">
+                        <div class="notif-dropdown-header">
+                            <h3>Notifications & Reminders</h3>
+                            <span class="notif-badge-pill">Real-time</span>
+                        </div>
+                        <div id="notifDropdownList" class="notif-dropdown-list"></div>
+                    </div>
+                </div>
+
+                <!-- User Profile Avatar -->
+                <div class="user-pill-header" onclick="window.LifeSyncApp.switchTab('profile')" title="Student Profile">
+                    <div class="user-avatar-circle">
+                        <img id="userAvatarImg" src="images/ananya_student_avatar.jpg" alt="Ananya" class="user-avatar-photo" onerror="this.style.display='none'; document.getElementById('userAvatarLetter').style.display='flex';">
+                        <span id="userAvatarLetter" class="avatar-letter-fallback" style="display:none;">A</span>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="todo-container">
+    <!-- Mobile Drawer Backdrop -->
+    <div id="appBackdrop" class="sidebar-backdrop"></div>
 
-        <!-- Header -->
-        <header class="todo-header">
+    <!-- Main Layout Container (Sidebar + Content) -->
+    <div class="dashboard-layout">
 
-            <div>
-                <div class="brand-row">
-                    <p class="page-label">LIFESYNC</p>
+        <!-- Unified Sidebar Navigation -->
+        <aside id="appSidebar" class="app-sidebar">
+            <!-- Brand Logo -->
+            <div class="sidebar-brand-block" onclick="window.LifeSyncApp.switchTab('dashboard')">
+                <div class="brand-badge-icon">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                        <rect x="3" y="3" width="11" height="11" rx="4" fill="#633bf5"/>
+                        <rect x="18" y="3" width="11" height="11" rx="4" fill="#8b5cf6"/>
+                        <rect x="3" y="18" width="11" height="11" rx="4" fill="#8b5cf6"/>
+                        <rect x="18" y="18" width="11" height="11" rx="4" fill="#633bf5"/>
+                        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+                        <circle cx="16" cy="16" r="2" fill="#5b36f5"/>
+                    </svg>
                 </div>
-                <h1>To-Do List</h1>
-                <p class="subtitle">Stay organized. Stay focused. You've got this!</p>
+                <span class="brand-title-text">LifeSync</span>
             </div>
 
-            <!-- Header Right Section: Progress Circle -->
-            <div class="header-right">
+            <!-- Navigation Links -->
+            <nav class="sidebar-nav">
+                <button type="button" class="nav-item-btn active" data-tab="dashboard" onclick="window.LifeSyncApp.switchTab('dashboard')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span class="nav-text">Dashboard</span>
+                </button>
 
-                <!-- Progress Circle -->
-                <div class="progress-wrapper">
+                <button type="button" class="nav-item-btn" data-tab="tasks" onclick="window.LifeSyncApp.switchTab('tasks')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span class="nav-text">To-Do List</span>
+                </button>
 
-                    <div class="progress-circle" id="progressCircle">
-                        <div class="progress-inner">
-                            <span id="progressPercent">0%</span>
+                <button type="button" class="nav-item-btn" data-tab="calendar" onclick="window.LifeSyncApp.switchTab('calendar')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span class="nav-text">Calendar & Reminders</span>
+                </button>
+
+                <button type="button" class="nav-item-btn" data-tab="smart" onclick="window.LifeSyncApp.switchTab('smart')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span class="nav-text">Task Organizer</span>
+                </button>
+
+                <button type="button" class="nav-item-btn" data-tab="budget" onclick="window.LifeSyncApp.switchTab('budget')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                    </svg>
+                    <span class="nav-text">Budget Planner</span>
+                </button>
+
+                <button type="button" class="nav-item-btn" data-tab="wellness" onclick="window.LifeSyncApp.switchTab('wellness')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span class="nav-text">Mental Wellness</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Bottom Group -->
+            <div class="sidebar-bottom-group">
+                <!-- Student Tip Card -->
+                <div class="sidebar-tip-card">
+                    <div class="tip-card-header">
+                        <span class="tip-icon">🎓</span>
+                        <span class="tip-title">Student Tip</span>
+                    </div>
+                    <p class="tip-text">Plan your day today and thank yourself tomorrow.</p>
+                </div>
+
+                <!-- Logout Button -->
+                <button type="button" id="btnLogout" class="sidebar-logout-btn" title="Sign Out">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area with View Panels -->
+        <main class="app-main-content">
+
+            <!-- =========================================================
+                 VIEW 1: UNIFIED DASHBOARD
+                 ========================================================= -->
+            <section id="view-dashboard" class="app-view active">
+
+                <!-- Greeting Section -->
+                <div class="dash-greeting-section">
+                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Ananya</span>! 👋</h1>
+                    <p class="dash-greeting-subtitle">Stay organized. Stay focused. You've got this!</p>
+                </div>
+
+                <!-- Top 4 Quick Stat Metric Cards -->
+                <div class="dash-top-metrics-grid">
+                    <!-- 1. Tasks Pending -->
+                    <div class="metric-card metric-lavender" onclick="window.LifeSyncApp.switchTab('tasks')">
+                        <div class="metric-icon-box box-purple">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#633bf5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Tasks Pending</span>
+                            <div class="metric-value" id="dashStatPendingTasks">7</div>
+                            <span class="metric-subtext sub-purple">Keep going!</span>
                         </div>
                     </div>
 
-                    <span class="progress-text">Completed</span>
+                    <!-- 2. Tasks Completed -->
+                    <div class="metric-card metric-mint" onclick="window.LifeSyncApp.switchTab('tasks')">
+                        <div class="metric-icon-box box-green">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Tasks Completed</span>
+                            <div class="metric-value" id="dashStatCompletedTasks">12</div>
+                            <span class="metric-subtext sub-green">Great progress!</span>
+                        </div>
+                    </div>
 
+                    <!-- 3. Upcoming Events -->
+                    <div class="metric-card metric-amber" onclick="window.LifeSyncApp.switchTab('calendar')">
+                        <div class="metric-icon-box box-amber">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Upcoming Events</span>
+                            <div class="metric-value" id="dashStatUpcomingEvents">3</div>
+                            <span class="metric-subtext sub-amber">Stay prepared</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Today's Focus -->
+                    <div class="metric-card metric-rose" onclick="window.LifeSyncApp.switchTab('smart')">
+                        <div class="metric-icon-box box-rose">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Today's Focus</span>
+                            <div class="metric-focus-title" id="dashStatFocusTask">DBMS Assignment</div>
+                            <span class="metric-subtext sub-rose" id="dashStatFocusDue">Due Tomorrow</span>
+                        </div>
+                    </div>
                 </div>
 
-            </div>
+                <!-- Middle 3-Column Section -->
+                <div class="dash-middle-grid">
 
-        </header>
+                    <!-- COLUMN 1: Today's Schedule -->
+                    <div class="dash-panel-card">
+                        <div class="panel-card-header">
+                            <div class="panel-title-with-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#633bf5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <h3>Today's Schedule</h3>
+                            </div>
+                            <button type="button" class="panel-header-link link-purple" onclick="window.LifeSyncApp.switchTab('calendar')">View Calendar</button>
+                        </div>
+                        <div id="dashTodayScheduleTimeline" class="schedule-timeline-container">
+                            <!-- Injected by DashboardModule -->
+                        </div>
+                    </div>
 
+                    <!-- COLUMN 2: Priority Tasks -->
+                    <div class="dash-panel-card">
+                        <div class="panel-card-header">
+                            <div class="panel-title-with-icon">
+                                <span class="star-icon">⭐</span>
+                                <h3>Priority Tasks</h3>
+                            </div>
+                            <button type="button" class="panel-header-link link-purple" onclick="window.LifeSyncApp.switchTab('tasks')">View All</button>
+                        </div>
+                        <div id="dashPriorityTaskList" class="priority-tasks-container">
+                            <!-- Injected by DashboardModule -->
+                        </div>
+                    </div>
 
-        <!-- Add Task Card -->
-        <section class="add-task-card">
+                    <!-- COLUMN 3: Budget Overview & Mental Wellness stacked -->
+                    <div class="dash-col-stacked">
 
-            <div class="input-wrapper">
+                        <!-- Card 3A: Budget Overview -->
+                        <div class="dash-panel-card card-compact">
+                            <div class="panel-card-header">
+                                <div class="panel-title-with-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                                    </svg>
+                                    <h3>Budget Overview</h3>
+                                </div>
+                                <button type="button" class="panel-header-link link-green" onclick="window.LifeSyncApp.switchTab('budget')">View Details</button>
+                            </div>
+                            <div class="budget-overview-content">
+                                <div class="budget-total-balance-label">Total Balance</div>
+                                <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹ 3,450</div>
+                                <div class="budget-in-out-row">
+                                    <div class="budget-in-col">
+                                        <span class="in-out-label">Income</span>
+                                        <span class="in-out-val" id="dashBudgetIncomeVal">₹ 8,000</span>
+                                    </div>
+                                    <div class="budget-out-col">
+                                        <span class="in-out-label">Expenses</span>
+                                        <span class="in-out-val" id="dashBudgetExpenseVal">₹ 4,550</span>
+                                    </div>
+                                </div>
+                                <div class="budget-meter-track">
+                                    <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 57%;"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                <span class="plus-icon">+</span>
-
-                <input
-                    id="task_list"
-                    type="text"
-                    placeholder="What do you need to accomplish today?"
-                    autocomplete="off"
-                >
-
-            </div>
-
-            <button id="addi">
-                Add Task
-            </button>
-
-        </section>
-
-
-        <!-- Statistics -->
-        <section class="stats">
-
-            <div class="stat-card pending-card">
-                <div class="stat-icon">📋</div>
-
-                <div>
-                    <span>Pending</span>
-                    <strong id="pendingCount">0</strong>
+                        <!-- Card 3B: Mental Wellness -->
+                        <div class="dash-panel-card card-compact">
+                            <div class="panel-card-header">
+                                <div class="panel-title-with-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#633bf5" stroke="#633bf5">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <h3>Mental Wellness</h3>
+                                </div>
+                                <button type="button" class="panel-header-link link-purple" onclick="window.LifeSyncApp.switchTab('wellness')">Check-in</button>
+                            </div>
+                            <div class="wellness-card-content">
+                                <p class="wellness-question">How are you feeling today?</p>
+                                <div class="wellness-mood-faces-row">
+                                    <button type="button" class="mood-face-btn" data-mood="excited" data-score="5" title="Great" onclick="window.LifeSyncApp.quickCheckInMood('excited', 5)">😃</button>
+                                    <button type="button" class="mood-face-btn" data-mood="happy" data-score="4" title="Good" onclick="window.LifeSyncApp.quickCheckInMood('happy', 4)">🙂</button>
+                                    <button type="button" class="mood-face-btn" data-mood="neutral" data-score="3" title="Okay" onclick="window.LifeSyncApp.quickCheckInMood('neutral', 3)">😐</button>
+                                    <button type="button" class="mood-face-btn" data-mood="sad" data-score="2" title="Down" onclick="window.LifeSyncApp.quickCheckInMood('sad', 2)">🙁</button>
+                                    <button type="button" class="mood-face-btn" data-mood="stressed" data-score="1" title="Stressed" onclick="window.LifeSyncApp.quickCheckInMood('stressed', 1)">😫</button>
+                                </div>
+                                <p class="wellness-footer-note">Take care of your mind. You matter!</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
+                <!-- Bottom Row (2 Columns) -->
+                <div class="dash-bottom-grid">
 
-            <div class="stat-card completed-card">
-                <div class="stat-icon">✓</div>
+                    <!-- Left: Daily Motivation Banner -->
+                    <div class="daily-motivation-banner">
+                        <div class="motivation-text-side">
+                            <div class="motivation-header">
+                                <span class="quote-symbol">❝</span>
+                                <h4>Daily Motivation</h4>
+                            </div>
+                            <p class="motivation-quote">"Small steps every day lead to big changes tomorrow."</p>
+                        </div>
+                        <div class="motivation-illustration-side">
+                            <img src="images/student_sunrise_motivation.jpg" alt="Student Sunrise Illustration" class="motivation-img">
+                        </div>
+                    </div>
 
-                <div>
-                    <span>Completed</span>
-                    <strong id="completedCount">0</strong>
+                    <!-- Right: Study Streak Card -->
+                    <div class="dash-panel-card streak-card">
+                        <div class="panel-card-header">
+                            <div class="panel-title-with-icon">
+                                <svg class="streak-flame-svg" width="18" height="18" viewBox="0 0 24 24" fill="#2563eb" stroke="#2563eb">
+                                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                                </svg>
+                                <h3>Study Streak</h3>
+                            </div>
+                        </div>
+                        <div class="streak-content">
+                            <p class="streak-subtitle" id="dashStreakSubtitle">You're on a 5-day streak!</p>
+                            <div class="streak-bubbles-row" id="dashStreakBubbles">
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">M</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">T</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">W</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">T</span></div>
+                                <div class="streak-day-bubble current"><span class="day-letter">F</span><span class="day-label">F</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+            </section>
 
 
-            <div class="stat-card total-card">
-                <div class="stat-icon">✦</div>
-
-                <div>
-                    <span>Total Tasks</span>
-                    <strong id="totalCount">0</strong>
-                </div>
-            </div>
-
-        </section>
-
-
-        <!-- Task Section -->
-        <section class="tasks-card">
-
-            <div class="tasks-heading">
-
-                <div>
-                    <h2 id="tasksHeadingTitle">Today's Tasks</h2>
-                    <p id="tasksHeadingSubtitle">Check off your tasks as you complete them.</p>
+            <!-- =========================================================
+                 VIEW 2: TO-DO / TASK MANAGEMENT
+                 ========================================================= -->
+            <section id="view-tasks" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">LIFESYNC TASKS</span>
+                        <h1>To-Do & Task Management</h1>
+                        <p class="subtitle">Organize tasks, set deadlines, and track your study milestones.</p>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTaskModal()">
+                        <span>+ Add New Task</span>
+                    </button>
                 </div>
 
-                <button id="deleteAll" class="delete-all">
-                    Delete All
-                </button>
+                <!-- Smart Task Organizer Banner -->
+                <div id="tasksSmartOrganizerBanner"></div>
 
-            </div>
+                <!-- Stats summary pills -->
+                <div class="tasks-metrics-row">
+                    <div class="task-metric-card">
+                        <span class="metric-num" id="taskCountTotal">0</span>
+                        <span class="metric-label">Total Tasks</span>
+                    </div>
+                    <div class="task-metric-card">
+                        <span class="metric-num" id="taskCountPending">0</span>
+                        <span class="metric-label">Pending</span>
+                    </div>
+                    <div class="task-metric-card">
+                        <span class="metric-num" id="taskCountCompleted">0</span>
+                        <span class="metric-label">Completed</span>
+                    </div>
+                    <div class="task-metric-card overdue-card">
+                        <span class="metric-num" id="taskCountOverdue">0</span>
+                        <span class="metric-label">Overdue</span>
+                    </div>
+                </div>
+
+                <!-- Filter & Search Controls Bar -->
+                <div class="tasks-controls-card">
+                    <div class="search-input-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="taskSearchInput" placeholder="Search tasks, categories, or notes..." autocomplete="off">
+                    </div>
+
+                    <div class="filters-row">
+                        <select id="taskFilterStatus">
+                            <option value="all">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="in progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+
+                        <select id="taskFilterCategory">
+                            <option value="all">All Categories</option>
+                            <option value="Study">📚 Study</option>
+                            <option value="Assignment">📝 Assignment</option>
+                            <option value="Project">💻 Project</option>
+                            <option value="Exam">🎯 Exam</option>
+                            <option value="Personal">💜 Personal</option>
+                        </select>
+
+                        <select id="taskFilterPriority">
+                            <option value="all">All Priorities</option>
+                            <option value="High">🔴 High Priority</option>
+                            <option value="Medium">🟡 Medium Priority</option>
+                            <option value="Low">🟢 Low Priority</option>
+                        </select>
+
+                        <select id="taskSortCriteria">
+                            <option value="deadline">Sort by Deadline</option>
+                            <option value="priority">Sort by Priority</option>
+                            <option value="newest">Sort by Newest</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tasks List Container -->
+                <div id="taskListContainer" class="task-cards-list"></div>
+
+                <!-- Empty State -->
+                <div id="taskEmptyState" class="empty-state" style="display:none;">
+                    <div class="empty-icon">✓</div>
+                    <h3>No tasks found</h3>
+                    <p>You have no matching tasks in this view.</p>
+                </div>
+            </section>
 
 
-            <!-- Empty State -->
-            <div id="emptyState" class="empty-state">
+            <!-- =========================================================
+                 VIEW 2b: SMART TASK ORGANIZER (Integrated Engine)
+                 ========================================================= -->
+            <section id="view-smart" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">AI-POWERED PRIORITIZATION</span>
+                        <h1>Smart Task Organizer</h1>
+                        <p class="subtitle">Intelligently ranked tasks combining deadlines, priority levels, and upcoming academic events.</p>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTaskModal()">
+                        <span>+ Add New Task</span>
+                    </button>
+                </div>
 
-                <div class="empty-icon">✓</div>
+                <!-- How it Works Card -->
+                <div class="smart-how-it-works">
+                    <div class="how-it-works-icon">🧠</div>
+                    <div class="how-it-works-text">
+                        <strong>How the Smart Organizer works:</strong>
+                        Combines your To-Do list deadlines, priority flags, and Calendar events (exams, classes) to calculate a real-world
+                        <em>urgency score</em>. Tasks near exams or class deadlines get an automatic boost so you always know what to tackle first.
+                    </div>
+                    <div class="how-it-works-legend">
+                        <span class="legend-dot-sm" style="background:#ef4444;"></span> Overdue / Due Today
+                        <span class="legend-dot-sm" style="background:#f59e0b; margin-left:10px;"></span> Due Soon
+                        <span class="legend-dot-sm" style="background:#8b5cf6; margin-left:10px;"></span> Exam Boost
+                        <span class="legend-dot-sm" style="background:#3b82f6; margin-left:10px;"></span> Normal
+                    </div>
+                </div>
 
-                <h3>No tasks yet</h3>
+                <!-- Top Priority Banner -->
+                <div id="smartTopPriorityBanner"></div>
 
-                <p>Add a task above and start organizing your day.</p>
+                <!-- Ranked Task List Header -->
+                <div class="smart-list-header">
+                    <h3>📋 Prioritized Task Queue</h3>
+                    <span class="smart-badge" id="smartTotalBadge">0 tasks</span>
+                </div>
 
-            </div>
+                <!-- Ranked Task List -->
+                <div id="smartOrganizerTaskList" class="smart-task-list"></div>
+
+                <!-- Empty State -->
+                <div id="smartOrganizerEmpty" class="empty-state" style="display:none;">
+                    <div class="empty-icon">🎯</div>
+                    <h3>All tasks completed!</h3>
+                    <p>No pending tasks to prioritize. Add a new task to get started.</p>
+                    <button class="btn-primary" onclick="window.LifeSyncApp.openAddTaskModal()">+ Add Task</button>
+                </div>
+            </section>
 
 
-            <!-- Dynamic Tasks -->
-            <div id="taskContainer"></div>
+            <!-- =========================================================
+                 VIEW 3: CALENDAR & REMINDERS
+                 ========================================================= -->
+            <section id="view-calendar" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">ACADEMIC SCHEDULE</span>
+                        <h1>Calendar & Reminders</h1>
+                        <p class="subtitle">Unified view of your classes, exams, events, and task deadlines.</p>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddEventModal()">
+                        <span>+ Add Event / Exam</span>
+                    </button>
+                </div>
 
-        </section>
+                <div class="calendar-two-column-layout">
+                    <!-- Calendar Month Column -->
+                    <div class="cal-main-card">
+                        <!-- Month Navigation Header -->
+                        <div class="cal-month-nav">
+                            <button type="button" id="btnCalPrevMonth" class="btn-cal-arrow">←</button>
+                            <h2 id="calMonthYear">September 2026</h2>
+                            <div class="cal-nav-right-actions">
+                                <button type="button" id="btnCalToday" class="btn-sm-secondary">Today</button>
+                                <button type="button" id="btnCalNextMonth" class="btn-cal-arrow">→</button>
+                            </div>
+                        </div>
+
+                        <!-- Weekday labels -->
+                        <div class="cal-weekdays-row">
+                            <span>Sun</span>
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                        </div>
+
+                        <!-- Days Grid -->
+                        <div id="calendarDaysGrid" class="cal-days-grid"></div>
+
+                        <div class="cal-legend-row">
+                            <span><span class="legend-dot dot-exam"></span> Exams</span>
+                            <span><span class="legend-dot dot-task"></span> Task Deadlines</span>
+                            <span><span class="legend-dot dot-event"></span> Classes & Events</span>
+                        </div>
+                    </div>
+
+                    <!-- Selected Day Drawer -->
+                    <div class="cal-side-card">
+                        <div class="side-card-header">
+                            <div>
+                                <span class="drawer-pretitle">SELECTED DATE</span>
+                                <h3 id="calSelectedDateDisplay">Today</h3>
+                            </div>
+                        </div>
+
+                        <div id="calSelectedDayItems" class="cal-day-items-list">
+                            <!-- Injected by CalendarModule -->
+                        </div>
+                    </div>
+                </div>
+            </section>
 
 
-        <!-- Motivation -->
-        <div class="motivation">
+            <!-- =========================================================
+                 VIEW 4: BUDGET PLANNER (Independent Module)
+                 ========================================================= -->
+            <section id="view-budget" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">STUDENT FINANCE</span>
+                        <h1>Budget & Expense Tracker</h1>
+                        <p class="subtitle">Manage allowance, track daily food & transit expenses, split bills, and safe-keep your money.</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.openAddBillModal()">+ Split Bill</button>
+                        <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTxModal()">+ Add Transaction</button>
+                    </div>
+                </div>
 
-            <div class="quote-icon">❝</div>
+                <!-- Financial Metric Overview -->
+                <div class="budget-metrics-grid">
+                    <div class="budget-stat-box">
+                        <span class="box-label">Total Income</span>
+                        <strong id="budgetValTotalIncome" class="income-text">₹0</strong>
+                    </div>
+                    <div class="budget-stat-box">
+                        <span class="box-label">Total Expenses</span>
+                        <strong id="budgetValTotalExpense" class="expense-text">₹0</strong>
+                    </div>
+                    <div class="budget-stat-box">
+                        <span class="box-label">Net Balance</span>
+                        <strong id="budgetValNetBalance">₹0</strong>
+                    </div>
+                    <div class="budget-stat-box highlight-box">
+                        <span class="box-label">Remaining Monthly Budget</span>
+                        <strong id="budgetValRemainingBudget">₹0</strong>
+                        <small>Limit: <span id="budgetValMonthlyLimit">₹15,000</span> (Spent: <span id="budgetValMonthlySpent">₹0</span>)</small>
+                    </div>
+                </div>
 
-            <div>
-                <h2>Daily Motivation</h2>
-                <p>
-                    "Small steps every day lead to big changes tomorrow."
-                </p>
-            </div>
+                <div id="budgetViewAlertBox" class="budget-warning-banner" style="display:none;"></div>
 
-        </div>
+                <div class="budget-progress-section card-box">
+                    <div class="budget-labels-row">
+                        <span>Monthly Spending Progress</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="budgetViewUsageBar" class="progress-fill" style="width:0%;"></div>
+                    </div>
+                </div>
 
+                <!-- Two Column Finance Sections -->
+                <div class="budget-two-col-layout">
+                    <!-- Left: Transactions History -->
+                    <div class="budget-tx-panel card-box">
+                        <div class="panel-header">
+                            <h3>Transactions History</h3>
+                        </div>
+                        <div id="budgetTransactionsList" class="tx-list"></div>
+                    </div>
+
+                    <!-- Right: Late-Night Safe & Bills -->
+                    <div class="budget-side-panels">
+                        <!-- Late Night Safe -->
+                        <div class="card-box night-safe-card">
+                            <div class="panel-header">
+                                <div>
+                                    <span class="box-label">STUDENT PROTECTION</span>
+                                    <h3>🌙 Late-Night Safe</h3>
+                                </div>
+                                <button type="button" id="btnToggleNightSafe" class="btn-sm-secondary">🔒 Lock Night Spending</button>
+                            </div>
+                            <p class="night-safe-text">Prevent impulsive late-night ordering. Caps spending after 10 PM.</p>
+                            <div class="night-safe-stat-row">
+                                <div>Safe Limit: <strong id="budgetNightSafeLimit">₹500</strong></div>
+                                <div>Available: <strong id="budgetNightSafeRemaining">₹380</strong></div>
+                            </div>
+                            <button type="button" id="btnNightSafeSpend" class="btn-sm-primary" style="margin-top:10px;">Record Late-Night Spend</button>
+                        </div>
+
+                        <!-- Roommate Shared Bills -->
+                        <div class="card-box">
+                            <div class="panel-header">
+                                <h3>🧾 Shared Bills & Split</h3>
+                                <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.openAddBillModal()">+ Add</button>
+                            </div>
+                            <div id="budgetBillsList" class="bills-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =========================================================
+                 VIEW 5: MENTAL WELLNESS (Independent Module)
+                 ========================================================= -->
+            <section id="view-wellness" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">MINDFULNESS & WELLBEING</span>
+                        <h1>Mental Wellness & Mood Log</h1>
+                        <p class="subtitle">Take a moment to check in with yourself. Cultivate mindfulness during busy semesters.</p>
+                    </div>
+                    <div class="wellness-streak-badge">
+                        <span id="wellnessStreakVal">5 Days 🔥</span>
+                    </div>
+                </div>
+
+                <!-- Today's Check-in Card -->
+                <div class="wellness-checkin-card card-box">
+                    <div class="checkin-header">
+                        <h2>How are you feeling today?</h2>
+                        <p>Select your mood emoji, assess your energy, and write a quick reflection.</p>
+                    </div>
+
+                    <!-- Mood Options Buttons -->
+                    <div class="mood-picker-row">
+                        <button type="button" class="mood-pick-btn" data-mood="happy">
+                            <span class="mood-big-emoji">😄</span>
+                            <span class="mood-text">Happy</span>
+                        </button>
+                        <button type="button" class="mood-pick-btn" data-mood="good">
+                            <span class="mood-big-emoji">🙂</span>
+                            <span class="mood-text">Good</span>
+                        </button>
+                        <button type="button" class="mood-pick-btn" data-mood="okay">
+                            <span class="mood-big-emoji">😐</span>
+                            <span class="mood-text">Okay</span>
+                        </button>
+                        <button type="button" class="mood-pick-btn" data-mood="sad">
+                            <span class="mood-big-emoji">😔</span>
+                            <span class="mood-text">Sad</span>
+                        </button>
+                        <button type="button" class="mood-pick-btn" data-mood="stressed">
+                            <span class="mood-big-emoji">😟</span>
+                            <span class="mood-text">Stressed</span>
+                        </button>
+                    </div>
+
+                    <!-- Sliders for Stress and Energy -->
+                    <div class="wellness-sliders-grid">
+                        <div class="slider-group">
+                            <label for="wellnessStressInput">Stress Level (1 = Calm, 5 = Very High)</label>
+                            <input type="range" id="wellnessStressInput" min="1" max="5" value="2">
+                        </div>
+                        <div class="slider-group">
+                            <label for="wellnessEnergyInput">Energy Level (1 = Exhausted, 5 = High Energy)</label>
+                            <input type="range" id="wellnessEnergyInput" min="1" max="5" value="3">
+                        </div>
+                    </div>
+
+                    <!-- Reflection Notes -->
+                    <div class="form-group" style="margin-top:15px;">
+                        <label for="wellnessNotesInput">Daily Reflection / Journal (Optional)</label>
+                        <textarea id="wellnessNotesInput" rows="3" maxlength="500" placeholder="What contributed to how you felt today? Completed assignment, good conversation, or exam stress?"></textarea>
+                    </div>
+
+                    <div class="checkin-footer-actions">
+                        <button type="button" id="btnSaveWellnessCheckin" class="btn-primary">Save Today's Check-in 💜</button>
+                        <span id="wellnessStatusMsg" class="wellness-msg-text"></span>
+                    </div>
+                </div>
+
+                <!-- 7-Day Mood Trend -->
+                <div class="card-box wellness-trend-card">
+                    <div class="panel-header">
+                        <div>
+                            <span class="box-label">WEEKLY TREND</span>
+                            <h3>7-Day Wellness Overview</h3>
+                        </div>
+                        <div class="wellness-averages">
+                            <span>Tracked: <strong id="wellnessDaysTrackedVal">0/7</strong></span>
+                            <span>Average Mood: <strong id="wellnessAvgScoreVal">--</strong></span>
+                        </div>
+                    </div>
+                    <div id="wellnessChartGrid" class="wellness-chart-bars"></div>
+                </div>
+
+                <!-- Reflection Entries History -->
+                <div class="card-box" style="margin-top:20px;">
+                    <h3>Recent Reflection Entries</h3>
+                    <div id="wellnessEntriesHistory" class="wellness-history-list"></div>
+                </div>
+
+                <!-- Non-Clinical Notice -->
+                <div class="wellness-disclaimer-card">
+                    <span>💡</span>
+                    <p>Notice: LifeSync Wellness is a reflective student self-care log and does not provide clinical or medical diagnosis. If you feel overwhelmed, reach out to your university counseling center or a trusted mentor.</p>
+                </div>
+            </section>
+
+
+            <!-- =========================================================
+                 VIEW 6: UNIFIED ANALYTICS
+                 ========================================================= -->
+            <section id="view-analytics" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">PERFORMANCE & HABITS</span>
+                        <h1>Unified Student Analytics</h1>
+                        <p class="subtitle">Holistic data across your productivity, time commitments, finances, and wellness.</p>
+                    </div>
+                </div>
+
+                <div class="analytics-cards-grid">
+                    <!-- Productivity Column -->
+                    <div class="card-box">
+                        <h3>📋 Productivity Performance</h3>
+                        <div class="analytics-rate-row">
+                            <div class="rate-large" id="analyticsProdRate">0%</div>
+                            <div class="rate-desc">
+                                <div>Tasks Completed: <strong id="analyticsProdCompleted">0</strong></div>
+                                <div>Overdue Count: <strong id="analyticsProdOverdue" class="expense-text">0</strong></div>
+                            </div>
+                        </div>
+                        <h4 class="sub-heading-chart">Tasks Completed (Past 7 Days)</h4>
+                        <div id="analyticsWeeklyBars" class="analytics-bars-row"></div>
+                    </div>
+
+                    <!-- Finance Breakdown -->
+                    <div class="card-box">
+                        <h3>💰 Financial Breakdown</h3>
+                        <div class="fin-ratios-row">
+                            <div>Total Income: <strong id="analyticsFinIncome" class="income-text">₹0</strong></div>
+                            <div>Total Expenses: <strong id="analyticsFinExpense" class="expense-text">₹0</strong></div>
+                            <div>Budget Used: <strong id="analyticsFinUsage">0%</strong></div>
+                        </div>
+                        <h4 class="sub-heading-chart">Expenses by Category</h4>
+                        <div id="analyticsFinCategories" class="cat-progress-list"></div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =========================================================
+                 VIEW 7: STUDENT PROFILE & SETTINGS
+                 ========================================================= -->
+            <section id="view-profile" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">ACCOUNT & IDENTITY</span>
+                        <h1>Student Profile</h1>
+                        <p class="subtitle">Manage your student profile details and semester information.</p>
+                    </div>
+                </div>
+
+                <div class="profile-layout-grid">
+                    <div class="card-box profile-badge-card">
+                        <div id="profileAvatarLetter" class="avatar-large">S</div>
+                        <h2 id="profileDisplayNameCard">Student</h2>
+                        <span class="student-pill-tag">ACTIVE STUDENT</span>
+                    </div>
+
+                    <div class="card-box profile-form-card">
+                        <h3>Academic Information</h3>
+                        <form id="profileEditForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileNameInput">Full Name</label>
+                                    <input type="text" id="profileNameInput" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileEmailInput">Email Address</label>
+                                    <input type="email" id="profileEmailInput" disabled>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileUniInput">University / Institute</label>
+                                    <input type="text" id="profileUniInput" placeholder="National Institute of Technology">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileMajorInput">Major / Degree</label>
+                                    <input type="text" id="profileMajorInput" placeholder="Computer Science & Engineering">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileYearInput">Year & Semester</label>
+                                    <input type="text" id="profileYearInput" placeholder="3rd Year / 5th Semester">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileStudentIdInput">Student ID / Roll No</label>
+                                    <input type="text" id="profileStudentIdInput" placeholder="STU-2026-8841">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="margin-top:15px;">Save Profile Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 8: SETTINGS -->
+            <section id="view-settings" class="app-view">
+                <div class="view-header">
+                    <div>
+                        <span class="page-label">APPLICATION PREFERENCES</span>
+                        <h1>Settings</h1>
+                        <p class="subtitle">Customize notifications, default landing views, and account options.</p>
+                    </div>
+                </div>
+
+                <div class="card-box settings-card">
+                    <h3>General Preferences</h3>
+                    <div class="settings-item-row">
+                        <div>
+                            <strong>Currency Symbol</strong>
+                            <p class="text-muted-sm">Choose the currency symbol for your budget planner.</p>
+                        </div>
+                        <select id="settingCurrency">
+                            <option value="₹">₹ (INR)</option>
+                            <option value="$">$ (USD)</option>
+                            <option value="€">€ (EUR)</option>
+                            <option value="£">£ (GBP)</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-item-row">
+                        <div>
+                            <strong>Smart Task Organizer Boost</strong>
+                            <p class="text-muted-sm">Automatically prioritize study tasks when exams approach in your calendar.</p>
+                        </div>
+                        <input type="checkbox" checked disabled>
+                    </div>
+
+                    <div class="settings-item-row">
+                        <div>
+                            <strong>Session Security</strong>
+                            <p class="text-muted-sm">Session token persists safely for 7 days via client-side JWT.</p>
+                        </div>
+                        <span class="badge-smart-organizer">Active</span>
+                    </div>
+                </div>
+            </section>
+
+        </main>
     </div>
 
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav">
+        <button type="button" class="mobile-nav-btn active" data-tab="dashboard" onclick="window.LifeSyncApp.switchTab('dashboard')">
+            <span class="mob-icon">⌂</span>
+            <span>Home</span>
+        </button>
+        <button type="button" class="mobile-nav-btn" data-tab="tasks" onclick="window.LifeSyncApp.switchTab('tasks')">
+            <span class="mob-icon">📋</span>
+            <span>Tasks</span>
+        </button>
+        <button type="button" class="mobile-nav-btn" data-tab="calendar" onclick="window.LifeSyncApp.switchTab('calendar')">
+            <span class="mob-icon">📅</span>
+            <span>Cal</span>
+        </button>
+        <button type="button" class="mobile-nav-btn" data-tab="budget" onclick="window.LifeSyncApp.switchTab('budget')">
+            <span class="mob-icon">💰</span>
+            <span>Budget</span>
+        </button>
+        <button type="button" class="mobile-nav-btn" data-tab="wellness" onclick="window.LifeSyncApp.switchTab('wellness')">
+            <span class="mob-icon">💜</span>
+            <span>Mood</span>
+        </button>
+    </nav>
 
 
+    <!-- =========================================================
+         SHARED INTERACTIVE MODALS
+         ========================================================= -->
 
-
-    <!-- ==========================================
-         EDIT USERNAME MODAL
-    ========================================== -->
-    <div id="editUserModal" class="modal-overlay hidden">
-
-        <div class="auth-card edit-user-card">
-
-            <button id="closeEditUserModal" class="modal-close-btn" aria-label="Close modal">&times;</button>
-
-            <div class="auth-header">
-                <span class="auth-brand-badge">PROFILE SETTINGS</span>
-                <h2>Update Username</h2>
-                <p>Change your public display name on LifeSync</p>
+    <!-- 1. Task Modal (Add / Edit) -->
+    <div id="taskModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="taskModalTitle">Add New Task</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('taskModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
-
-            <!-- Error Banner -->
-            <div id="editUserError" class="auth-error-banner hidden"></div>
-
-            <form id="editUserForm" class="auth-form">
+            <form id="taskFormModal">
+                <input type="hidden" id="taskEditId">
                 <div class="form-group">
-                    <label for="newUsernameInput">New Username</label>
-                    <input type="text" id="newUsernameInput" placeholder="Enter new username" required autocomplete="off">
+                    <label for="taskTitleInput">Task Title *</label>
+                    <input type="text" id="taskTitleInput" placeholder="e.g. Complete OS Chapter 4 Problem Set" required>
                 </div>
-
+                <div class="form-group">
+                    <label for="taskDescInput">Description / Notes</label>
+                    <textarea id="taskDescInput" rows="2" placeholder="Implementation details or textbook page numbers..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDueDateInput">Due Date</label>
+                        <input type="date" id="taskDueDateInput">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskPriorityInput">Priority</label>
+                        <select id="taskPriorityInput">
+                            <option value="High">🔴 High</option>
+                            <option value="Medium" selected>🟡 Medium</option>
+                            <option value="Low">🟢 Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="taskCategoryInput">Category</label>
+                    <select id="taskCategoryInput">
+                        <option value="Study">📚 Study</option>
+                        <option value="Assignment">📝 Assignment</option>
+                        <option value="Project">💻 Project</option>
+                        <option value="Exam">🎯 Exam Preparation</option>
+                        <option value="Personal">💜 Personal / Routine</option>
+                    </select>
+                </div>
                 <div class="modal-actions">
-                    <button type="button" id="cancelEditUser" class="btn-secondary">Cancel</button>
-                    <button type="submit" class="btn-auth-submit">Save Changes</button>
+                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('taskModalOverlay')">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Task</button>
                 </div>
             </form>
-
         </div>
-
     </div>
 
+    <!-- 2. Calendar Event Modal (Add Event / Exam) -->
+    <div id="eventModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="eventModalTitle">Add Schedule Event / Exam</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('eventModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="eventFormModal">
+                <div class="form-group">
+                    <label for="eventTitleInput">Event Title / Subject *</label>
+                    <input type="text" id="eventTitleInput" placeholder="e.g. Midterm Examination / Chemistry Lab" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventDateInput">Date *</label>
+                        <input type="date" id="eventDateInput" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTimeInput">Time</label>
+                        <input type="time" id="eventTimeInput" value="10:00">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventCategoryInput">Category</label>
+                        <select id="eventCategoryInput">
+                            <option value="Exam">🎯 Exam</option>
+                            <option value="Study">📚 Study / Class</option>
+                            <option value="Assignment">📝 Assignment Deadline</option>
+                            <option value="Project">💻 Project Milestone</option>
+                            <option value="Personal">💜 Personal Event</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventPriorityInput">Priority</label>
+                        <select id="eventPriorityInput">
+                            <option value="High" selected>🔴 High</option>
+                            <option value="Medium">🟡 Medium</option>
+                            <option value="Low">🟢 Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="eventDescInput">Description / Location</label>
+                    <textarea id="eventDescInput" rows="2" placeholder="Room number, topics covered, or syllabus notes..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('eventModalOverlay')">Cancel</button>
+                    <button type="submit" class="btn-primary">Add to Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- JavaScript Modules -->
+    <!-- 3. Budget Transaction Modal -->
+    <div id="txModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="txModalTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="txModalTitle">Add Financial Transaction</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('txModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="txFormModal">
+                <div class="form-group">
+                    <label for="txTitleInput">Title / Payee *</label>
+                    <input type="text" id="txTitleInput" placeholder="e.g. Campus Cafeteria, Books, Allowance" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="txAmountInput">Amount (₹) *</label>
+                        <input type="number" id="txAmountInput" min="1" step="1" placeholder="250" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="txTypeInput">Type</label>
+                        <select id="txTypeInput">
+                            <option value="expense">📤 Expense</option>
+                            <option value="income">📥 Income</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="txCategoryInput">Category</label>
+                        <select id="txCategoryInput">
+                            <option value="Food">🍔 Food & Dining</option>
+                            <option value="Travel">🚆 Travel & Transit</option>
+                            <option value="Education">📚 Education & Stationery</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Bills">🧾 Bills & Utilities</option>
+                            <option value="Scholarship">🎓 Scholarship</option>
+                            <option value="Allowance">💵 Allowance</option>
+                            <option value="Other">✨ Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="txDateInput">Date</label>
+                        <input type="date" id="txDateInput">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txDescInput">Notes (Optional)</label>
+                    <input type="text" id="txDescInput" placeholder="Optional details...">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('txModalOverlay')">Cancel</button>
+                    <button type="submit" class="btn-primary">Record Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Split Bill Modal -->
+    <div id="billModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="billModalTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="billModalTitle">Add Shared Bill to Split</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('billModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="billFormModal">
+                <div class="form-group">
+                    <label for="billTitleInput">Bill Name *</label>
+                    <input type="text" id="billTitleInput" placeholder="e.g. Dorm Wi-Fi, Electricity, Grocery" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="billAmountInput">Total Bill Amount (₹) *</label>
+                        <input type="number" id="billAmountInput" min="1" placeholder="1200" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="billSplitInput">Split Ways (People) *</label>
+                        <input type="number" id="billSplitInput" min="1" max="20" value="3" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="billDateInput">Due Date</label>
+                    <input type="date" id="billDateInput">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('billModalOverlay')">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Shared Bill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container"></div>
+
+    <!-- Application JavaScript Layer -->
     <script src="js/auth.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/ui.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/smart-organizer.js"></script>
+    <script src="js/budget.js"></script>
+    <script src="js/wellness.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/dashboard.js"></script>
     <script src="js/app.js"></script>
 
 </body>

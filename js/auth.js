@@ -220,13 +220,16 @@
      * Simulates Google Auth login flow and issues session JWT token.
      */
     function signInWithGoogle(googleData = {}) {
-        if (!googleData.email || !googleData.email.trim()) {
-            throw new Error('Please enter a valid Google email address.');
-        }
+        const defaultEmail = 'student.google@gmail.com';
+        const defaultName = 'Google Student';
+        const googleEmail = (googleData.email && googleData.email.trim()) 
+            ? googleData.email.trim().toLowerCase() 
+            : defaultEmail;
+        const googleUsername = (googleData.username && googleData.username.trim())
+            ? googleData.username.trim()
+            : (googleEmail.split('@')[0]);
 
         const users = getUsersFromStorage();
-        const googleEmail = googleData.email.trim().toLowerCase();
-        const googleUsername = (googleData.username || googleEmail.split('@')[0]).trim();
         const initialLetter = googleUsername.charAt(0).toUpperCase() || 'G';
 
         let user = users.find(u => u.email.toLowerCase() === googleEmail);

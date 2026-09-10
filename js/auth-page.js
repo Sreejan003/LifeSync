@@ -74,6 +74,9 @@
         if (window.UI && window.UI.showToast) {
             window.UI.showToast(welcomeMsg, "success");
         }
+        // Mark this browser tab as having an active authenticated session.
+        // sessionStorage clears on tab/browser close, so app.js will force re-login on fresh open.
+        sessionStorage.setItem('ls_session_active', '1');
         setTimeout(() => {
             window.location.href = "index.html";
         }, 500);
@@ -129,16 +132,18 @@
             if (event.persisted) {
                 // If restored from bfcache, ensure state check or reload
                 const user = typeof AuthSystem !== 'undefined' ? AuthSystem.getCurrentUser() : null;
-                if (user) {
+                const sessionActive = sessionStorage.getItem('ls_session_active');
+                if (user && sessionActive) {
                     window.location.href = "index.html";
                 }
             }
         });
 
-        // If already signed in, automatically redirect to index.html
+        // If already signed in AND in an active session, skip the login page
         if (typeof AuthSystem !== 'undefined') {
             const currentUser = AuthSystem.getCurrentUser();
-            if (currentUser) {
+            const sessionActive = sessionStorage.getItem('ls_session_active');
+            if (currentUser && sessionActive) {
                 window.location.href = "index.html";
                 return;
             }
@@ -217,43 +222,75 @@
         // Google Auth Simulation & Account Picker Modal
         const googleAuthModal = document.querySelector("#googleAuthModal");
         const closeGoogleModal = document.querySelector("#closeGoogleModal");
+        const googleTriggers = document.querySelectorAll(".btn-trigger-google, #googleAuthBtn");
 
-        if (elements.googleAuthBtn) {
-            elements.googleAuthBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                if (googleAuthModal) {
-                    googleAuthModal.classList.remove("hidden");
-                } else {
-                    try {
-                        const user = AuthSystem.signInWithGoogle();
-                        redirectToApp(`Signed in with Google as ${user.username}`);
-                    } catch (err) {
-                        showAuthError("Google Sign-In failed. Please try again.");
-                    }
+        const openGoogleModal = (e) => {
+            if (e) e.preventDefault();
+            if (googleAuthModal) {
+                googleAuthModal.classList.remove("hidden");
+                googleAuthModal.classList.add("show");
+            }
+        };
+
+        const hideGoogleModal = () => {
+            if (googleAuthModal) {
+                googleAuthModal.classList.add("hidden");
+                googleAuthModal.classList.remove("show");
+            }
+        };
+
+        googleTriggers.forEach(btn => {
+            btn.addEventListener("click", openGoogleModal);
+        });
+
+        if (closeGoogleModal) {
+            closeGoogleModal.addEventListener("click", hideGoogleModal);
+        }
+
+        if (googleAuthModal) {
+            googleAuthModal.addEventListener("click", (e) => {
+                if (e.target === googleAuthModal) hideGoogleModal();
+            });
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && googleAuthModal.classList.contains("show")) {
+                    hideGoogleModal();
                 }
             });
         }
 
-        if (closeGoogleModal && googleAuthModal) {
-            closeGoogleModal.addEventListener("click", () => {
-                googleAuthModal.classList.add("hidden");
+        // Handle Quick Google Account Selection (One-click Google Auth)
+        const quickGoogleBtns = document.querySelectorAll(".btn-google-quick");
+        quickGoogleBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const email = btn.dataset.email;
+                const name = btn.dataset.name;
+
+                try {
+                    const user = AuthSystem.signInWithGoogle({ username: name, email: email });
+                    hideGoogleModal();
+                    redirectToApp(`Signed in with Google as ${user.username}`);
+                } catch (err) {
+                    showAuthError(err.message || "Google Sign-In failed. Please try again.");
+                }
             });
-            googleAuthModal.addEventListener("click", (e) => {
-                if (e.target === googleAuthModal) googleAuthModal.classList.add("hidden");
-            });
-        }
+        });
 
         // Handle Google Custom Auth Form Submission
         const googleForm = document.querySelector("#googleCustomAuthForm");
         if (googleForm) {
             googleForm.addEventListener("submit", (e) => {
                 e.preventDefault();
-                const email = document.querySelector("#googleEmailInput").value;
-                const name = document.querySelector("#googleNameInput").value;
+                const email = document.querySelector("#googleEmailInput").value.trim();
+                const name = document.querySelector("#googleNameInput").value.trim() || email.split("@")[0];
+
+                if (!email) {
+                    showAuthError("Please enter a valid Google email address.");
+                    return;
+                }
 
                 try {
                     const user = AuthSystem.signInWithGoogle({ username: name, email: email });
-                    if (googleAuthModal) googleAuthModal.classList.add("hidden");
+                    hideGoogleModal();
                     redirectToApp(`Signed in with Google as ${user.username}`);
                 } catch (err) {
                     showAuthError(err.message || "Google Sign-In failed. Please try again.");
