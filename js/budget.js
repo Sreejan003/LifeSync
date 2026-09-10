@@ -29,6 +29,39 @@
     const BudgetModule = {
         init(user) {
             currentBudget = window.LifeSyncStorage.getBudget(user);
+
+            // One-time migration: Import any existing standalone BudgetBuddy data into unified LifeSync storage
+            try {
+                const standaloneRaw = localStorage.getItem('budget_buddy_app_data');
+                if (standaloneRaw) {
+                    const standaloneData = JSON.parse(standaloneRaw);
+                    let modified = false;
+
+                    if (standaloneData.runway && (!currentBudget.runway || !currentBudget.runway.sum)) {
+                        currentBudget.runway = { ...standaloneData.runway };
+                        modified = true;
+                    }
+                    if (standaloneData.nightSafe && (!currentBudget.nightSafe || !currentBudget.nightSafe.limit)) {
+                        currentBudget.nightSafe = { ...standaloneData.nightSafe };
+                        modified = true;
+                    }
+                    if (standaloneData.sharedGoal && (!currentBudget.sharedGoal || !currentBudget.sharedGoal.target)) {
+                        currentBudget.sharedGoal = { ...standaloneData.sharedGoal };
+                        modified = true;
+                    }
+                    if (Array.isArray(standaloneData.bills) && standaloneData.bills.length > 0 && (!currentBudget.bills || currentBudget.bills.length === 0)) {
+                        currentBudget.bills = standaloneData.bills;
+                        modified = true;
+                    }
+
+                    if (modified) {
+                        window.LifeSyncStorage.saveBudget(user, currentBudget);
+                    }
+                }
+            } catch (e) {
+                console.warn('Budget migration notice:', e);
+            }
+
             return currentBudget;
         },
 
@@ -74,8 +107,79 @@
             if (num > 0) {
                 currentBudget.monthlyBudget = num;
                 window.LifeSyncStorage.saveBudget(user, currentBudget);
+                this.syncWithBudgetBuddy();
                 notifyChange();
             }
+        },
+
+        setNightSafeLimit(user, limit) {
+            const num = Number(limit);
+            if (num > 0) {
+                if (!currentBudget.nightSafe) {
+                    currentBudget.nightSafe = { limit: 500, spent: 0, locked: false, lastResetDate: new Date().toISOString().split('T')[0] };
+                }
+                currentBudget.nightSafe.limit = num;
+                window.LifeSyncStorage.saveBudget(user, currentBudget);
+                this.syncWithBudgetBuddy();
+                notifyChange();
+            }
+        },
+
+        setBudgetSettings(user, settings) {
+            if (settings.monthlyBudget) {
+                const mb = Number(settings.monthlyBudget);
+                if (mb > 0) currentBudget.monthlyBudget = mb;
+            }
+            if (settings.nightSafeLimit) {
+                const nsl = Number(settings.nightSafeLimit);
+                if (nsl > 0) {
+                    if (!currentBudget.nightSafe) {
+                        currentBudget.nightSafe = { limit: 500, spent: 0, locked: false, lastResetDate: new Date().toISOString().split('T')[0] };
+                    }
+                    currentBudget.nightSafe.limit = nsl;
+                }
+            }
+            window.LifeSyncStorage.saveBudget(user, currentBudget);
+            this.syncWithBudgetBuddy();
+            notifyChange();
+        },
+
+        resetToDefault(user) {
+            currentBudget = {
+                monthlyBudget: 15000,
+                runway: { sum: 20000, bufferPct: 15 },
+                nightSafe: { limit: 500, spent: 0, locked: false, lastResetDate: new Date().toISOString().split('T')[0] },
+                sharedGoal: { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 },
+                transactions: [
+                    {
+                        id: 'tx_1',
+                        title: 'Academic Scholarship Credit',
+                        amount: 8000,
+                        type: 'income',
+                        category: 'Scholarship',
+                        date: new Date().toISOString().split('T')[0],
+                        description: 'Semester merit scholarship'
+                    },
+                    {
+                        id: 'tx_2',
+                        title: 'Campus Dining & Meal Plan',
+                        amount: 2500,
+                        type: 'expense',
+                        category: 'Food',
+                        date: new Date().toISOString().split('T')[0],
+                        description: 'Monthly dining hall meal coupon bundle'
+                    }
+                ],
+                bills: [
+                    { id: 'b1', title: 'Wi-Fi Fiber Router', amount: 600, split: 3, date: 'Aug 22', paid: false },
+                    { id: 'b2', title: 'Apartment Electricity', amount: 1200, split: 3, date: 'Aug 25', paid: false },
+                    { id: 'b3', title: 'Cleaning & Maid Fund', amount: 300, split: 3, date: 'Sep 01', paid: false }
+                ]
+            };
+            window.LifeSyncStorage.saveBudget(user, currentBudget);
+            this.syncWithBudgetBuddy();
+            notifyChange();
+            return currentBudget;
         },
 
         // --- BILLS ---
@@ -152,7 +256,112 @@
             currentBudget.runway.sum = Math.max(0, Number(sum) || 0);
             currentBudget.runway.bufferPct = Math.max(0, Math.min(100, Number(bufferPct) || 15));
             window.LifeSyncStorage.saveBudget(user, currentBudget);
+            this.syncWithBudgetBuddy();
             notifyChange();
+        },
+
+        calculateRunwayValues(sum, bufferPct) {
+            const total = Math.max(0, Number(sum) || 0);
+            const buffer = Math.max(0, Math.min(100, Number(bufferPct) || 15));
+            const usable = total * (1 - buffer / 100);
+            const base = usable / 4;
+            const weights = [1.08, 1.0, 0.92, 1.0];
+            const raw = weights.map(w => base * w);
+            const scale = usable / (raw.reduce((a, b) => a + b, 0) || 1);
+            const values = raw.map(v => Math.round(v * scale));
+            return { total, buffer, usable: Math.round(usable), base: Math.round(base), values };
+        },
+
+        // --- SHARED GOAL CONTRIBUTION ---
+        addGoalContribution(user, amount, note) {
+            const val = Number(amount);
+            if (!val || val <= 0) throw new Error('Valid contribution amount is required.');
+            if (!currentBudget.sharedGoal) {
+                currentBudget.sharedGoal = { title: 'Emergency / Tech Fund', current: 0, target: 10000, etaWeeks: 6 };
+            }
+            currentBudget.sharedGoal.current = (currentBudget.sharedGoal.current || 0) + val;
+            
+            // Also log transaction
+            currentBudget.transactions.unshift({
+                id: 'tx_goal_' + Date.now(),
+                title: `Goal Contribution: ${currentBudget.sharedGoal.title}`,
+                amount: val,
+                type: 'expense',
+                category: 'Savings',
+                date: new Date().toISOString().split('T')[0],
+                description: (note || 'Added savings funds towards goal').trim()
+            });
+
+            window.LifeSyncStorage.saveBudget(user, currentBudget);
+            this.syncWithBudgetBuddy();
+            notifyChange();
+            return currentBudget.sharedGoal;
+        },
+
+        // --- BUDGET REVIEW (Gamified streak & XP) ---
+        reviewBudget(user) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            let profile = window.ProfileModule ? window.ProfileModule.getProfile() : null;
+            if (!profile) {
+                profile = window.LifeSyncStorage.getProfile(user);
+            }
+            if (!profile.budgetStreak) profile.budgetStreak = 12;
+            if (!profile.xp) profile.xp = 450;
+
+            if (profile.lastBudgetReviewDate === todayStr) {
+                return { reviewed: false, streak: profile.budgetStreak, xp: profile.xp, message: 'Already reviewed today! Keep it up 🔥' };
+            }
+
+            profile.budgetStreak += 1;
+            profile.lastBudgetReviewDate = todayStr;
+            profile.xp += 50;
+            if (window.ProfileModule && window.ProfileModule.updateProfile) {
+                window.ProfileModule.updateProfile(user, profile);
+            } else {
+                window.LifeSyncStorage.saveProfile(user, profile);
+            }
+            this.syncWithBudgetBuddy();
+            notifyChange();
+            return { reviewed: true, streak: profile.budgetStreak, xp: profile.xp, message: `Review completed! Streak: ${profile.budgetStreak} days 🔥 (+50 XP)` };
+        },
+
+        // --- PEER BENCHMARKS ---
+        getBenchmarkData() {
+            return [
+                { name: 'Food & Dining', you: 1800, peer: 2200, category: 'Food' },
+                { name: 'Transit & Commute', you: 700, peer: 950, category: 'Travel' },
+                { name: 'Entertainment', you: 520, peer: 760, category: 'Entertainment' },
+                { name: 'Study Materials', you: 900, peer: 800, category: 'Education' },
+                { name: 'Shopping & Apparel', you: 640, peer: 980, category: 'Shopping' }
+            ];
+        },
+
+        // --- TWO-WAY SYNC WITH STANDALONE BUDGETBUDDY ---
+        syncWithBudgetBuddy() {
+            try {
+                const buddyData = {
+                    profile: {
+                        name: 'Ananya',
+                        streak: 12,
+                        lastReviewDate: null,
+                        xp: 450
+                    },
+                    runway: currentBudget.runway || { sum: 18000, bufferPct: 15 },
+                    nightSafe: currentBudget.nightSafe || { limit: 350, spent: 112, locked: false },
+                    sharedGoal: currentBudget.sharedGoal || { title: 'Emergency deposit', current: 6400, target: 10000, etaWeeks: 6 },
+                    bills: (currentBudget.bills || []).map(b => ({
+                        id: b.id,
+                        title: b.title,
+                        amount: b.amount,
+                        split: b.split || 1,
+                        date: b.date,
+                        paid: !!b.paid
+                    }))
+                };
+                localStorage.setItem('budget_buddy_app_data', JSON.stringify(buddyData));
+            } catch (e) {
+                // ignore in constrained envs
+            }
         },
 
         // --- SUMMARY REPORT (Exported directly to Dashboard) ---
@@ -173,17 +382,23 @@
                     totalIncome += amt;
                 } else {
                     totalExpense += amt;
-                    if (tx.date && tx.date.startsWith(curMonthPrefix)) {
-                        spentThisMonth += amt;
-                    }
-                    categorySpending[tx.category] = (categorySpending[tx.category] || 0) + amt;
                 }
+                if (tx.date && tx.date.startsWith(curMonthPrefix)) {
+                    if (tx.type === 'expense') spentThisMonth += amt;
+                }
+                categorySpending[tx.category] = (categorySpending[tx.category] || 0) + amt;
             });
 
             const monthlyBudget = currentBudget.monthlyBudget || 15000;
             const remainingBudget = Math.max(0, monthlyBudget - spentThisMonth);
             const budgetUsagePct = Math.min(100, Math.round((spentThisMonth / monthlyBudget) * 100));
             const totalBalance = totalIncome - totalExpense;
+
+            // Compute bills summary
+            const bills = currentBudget.bills || [];
+            const unpaidBills = bills.filter(b => !b.paid);
+            const unpaidBillsTotalShare = unpaidBills.reduce((acc, b) => acc + Math.round(b.amount / (b.split || 1)), 0);
+            const nextDueBill = unpaidBills.length > 0 ? unpaidBills[0] : null;
 
             return {
                 totalIncome,
@@ -196,8 +411,13 @@
                 isWarning: budgetUsagePct >= 80 && budgetUsagePct < 100,
                 isExceeded: spentThisMonth > monthlyBudget,
                 categorySpending,
-                runway: currentBudget.runway,
-                nightSafe: currentBudget.nightSafe,
+                runway: currentBudget.runway || { sum: 20000, bufferPct: 15 },
+                nightSafe: currentBudget.nightSafe || { limit: 500, spent: 0, locked: false },
+                sharedGoal: currentBudget.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 },
+                bills,
+                unpaidBillsCount: unpaidBills.length,
+                unpaidBillsTotalShare,
+                nextDueBill,
                 recentTransactions: currentBudget.transactions.slice(0, 5)
             };
         }

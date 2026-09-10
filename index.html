@@ -294,33 +294,97 @@
                     <!-- COLUMN 3: Budget Overview & Mental Wellness stacked -->
                     <div class="dash-col-stacked">
 
-                        <!-- Card 3A: Budget Overview -->
-                        <div class="dash-panel-card card-compact">
+                        <!-- Card 3A: Student Finance Hub & Budget (Fully Integrated) -->
+                        <div class="dash-panel-card card-compact dash-budget-integrated-card">
                             <div class="panel-card-header">
                                 <div class="panel-title-with-icon">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                                         <line x1="2" y1="10" x2="22" y2="10"></line>
                                     </svg>
-                                    <h3>Budget Overview</h3>
+                                    <h3>Student Finance Hub</h3>
                                 </div>
-                                <button type="button" class="panel-header-link link-green" onclick="window.LifeSyncApp.switchTab('budget')">View Details</button>
+                                <div class="dash-budget-header-actions">
+                                    <span id="dashBudgetStreakBadge" class="badge-streak-sm" title="Budget Review Streak">🔥 12d</span>
+                                    <button type="button" class="panel-header-link link-green" onclick="window.LifeSyncApp.switchTab('budget')">Open Hub →</button>
+                                </div>
                             </div>
                             <div class="budget-overview-content">
-                                <div class="budget-total-balance-label">Total Balance</div>
-                                <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹ 3,450</div>
+                                <!-- Balance & Monthly Allowance Row -->
+                                <div class="dash-budget-top-row">
+                                    <div>
+                                        <div class="budget-total-balance-label">Available Balance</div>
+                                        <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹ 3,450</div>
+                                    </div>
+                                    <div class="dash-budget-quick-actions">
+                                        <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddTxModal()" title="Record income or expense">+ Add Spend</button>
+                                    </div>
+                                </div>
+
                                 <div class="budget-in-out-row">
                                     <div class="budget-in-col">
                                         <span class="in-out-label">Income</span>
                                         <span class="in-out-val" id="dashBudgetIncomeVal">₹ 8,000</span>
                                     </div>
                                     <div class="budget-out-col">
-                                        <span class="in-out-label">Expenses</span>
+                                        <span class="in-out-label">Spent This Month</span>
                                         <span class="in-out-val" id="dashBudgetExpenseVal">₹ 4,550</span>
                                     </div>
                                 </div>
-                                <div class="budget-meter-track">
+                                <div class="budget-meter-track" title="Monthly spending progress">
                                     <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 57%;"></div>
+                                </div>
+
+                                <!-- Integrated Feature 1: Late-Night Safe Quick Bar -->
+                                <div class="dash-finance-mini-box dash-night-safe-mini">
+                                    <div class="mini-box-header">
+                                        <div class="mini-box-title">
+                                            <span id="dashNightSafeIcon">🌙</span>
+                                            <span>Late-Night Safe:</span>
+                                            <strong id="dashNightSafeStatus" class="night-safe-status-pill">🔓 ₹380 Left</strong>
+                                        </div>
+                                        <button type="button" id="dashBtnToggleNightSafe" class="btn-xs-toggle" onclick="window.LifeSyncApp.quickNightSafeToggle()">🔒 Lock</button>
+                                    </div>
+                                    <div class="dash-night-quick-chips">
+                                        <button type="button" class="dash-chip-btn" onclick="window.LifeSyncApp.quickNightSpend(50)">+₹50 Snack</button>
+                                        <button type="button" class="dash-chip-btn" onclick="window.LifeSyncApp.quickNightSpend(100)">+₹100 Auto</button>
+                                        <button type="button" class="dash-chip-btn" onclick="window.LifeSyncApp.quickNightSpend(200)">+₹200 Meal</button>
+                                    </div>
+                                </div>
+
+                                <!-- Integrated Feature 2: Upcoming Roommate Bills Quick Alert -->
+                                <div class="dash-finance-mini-box dash-bills-mini" id="dashBillsMiniBox">
+                                    <div class="mini-box-header">
+                                        <div class="mini-box-title">
+                                            <span>🧾</span>
+                                            <span id="dashNextBillLabel">Next Bill:</span>
+                                            <strong id="dashNextBillTitle">Wi-Fi (₹200 share)</strong>
+                                        </div>
+                                        <button type="button" id="dashBtnPayNextBill" class="btn-xs-action">✓ Mark Paid</button>
+                                    </div>
+                                </div>
+
+                                <!-- Integrated Feature 3: Shared Savings Goal Mini Bar -->
+                                <div class="dash-finance-mini-box dash-goal-mini">
+                                    <div class="mini-box-header">
+                                        <div class="mini-box-title">
+                                            <span>🎯</span>
+                                            <span id="dashGoalTitle">Tech Fund:</span>
+                                            <strong id="dashGoalPct">56% (₹4.5k)</strong>
+                                        </div>
+                                        <button type="button" class="btn-xs-link" onclick="window.LifeSyncApp.openGoalContributionModal()">+ Add</button>
+                                    </div>
+                                    <div class="dash-mini-progress">
+                                        <div id="dashGoalMiniBar" class="dash-mini-progress-fill" style="width: 56%;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Sub-Tab Shortcuts -->
+                                <div class="dash-finance-shortcuts">
+                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('runway')">◈ Runway</button>
+                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('benchmark')">◎ Peer Benchmark</button>
+                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('night')">☾ Late Safe</button>
+                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('split')">⇄ Bills & Goals</button>
                                 </div>
                             </div>
                         </div>
@@ -606,87 +670,358 @@
             <!-- =========================================================
                  VIEW 4: BUDGET PLANNER (Independent Module)
                  ========================================================= -->
+            <!-- =========================================================
+                 VIEW 4: BUDGET PLANNER & FINANCE HUB (Original Features Retained)
+                 ========================================================= -->
             <section id="view-budget" class="app-view">
                 <div class="view-header">
                     <div>
-                        <span class="page-label">STUDENT FINANCE</span>
+                        <div class="header-label-row">
+                            <span class="page-label">STUDENT FINANCE HUB</span>
+                            <span id="budgetStreakPill" class="budget-streak-pill">🔥 <span id="budgetStreakCount">12</span> Days Streak</span>
+                        </div>
                         <h1>Budget & Expense Tracker</h1>
-                        <p class="subtitle">Manage allowance, track daily food & transit expenses, split bills, and safe-keep your money.</p>
+                        <p class="subtitle">Runway calculator, peer benchmarks, late-night safe, roommate splits, and savings goals.</p>
                     </div>
                     <div class="view-header-actions">
+                        <button type="button" id="btnReviewBudget" class="btn-review-budget" title="Review today's finances to boost your streak and earn +50 XP">✓ Review Budget (+50 XP)</button>
+                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.openBudgetSettingsModal()" title="Configure monthly limit, curfew limit, and defaults">⚙️ Budget Settings</button>
                         <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.openAddBillModal()">+ Split Bill</button>
                         <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTxModal()">+ Add Transaction</button>
                     </div>
                 </div>
 
-                <!-- Financial Metric Overview -->
-                <div class="budget-metrics-grid">
-                    <div class="budget-stat-box">
-                        <span class="box-label">Total Income</span>
-                        <strong id="budgetValTotalIncome" class="income-text">₹0</strong>
-                    </div>
-                    <div class="budget-stat-box">
-                        <span class="box-label">Total Expenses</span>
-                        <strong id="budgetValTotalExpense" class="expense-text">₹0</strong>
-                    </div>
-                    <div class="budget-stat-box">
-                        <span class="box-label">Net Balance</span>
-                        <strong id="budgetValNetBalance">₹0</strong>
-                    </div>
-                    <div class="budget-stat-box highlight-box">
-                        <span class="box-label">Remaining Monthly Budget</span>
-                        <strong id="budgetValRemainingBudget">₹0</strong>
-                        <small>Limit: <span id="budgetValMonthlyLimit">₹15,000</span> (Spent: <span id="budgetValMonthlySpent">₹0</span>)</small>
-                    </div>
+                <!-- Budget Sub-Navigation (Matching original BudgetBuddy) -->
+                <div class="budget-subnav-bar">
+                    <button type="button" class="bsub-btn active" data-bsub="overview" onclick="window.LifeSyncApp.switchBudgetSubTab('overview')">
+                        <span>⌂</span> Overview
+                    </button>
+                    <button type="button" class="bsub-btn" data-bsub="runway" onclick="window.LifeSyncApp.switchBudgetSubTab('runway')">
+                        <span>◈</span> Financial Runway
+                    </button>
+                    <button type="button" class="bsub-btn" data-bsub="benchmark" onclick="window.LifeSyncApp.switchBudgetSubTab('benchmark')">
+                        <span>◎</span> Peer Benchmark
+                    </button>
+                    <button type="button" class="bsub-btn" data-bsub="night" onclick="window.LifeSyncApp.switchBudgetSubTab('night')">
+                        <span>☾</span> Late-Night Safe
+                    </button>
+                    <button type="button" class="bsub-btn" data-bsub="split" onclick="window.LifeSyncApp.switchBudgetSubTab('split')">
+                        <span>⇄</span> Bills & Goals
+                    </button>
                 </div>
 
-                <div id="budgetViewAlertBox" class="budget-warning-banner" style="display:none;"></div>
-
-                <div class="budget-progress-section card-box">
-                    <div class="budget-labels-row">
-                        <span>Monthly Spending Progress</span>
-                    </div>
-                    <div class="progress-track">
-                        <div id="budgetViewUsageBar" class="progress-fill" style="width:0%;"></div>
-                    </div>
-                </div>
-
-                <!-- Two Column Finance Sections -->
-                <div class="budget-two-col-layout">
-                    <!-- Left: Transactions History -->
-                    <div class="budget-tx-panel card-box">
-                        <div class="panel-header">
-                            <h3>Transactions History</h3>
+                <!-- SUB-VIEW 1: OVERVIEW -->
+                <div id="bsub-view-overview" class="bsub-view active">
+                    <!-- Financial Metric Overview -->
+                    <div class="budget-metrics-grid">
+                        <div class="budget-stat-box">
+                            <span class="box-label">Total Income</span>
+                            <strong id="budgetValTotalIncome" class="income-text">₹0</strong>
                         </div>
-                        <div id="budgetTransactionsList" class="tx-list"></div>
+                        <div class="budget-stat-box">
+                            <span class="box-label">Total Expenses</span>
+                            <strong id="budgetValTotalExpense" class="expense-text">₹0</strong>
+                        </div>
+                        <div class="budget-stat-box">
+                            <span class="box-label">Net Balance</span>
+                            <strong id="budgetValNetBalance">₹0</strong>
+                        </div>
+                        <div class="budget-stat-box highlight-box">
+                            <span class="box-label">Remaining Monthly Budget</span>
+                            <strong id="budgetValRemainingBudget">₹0</strong>
+                            <small>Limit: <span id="budgetValMonthlyLimit">₹15,000</span> (Spent: <span id="budgetValMonthlySpent">₹0</span>)</small>
+                        </div>
                     </div>
 
-                    <!-- Right: Late-Night Safe & Bills -->
-                    <div class="budget-side-panels">
-                        <!-- Late Night Safe -->
-                        <div class="card-box night-safe-card">
+                    <div id="budgetViewAlertBox" class="budget-warning-banner" style="display:none;"></div>
+
+                    <!-- Progress Section -->
+                    <div class="budget-progress-section card-box">
+                        <div class="budget-labels-row">
+                            <span>Monthly Spending Progress</span>
+                            <span id="budgetUsagePctLabel">0%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="budgetViewUsageBar" class="progress-fill" style="width:0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Overview Two Column Layout -->
+                    <div class="budget-two-col-layout">
+                        <!-- Left Column: Transactions History -->
+                        <div class="budget-tx-panel card-box">
+                            <div class="panel-header">
+                                <h3>Transactions History</h3>
+                                <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.openAddTxModal()">+ Log Transaction</button>
+                            </div>
+                            <div id="budgetTransactionsList" class="tx-list"></div>
+                        </div>
+
+                        <!-- Right Column: Quick Runway Snapshot + Quick Night Safe -->
+                        <div class="budget-side-panels">
+                            <!-- Quick Semester Runway Snapshot -->
+                            <div class="card-box runway-snapshot-card">
+                                <div class="panel-header">
+                                    <div>
+                                        <span class="box-label">SEMESTER RUNWAY</span>
+                                        <h3>◈ 4-Month Spending Curve</h3>
+                                    </div>
+                                    <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.switchBudgetSubTab('runway')">Configure →</button>
+                                </div>
+                                <div class="runway-bars-grid" id="dashRunwayBars">
+                                    <!-- Dynamic 4-Month Bars rendered by JS -->
+                                </div>
+                                <div class="runway-foot-stats">
+                                    <div>Secured: <strong id="dashRunwayTotalVal">₹20,000</strong></div>
+                                    <div>Safe Monthly Cap: <strong id="dashRunwayCapVal">₹4,250</strong></div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Late-Night Safe Widget -->
+                            <div class="card-box night-safe-card">
+                                <div class="panel-header">
+                                    <div>
+                                        <span class="box-label">STUDENT PROTECTION</span>
+                                        <h3>🌙 Late-Night Safe</h3>
+                                    </div>
+                                    <button type="button" id="btnToggleNightSafe" class="btn-sm-secondary">🔒 Lock Night Spending</button>
+                                </div>
+                                <p class="night-safe-text">Prevent impulsive late-night food ordering. Protects your wallet after 10 PM.</p>
+                                <div class="night-safe-stat-row">
+                                    <div>Safe Limit: <strong id="budgetNightSafeLimit">₹500</strong></div>
+                                    <div>Available: <strong id="budgetNightSafeRemaining">₹380</strong></div>
+                                </div>
+                                <div class="night-quick-spend-row">
+                                    <button type="button" class="btn-quick-chip" onclick="window.LifeSyncApp.quickNightSpend(50)">+₹50 Snack</button>
+                                    <button type="button" class="btn-quick-chip" onclick="window.LifeSyncApp.quickNightSpend(100)">+₹100 Auto</button>
+                                    <button type="button" class="btn-quick-chip" onclick="window.LifeSyncApp.quickNightSpend(200)">+₹200 Meal</button>
+                                    <button type="button" id="btnNightSafeSpend" class="btn-quick-chip" title="Record custom spend amount">+ Custom</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 2: FINANCIAL RUNWAY -->
+                <div id="bsub-view-runway" class="bsub-view">
+                    <div class="card-box runway-main-card">
+                        <div class="runway-header-row">
+                            <div>
+                                <span class="box-label">FINANCIAL RUNWAY MODEL</span>
+                                <h2>Semester Spending Curve & Cash Runway</h2>
+                                <p class="section-desc">Estimate how long your semester allowance and savings will sustain you with safety buffer padding.</p>
+                            </div>
+                            <div class="runway-kpi-badge">
+                                <span class="kpi-title">Monthly Safe Cap</span>
+                                <strong id="runwayKpiCap">₹4,250</strong>
+                            </div>
+                        </div>
+
+                        <!-- Runway Inputs -->
+                        <div class="runway-controls-grid">
+                            <div class="control-box">
+                                <label for="runwaySumInput">Total Available Allowance / Savings (₹)</label>
+                                <div class="input-with-symbol">
+                                    <span>₹</span>
+                                    <input type="number" id="runwaySumInput" min="1000" step="500" value="20000">
+                                </div>
+                                <small>Total funds in bank for this 4-month semester</small>
+                            </div>
+
+                            <div class="control-box">
+                                <div class="label-with-val">
+                                    <label for="runwayBufferRange">Emergency Safety Buffer</label>
+                                    <span id="runwayBufferLabel" class="slider-val-badge">15%</span>
+                                </div>
+                                <input type="range" id="runwayBufferRange" min="0" max="30" step="1" value="15">
+                                <small>Emergency reserve set aside untouchable</small>
+                            </div>
+                        </div>
+
+                        <!-- Runway Summary Cards -->
+                        <div class="runway-results-grid">
+                            <div class="runway-metric-box">
+                                <span class="box-label">Total Cash</span>
+                                <strong id="runwayResultTotal">₹20,000</strong>
+                            </div>
+                            <div class="runway-metric-box">
+                                <span class="box-label">Emergency Buffer</span>
+                                <strong id="runwayResultBuffer">₹3,000</strong>
+                            </div>
+                            <div class="runway-metric-box highlight-purple">
+                                <span class="box-label">Usable Living Fund</span>
+                                <strong id="runwayResultUsable">₹17,000</strong>
+                            </div>
+                            <div class="runway-metric-box highlight-green">
+                                <span class="box-label">Safe Monthly Allowance</span>
+                                <strong id="runwayResultMonthly">₹4,250</strong>
+                            </div>
+                        </div>
+
+                        <!-- 4-Month Interactive Bar Chart -->
+                        <div class="runway-chart-container">
+                            <div class="chart-header">
+                                <h4>Projected Semester Monthly Distribution</h4>
+                                <span class="chart-subtitle">Weighted by exam season, festivals, and campus calendar</span>
+                            </div>
+                            <div class="runway-bars-interactive" id="runwayBarsContainer">
+                                <!-- Rendered dynamically by calculateRunwayUI -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 3: PEER BENCHMARK -->
+                <div id="bsub-view-benchmark" class="bsub-view">
+                    <div class="card-box benchmark-main-card">
+                        <div class="benchmark-header">
+                            <div>
+                                <span class="box-label">PEER EXPENDITURE BENCHMARK</span>
+                                <h2>Campus Average Spending Comparison</h2>
+                                <p class="section-desc">See how your typical monthly expense allocations compare against average university students in your tier.</p>
+                            </div>
+                            <div class="benchmark-legend">
+                                <span class="legend-item"><span class="legend-dot dot-you"></span> You</span>
+                                <span class="legend-item"><span class="legend-dot dot-peers"></span> College Peers</span>
+                            </div>
+                        </div>
+
+                        <div id="benchmarkListContainer" class="benchmark-list-grid">
+                            <!-- Populated dynamically with category comparisons -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 4: LATE-NIGHT SAFE -->
+                <div id="bsub-view-night" class="bsub-view">
+                    <div class="card-box night-dedicated-card">
+                        <div class="night-top-section">
+                            <div class="night-icon-status">
+                                <span id="nightSafeBigIcon" class="big-lock-icon">🔒</span>
+                            </div>
+                            <div class="night-status-info">
+                                <span class="box-label">STUDENT IMPULSE PROTECTION</span>
+                                <h2 id="nightSafeStatusTitle">Night Wallet is Locked</h2>
+                                <p id="nightSafeStatusSubtitle">Curfew is active after 10 PM. Impulsive food deliveries and late-night shopping are blocked.</p>
+                            </div>
+                            <div class="night-action-wrap">
+                                <button type="button" id="btnNightSafeBigToggle" class="btn-primary">🔓 Unlock Wallet</button>
+                            </div>
+                        </div>
+
+                        <div class="night-stats-grid">
+                            <div class="night-stat-item">
+                                <span class="box-label">Tonight's Limit</span>
+                                <strong id="nightDedicatedLimit">₹500</strong>
+                            </div>
+                            <div class="night-stat-item">
+                                <span class="box-label">Spent Tonight</span>
+                                <strong id="nightDedicatedSpent">₹120</strong>
+                            </div>
+                            <div class="night-stat-item highlight-item">
+                                <span class="box-label">Safe Remaining</span>
+                                <strong id="nightDedicatedRemaining">₹380</strong>
+                            </div>
+                        </div>
+
+                        <div class="night-progress-wrap">
+                            <div class="budget-labels-row">
+                                <span>Tonight's Spend Allowance Usage</span>
+                                <span id="nightDedicatedUsagePct">24%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div id="nightDedicatedBar" class="progress-fill progress-night" style="width: 24%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="night-actions-panel">
+                            <h4>Quick Spend Actions</h4>
+                            <p>Quickly log small late-night necessities within your safety cap:</p>
+                            <div class="night-buttons-row">
+                                <button type="button" class="btn-night-action" onclick="window.LifeSyncApp.quickNightSpend(50)">
+                                    <span class="action-icon">☕</span>
+                                    <span>Midnight Chai / Snack</span>
+                                    <strong>+₹50</strong>
+                                </button>
+                                <button type="button" class="btn-night-action" onclick="window.LifeSyncApp.quickNightSpend(100)">
+                                    <span class="action-icon">🛺</span>
+                                    <span>Late Night Transit / Auto</span>
+                                    <strong>+₹100</strong>
+                                </button>
+                                <button type="button" class="btn-night-action" onclick="window.LifeSyncApp.quickNightSpend(200)">
+                                    <span class="action-icon">🍕</span>
+                                    <span>Late Night Campus Food</span>
+                                    <strong>+₹200</strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 5: BILLS & GOALS -->
+                <div id="bsub-view-split" class="bsub-view">
+                    <!-- Bill Splitter Calculator & Shared Savings Goal -->
+                    <div class="bills-top-row">
+                        <!-- Roommate Bill Splitter Calculator -->
+                        <div class="card-box splitter-card">
                             <div class="panel-header">
                                 <div>
-                                    <span class="box-label">STUDENT PROTECTION</span>
-                                    <h3>🌙 Late-Night Safe</h3>
+                                    <span class="box-label">ROOMMATE SPLITTER</span>
+                                    <h3>➗ Quick Bill Split Calculator</h3>
                                 </div>
-                                <button type="button" id="btnToggleNightSafe" class="btn-sm-secondary">🔒 Lock Night Spending</button>
                             </div>
-                            <p class="night-safe-text">Prevent impulsive late-night ordering. Caps spending after 10 PM.</p>
-                            <div class="night-safe-stat-row">
-                                <div>Safe Limit: <strong id="budgetNightSafeLimit">₹500</strong></div>
-                                <div>Available: <strong id="budgetNightSafeRemaining">₹380</strong></div>
+                            <div class="splitter-inputs-row">
+                                <div class="form-group">
+                                    <label for="calcBillAmount">Total Bill (₹)</label>
+                                    <input type="number" id="calcBillAmount" min="1" placeholder="1200" value="1200">
+                                </div>
+                                <div class="form-group">
+                                    <label for="calcBillPeople">Split Between (People)</label>
+                                    <input type="number" id="calcBillPeople" min="1" max="20" value="3">
+                                </div>
                             </div>
-                            <button type="button" id="btnNightSafeSpend" class="btn-sm-primary" style="margin-top:10px;">Record Late-Night Spend</button>
+                            <div class="splitter-result-box">
+                                <span>Each Person Owes:</span>
+                                <strong id="calcBillPerPerson">₹400</strong>
+                            </div>
+                            <button type="button" class="btn-secondary" style="width:100%; margin-top:12px;" onclick="window.LifeSyncApp.convertSplitToBill()">+ Save as Shared Bill</button>
                         </div>
 
-                        <!-- Roommate Shared Bills -->
-                        <div class="card-box">
+                        <!-- Shared Savings Goal -->
+                        <div class="card-box goal-card">
                             <div class="panel-header">
-                                <h3>🧾 Shared Bills & Split</h3>
-                                <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.openAddBillModal()">+ Add</button>
+                                <div>
+                                    <span class="box-label">SAVINGS TARGET</span>
+                                    <h3 id="goalTitleDisplay">Emergency Deposit / Tech Fund</h3>
+                                </div>
+                                <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.openGoalContributionModal()">+ Add Funds</button>
                             </div>
-                            <div id="budgetBillsList" class="bills-list"></div>
+                            <div class="goal-amount-row">
+                                <strong id="goalCurrentDisplay">₹4,500</strong>
+                                <span class="goal-target-sub">Target: <span id="goalTargetDisplay">₹8,000</span></span>
+                            </div>
+                            <div class="progress-track" style="margin: 12px 0;">
+                                <div id="goalProgressBar" class="progress-fill progress-emerald" style="width: 56%;"></div>
+                            </div>
+                            <div class="goal-meta-row">
+                                <span>Progress: <strong id="goalPctDisplay">56%</strong></span>
+                                <span>ETA: <strong id="goalEtaDisplay">4 weeks</strong></span>
+                                <span>Remaining: <strong id="goalRemainingDisplay">₹3,500</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Shared Bills List -->
+                    <div class="card-box">
+                        <div class="panel-header">
+                            <div>
+                                <span class="box-label">RECURRING UTILITIES</span>
+                                <h3>🧾 Upcoming Roommate Shared Bills</h3>
+                            </div>
+                            <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddBillModal()">+ Add Shared Bill</button>
+                        </div>
+                        <div id="budgetBillsDedicatedList" class="bills-dedicated-grid">
+                            <!-- Populated dynamically -->
                         </div>
                     </div>
                 </div>
@@ -1159,6 +1494,93 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('billModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Add Shared Bill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Goal Contribution Modal -->
+    <div id="goalModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="goalModalTitle">Add Savings Contribution</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('goalModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="goalContributionForm">
+                <div class="form-group">
+                    <label for="goalContributionAmount">Contribution Amount (₹) *</label>
+                    <input type="number" id="goalContributionAmount" min="10" step="10" placeholder="500" required>
+                </div>
+                <div class="form-group">
+                    <label for="goalContributionNote">Note (Optional)</label>
+                    <input type="text" id="goalContributionNote" placeholder="e.g. Saved from weekend coffee">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('goalModalOverlay')">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Funds (+80 XP)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. Budget Settings Modal -->
+    <div id="budgetSettingsModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="budgetSettingsTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="budgetSettingsTitle">⚙️ Budget & Finance Settings</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('budgetSettingsModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="budgetSettingsForm">
+                <div class="form-group">
+                    <label for="settingMonthlyBudgetInput">Monthly Spending Limit (₹) *</label>
+                    <input type="number" id="settingMonthlyBudgetInput" min="1000" step="500" placeholder="15000" required>
+                    <small class="form-hint">Maximum targeted expenses per month.</small>
+                </div>
+                <div class="form-group">
+                    <label for="settingNightLimitInput">Late-Night Curfew Safety Limit (₹) *</label>
+                    <input type="number" id="settingNightLimitInput" min="50" step="50" placeholder="500" required>
+                    <small class="form-hint">Night spend cap active after 10 PM.</small>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="settingRunwaySumInput">Semester Living Fund (₹)</label>
+                        <input type="number" id="settingRunwaySumInput" min="1000" step="1000" placeholder="20000">
+                    </div>
+                    <div class="form-group">
+                        <label for="settingRunwayBufferInput">Safety Buffer (%)</label>
+                        <input type="number" id="settingRunwayBufferInput" min="0" max="40" step="1" placeholder="15">
+                    </div>
+                </div>
+                <div class="modal-actions" style="justify-content: space-between;">
+                    <button type="button" class="btn-danger-outline" onclick="window.LifeSyncApp.handleResetBudgetData()">Reset Defaults</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('budgetSettingsModalOverlay')">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Settings</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 7. Custom Night Spend Modal -->
+    <div id="nightSpendModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="nightSpendModalTitle">
+        <div class="modal-dialog modal-dialog-sm">
+            <div class="modal-header">
+                <h3 id="nightSpendModalTitle">🌙 Record Night Spend</h3>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('nightSpendModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="nightSpendModalForm">
+                <div class="form-group">
+                    <label for="customNightSpendAmount">Amount (₹) *</label>
+                    <input type="number" id="customNightSpendAmount" min="1" step="5" placeholder="75" required>
+                </div>
+                <div class="form-group">
+                    <label for="customNightSpendNote">Spend Item / Necessity</label>
+                    <input type="text" id="customNightSpendNote" placeholder="e.g. Midnight printout, bottled water">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('nightSpendModalOverlay')">Cancel</button>
+                    <button type="submit" class="btn-primary">Log Spend</button>
                 </div>
             </form>
         </div>

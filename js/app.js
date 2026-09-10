@@ -139,18 +139,24 @@
     function renderHeader() {
         if (!currentUser) return;
 
+        const userAvatarLetter = document.getElementById('userAvatarLetter');
+        const dashGreetingName = document.getElementById('dashGreetingName');
+        const userAvatarImg = document.getElementById('userAvatarImg');
+
+        if (userAvatarLetter) {
+            userAvatarLetter.textContent = currentUser.avatarLetter || currentUser.username.charAt(0).toUpperCase();
+        }
+        if (dashGreetingName) {
+            dashGreetingName.textContent = currentUser.username;
+        }
+        if (userAvatarImg) {
+            userAvatarImg.title = currentUser.username;
+        }
+
         const userAvatarEl = document.getElementById('userAvatarDisplay');
         const userDisplayNameEl = document.getElementById('userDisplayName');
-        const headerTodayDate = document.getElementById('headerTodayDate');
-
         if (userAvatarEl) userAvatarEl.textContent = currentUser.avatarLetter || currentUser.username.charAt(0).toUpperCase();
         if (userDisplayNameEl) userDisplayNameEl.textContent = currentUser.username;
-        if (headerTodayDate) {
-            const now = new Date();
-            headerTodayDate.textContent = now.toLocaleDateString('en-US', {
-                weekday: 'short', month: 'short', day: 'numeric'
-            });
-        }
     }
 
     function updateNotifications() {
@@ -493,12 +499,52 @@
     }
 
     // ==========================================
-    // 6. BUDGET VIEW RENDERER (Independent Module)
+    // 6. BUDGET VIEW RENDERER (Original Features Retained)
     // ==========================================
+    let currentBudgetSubTab = 'overview';
+
+    function switchBudgetSubTab(subTabId) {
+        currentBudgetSubTab = subTabId;
+        
+        // Update subnav buttons
+        const subBtns = document.querySelectorAll('.bsub-btn');
+        subBtns.forEach(b => {
+            b.classList.toggle('active', b.dataset.bsub === subTabId);
+        });
+
+        // Update sub-views
+        const subViews = document.querySelectorAll('.bsub-view');
+        subViews.forEach(v => {
+            v.classList.toggle('active', v.id === `bsub-view-${subTabId}`);
+        });
+
+        renderBudgetView();
+    }
+
     function renderBudgetView() {
         const summary = window.BudgetModule.getSummary();
         const budgetState = window.BudgetModule.getBudget();
+        const profile = window.ProfileModule ? window.ProfileModule.getProfile() : (window.LifeSyncStorage.getProfile(currentUser) || {});
 
+        // 1. Streak & Gamification Header
+        const streakCountEl = document.getElementById('budgetStreakCount');
+        if (streakCountEl) streakCountEl.textContent = profile.budgetStreak || 12;
+
+        const btnReview = document.getElementById('btnReviewBudget');
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (btnReview) {
+            if (profile.lastBudgetReviewDate === todayStr) {
+                btnReview.textContent = '✓ Reviewed Today 🔥';
+                btnReview.classList.add('reviewed');
+                btnReview.disabled = true;
+            } else {
+                btnReview.textContent = '✓ Review Budget (+50 XP)';
+                btnReview.classList.remove('reviewed');
+                btnReview.disabled = false;
+            }
+        }
+
+        // 2. Overview Metric Cards
         const valTotalIncome = document.getElementById('budgetValTotalIncome');
         const valTotalExpense = document.getElementById('budgetValTotalExpense');
         const valNetBalance = document.getElementById('budgetValNetBalance');
@@ -506,9 +552,8 @@
         const valMonthlyLimit = document.getElementById('budgetValMonthlyLimit');
         const valRemainingBudget = document.getElementById('budgetValRemainingBudget');
         const budgetUsageBar = document.getElementById('budgetViewUsageBar');
+        const budgetUsagePctLabel = document.getElementById('budgetUsagePctLabel');
         const budgetViewAlert = document.getElementById('budgetViewAlertBox');
-        const txListContainer = document.getElementById('budgetTransactionsList');
-        const billsListContainer = document.getElementById('budgetBillsList');
 
         if (valTotalIncome) valTotalIncome.textContent = '₹' + Math.round(summary.totalIncome).toLocaleString('en-IN');
         if (valTotalExpense) valTotalExpense.textContent = '₹' + Math.round(summary.totalExpense).toLocaleString('en-IN');
@@ -516,42 +561,34 @@
         if (valMonthlySpent) valMonthlySpent.textContent = '₹' + Math.round(summary.spentThisMonth).toLocaleString('en-IN');
         if (valMonthlyLimit) valMonthlyLimit.textContent = '₹' + Math.round(summary.monthlyBudget).toLocaleString('en-IN');
         if (valRemainingBudget) valRemainingBudget.textContent = '₹' + Math.round(summary.remainingBudget).toLocaleString('en-IN');
+        if (budgetUsagePctLabel) budgetUsagePctLabel.textContent = `${summary.budgetUsagePct}%`;
 
         if (budgetUsageBar) {
             budgetUsageBar.style.width = `${summary.budgetUsagePct}%`;
-            budgetUsageBar.style.background = summary.isExceeded ? '#db4665' : summary.isWarning ? '#f5a623' : '#7048e8';
+            budgetUsageBar.style.background = summary.isExceeded ? '#db4665' : summary.isWarning ? '#f5a623' : 'linear-gradient(90deg, #7048e8, #9d74f7)';
         }
 
         if (budgetViewAlert) {
             if (summary.isExceeded) {
                 budgetViewAlert.className = 'budget-warning-banner banner-danger';
-                budgetViewAlert.innerHTML = `⚠️ Monthly limit exceeded by ₹${Math.round(summary.spentThisMonth - summary.monthlyBudget).toLocaleString('en-IN')}!`;
+                budgetViewAlert.innerHTML = `⚠️ Monthly limit exceeded by ₹${Math.round(summary.spentThisMonth - summary.monthlyBudget).toLocaleString('en-IN')}! Review non-essential spends.`;
                 budgetViewAlert.style.display = 'block';
             } else if (summary.isWarning) {
                 budgetViewAlert.className = 'budget-warning-banner banner-warning';
-                budgetViewAlert.innerHTML = `💳 Spending warning: ${summary.budgetUsagePct}% of your budget used this month.`;
+                budgetViewAlert.innerHTML = `💳 Spending warning: ${summary.budgetUsagePct}% of your monthly allowance used already.`;
                 budgetViewAlert.style.display = 'block';
             } else {
                 budgetViewAlert.style.display = 'none';
             }
         }
 
-        // Night Safe Render
-        const nightSafeLimit = document.getElementById('budgetNightSafeLimit');
-        const nightSafeRemaining = document.getElementById('budgetNightSafeRemaining');
-        const nightSafeBtn = document.getElementById('btnToggleNightSafe');
-        if (nightSafeLimit) nightSafeLimit.textContent = '₹' + budgetState.nightSafe.limit;
-        if (nightSafeRemaining) nightSafeRemaining.textContent = '₹' + Math.max(0, budgetState.nightSafe.limit - budgetState.nightSafe.spent);
-        if (nightSafeBtn) {
-            nightSafeBtn.textContent = budgetState.nightSafe.locked ? '🔓 Unlock Wallet' : '🔒 Lock Night Spending';
-        }
-
-        // Transactions List
+        // 3. Transactions History (Overview)
+        const txListContainer = document.getElementById('budgetTransactionsList');
         if (txListContainer) {
             if (budgetState.transactions.length === 0) {
                 txListContainer.innerHTML = `<div class="empty-list-notice">No transactions logged yet. Click "+ Add Transaction" above!</div>`;
             } else {
-                txListContainer.innerHTML = budgetState.transactions.map(tx => {
+                txListContainer.innerHTML = budgetState.transactions.slice(0, 10).map(tx => {
                     const isIncome = tx.type === 'income';
                     return `
                         <div class="transaction-row">
@@ -579,12 +616,186 @@
             }
         }
 
-        // Bills List
-        if (billsListContainer) {
+        // 4. Financial Runway Calculations & Bars
+        const runwaySum = (budgetState.runway && budgetState.runway.sum) || 20000;
+        const runwayBuffer = (budgetState.runway && budgetState.runway.bufferPct !== undefined) ? budgetState.runway.bufferPct : 15;
+        const runwayCalc = window.BudgetModule.calculateRunwayValues(runwaySum, runwayBuffer);
+
+        // Update Overview Mini Runway Preview
+        const dashRunwayBars = document.getElementById('dashRunwayBars');
+        const dashRunwayTotalVal = document.getElementById('dashRunwayTotalVal');
+        const dashRunwayCapVal = document.getElementById('dashRunwayCapVal');
+        if (dashRunwayTotalVal) dashRunwayTotalVal.textContent = '₹' + runwayCalc.total.toLocaleString('en-IN');
+        if (dashRunwayCapVal) dashRunwayCapVal.textContent = '₹' + runwayCalc.base.toLocaleString('en-IN');
+
+        const months = ['Sep', 'Oct', 'Nov', 'Dec'];
+        const maxVal = Math.max(...runwayCalc.values, 1);
+
+        if (dashRunwayBars) {
+            dashRunwayBars.innerHTML = runwayCalc.values.map((val, idx) => {
+                const heightPct = Math.max(25, Math.round((val / maxVal) * 100));
+                return `
+                    <div class="runway-col">
+                        <div class="runway-bar-track">
+                            <div class="runway-bar-fill" style="height: ${heightPct}%;"></div>
+                        </div>
+                        <span class="runway-month-label">${months[idx]}</span>
+                        <span class="runway-amount-label">₹${val}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update Dedicated Runway Sub-View
+        const runwaySumInput = document.getElementById('runwaySumInput');
+        const runwayBufferRange = document.getElementById('runwayBufferRange');
+        const runwayBufferLabel = document.getElementById('runwayBufferLabel');
+        const runwayKpiCap = document.getElementById('runwayKpiCap');
+        const runwayResultTotal = document.getElementById('runwayResultTotal');
+        const runwayResultBuffer = document.getElementById('runwayResultBuffer');
+        const runwayResultUsable = document.getElementById('runwayResultUsable');
+        const runwayResultMonthly = document.getElementById('runwayResultMonthly');
+        const runwayBarsContainer = document.getElementById('runwayBarsContainer');
+
+        if (runwaySumInput && document.activeElement !== runwaySumInput) runwaySumInput.value = runwayCalc.total;
+        if (runwayBufferRange && document.activeElement !== runwayBufferRange) runwayBufferRange.value = runwayCalc.buffer;
+        if (runwayBufferLabel) runwayBufferLabel.textContent = `${runwayCalc.buffer}%`;
+        if (runwayKpiCap) runwayKpiCap.textContent = '₹' + runwayCalc.base.toLocaleString('en-IN');
+        if (runwayResultTotal) runwayResultTotal.textContent = '₹' + runwayCalc.total.toLocaleString('en-IN');
+        if (runwayResultBuffer) runwayResultBuffer.textContent = '₹' + Math.round(runwayCalc.total * (runwayCalc.buffer / 100)).toLocaleString('en-IN');
+        if (runwayResultUsable) runwayResultUsable.textContent = '₹' + runwayCalc.usable.toLocaleString('en-IN');
+        if (runwayResultMonthly) runwayResultMonthly.textContent = '₹' + runwayCalc.base.toLocaleString('en-IN');
+
+        if (runwayBarsContainer) {
+            runwayBarsContainer.innerHTML = runwayCalc.values.map((val, idx) => {
+                const heightPct = Math.max(20, Math.round((val / maxVal) * 100));
+                return `
+                    <div class="interactive-bar-col">
+                        <span class="bar-val-bubble">₹${val}</span>
+                        <div class="interactive-bar-track">
+                            <div class="interactive-bar-fill" style="height: ${heightPct}%;"></div>
+                        </div>
+                        <strong class="bar-month-title">${months[idx]}</strong>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 5. Peer Benchmark View
+        const benchmarkListContainer = document.getElementById('benchmarkListContainer');
+        if (benchmarkListContainer) {
+            const benchData = window.BudgetModule.getBenchmarkData();
+            benchmarkListContainer.innerHTML = benchData.map(item => {
+                const max = Math.max(item.you, item.peer);
+                const pctYou = Math.round((item.you / max) * 100);
+                const pctPeer = Math.round((item.peer / max) * 100);
+                const isBelow = item.you < item.peer;
+                const diff = Math.abs(item.peer - item.you);
+
+                return `
+                    <div class="benchmark-card">
+                        <div class="benchmark-card-head">
+                            <strong>${escapeHtml(item.name)}</strong>
+                            <span class="badge-diff ${isBelow ? 'diff-below' : 'diff-above'}">
+                                ${isBelow ? '₹' + diff + ' below avg' : '₹' + diff + ' above avg'}
+                            </span>
+                        </div>
+                        <div class="benchmark-dual-bars">
+                            <div class="bench-row">
+                                <span class="bench-label">You</span>
+                                <div class="bench-track">
+                                    <div class="bench-fill fill-you" style="width: ${pctYou}%;"></div>
+                                </div>
+                                <strong class="bench-amount">₹${item.you}</strong>
+                            </div>
+                            <div class="bench-row">
+                                <span class="bench-label">Peers</span>
+                                <div class="bench-track">
+                                    <div class="bench-fill fill-peers" style="width: ${pctPeer}%;"></div>
+                                </div>
+                                <strong class="bench-amount bench-muted">₹${item.peer}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 6. Late-Night Safe (Overview + Dedicated View)
+        const night = budgetState.nightSafe || { limit: 500, spent: 120, locked: false };
+        const nightRemaining = Math.max(0, night.limit - night.spent);
+        const nightSpentPct = Math.min(100, Math.round((night.spent / night.limit) * 100));
+
+        // Overview night widget
+        const nightSafeLimit = document.getElementById('budgetNightSafeLimit');
+        const nightSafeRemaining = document.getElementById('budgetNightSafeRemaining');
+        const nightSafeBtn = document.getElementById('btnToggleNightSafe');
+        if (nightSafeLimit) nightSafeLimit.textContent = '₹' + night.limit;
+        if (nightSafeRemaining) nightSafeRemaining.textContent = '₹' + nightRemaining;
+        if (nightSafeBtn) nightSafeBtn.textContent = night.locked ? '🔓 Unlock Wallet' : '🔒 Lock Night Spending';
+
+        // Dedicated night sub-view
+        const nightSafeBigIcon = document.getElementById('nightSafeBigIcon');
+        const nightSafeStatusTitle = document.getElementById('nightSafeStatusTitle');
+        const nightSafeStatusSubtitle = document.getElementById('nightSafeStatusSubtitle');
+        const btnNightSafeBigToggle = document.getElementById('btnNightSafeBigToggle');
+        const nightDedicatedLimit = document.getElementById('nightDedicatedLimit');
+        const nightDedicatedSpent = document.getElementById('nightDedicatedSpent');
+        const nightDedicatedRemaining = document.getElementById('nightDedicatedRemaining');
+        const nightDedicatedUsagePct = document.getElementById('nightDedicatedUsagePct');
+        const nightDedicatedBar = document.getElementById('nightDedicatedBar');
+
+        if (nightSafeBigIcon) nightSafeBigIcon.textContent = night.locked ? '🔒' : '🔓';
+        if (nightSafeStatusTitle) nightSafeStatusTitle.textContent = night.locked ? 'Night Wallet is Locked 🔒' : 'Night Wallet is Unlocked 🔓';
+        if (nightSafeStatusSubtitle) {
+            nightSafeStatusSubtitle.textContent = night.locked
+                ? 'Curfew protection active. Spends blocked so tomorrow-you stays on track.'
+                : `Active limit: ₹${night.limit}. Keep late-night munchies within budget.`;
+        }
+        if (btnNightSafeBigToggle) {
+            btnNightSafeBigToggle.textContent = night.locked ? '🔓 Unlock Wallet' : '🔒 Lock Night Wallet';
+            btnNightSafeBigToggle.className = night.locked ? 'btn-secondary' : 'btn-primary';
+        }
+        if (nightDedicatedLimit) nightDedicatedLimit.textContent = '₹' + night.limit;
+        if (nightDedicatedSpent) nightDedicatedSpent.textContent = '₹' + night.spent;
+        if (nightDedicatedRemaining) nightDedicatedRemaining.textContent = '₹' + nightRemaining;
+        if (nightDedicatedUsagePct) nightDedicatedUsagePct.textContent = `${nightSpentPct}%`;
+        if (nightDedicatedBar) nightDedicatedBar.style.width = `${nightSpentPct}%`;
+
+        // 7. Bills & Goals (Splitter + Savings Goal + Dedicated Bills List)
+        // Calculator
+        calculateBillSplit();
+
+        // Shared Goal
+        const goal = budgetState.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 };
+        const goalCurrent = Number(goal.current) || 0;
+        const goalTarget = Number(goal.target) || 8000;
+        const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
+        const goalRemaining = Math.max(0, goalTarget - goalCurrent);
+
+        const goalTitleDisplay = document.getElementById('goalTitleDisplay');
+        const goalCurrentDisplay = document.getElementById('goalCurrentDisplay');
+        const goalTargetDisplay = document.getElementById('goalTargetDisplay');
+        const goalProgressBar = document.getElementById('goalProgressBar');
+        const goalPctDisplay = document.getElementById('goalPctDisplay');
+        const goalEtaDisplay = document.getElementById('goalEtaDisplay');
+        const goalRemainingDisplay = document.getElementById('goalRemainingDisplay');
+
+        if (goalTitleDisplay) goalTitleDisplay.textContent = goal.title;
+        if (goalCurrentDisplay) goalCurrentDisplay.textContent = '₹' + goalCurrent.toLocaleString('en-IN');
+        if (goalTargetDisplay) goalTargetDisplay.textContent = '₹' + goalTarget.toLocaleString('en-IN');
+        if (goalProgressBar) goalProgressBar.style.width = `${goalPct}%`;
+        if (goalPctDisplay) goalPctDisplay.textContent = `${goalPct}%`;
+        if (goalEtaDisplay) goalEtaDisplay.textContent = `${goal.etaWeeks || 4} weeks`;
+        if (goalRemainingDisplay) goalRemainingDisplay.textContent = '₹' + goalRemaining.toLocaleString('en-IN');
+
+        // Dedicated Bills Grid
+        const billsGrid = document.getElementById('budgetBillsDedicatedList');
+        if (billsGrid) {
             if (budgetState.bills.length === 0) {
-                billsListContainer.innerHTML = `<div class="empty-list-notice">No shared bills. Click "+ Add Bill" to split with roommates!</div>`;
+                billsGrid.innerHTML = `<div class="empty-list-notice">No shared bills. Click "+ Add Shared Bill" above to split with roommates!</div>`;
             } else {
-                billsListContainer.innerHTML = budgetState.bills.map(b => {
+                billsGrid.innerHTML = budgetState.bills.map(b => {
                     const yourShare = Math.round(b.amount / (b.split || 1));
                     return `
                         <div class="bill-card ${b.paid ? 'bill-paid' : ''}">
@@ -592,19 +803,31 @@
                                 <span class="bill-title">${escapeHtml(b.title)}</span>
                                 <span class="bill-badge ${b.paid ? 'badge-paid' : 'badge-pending'}">${b.paid ? 'PAID' : 'DUE'}</span>
                             </div>
-                            <div class="bill-amount-line">Your share: <strong>₹${yourShare.toLocaleString('en-IN')}</strong> <small>(₹${b.amount} ÷ ${b.split})</small></div>
+                            <div class="bill-amount-line">Your share: <strong>₹${yourShare.toLocaleString('en-IN')}</strong> <small>(₹${b.amount} ÷ ${b.split} people)</small></div>
                             <div class="bill-due-date">Due: ${b.date}</div>
                             <div class="bill-actions">
                                 <button class="btn-sm-action" onclick="window.LifeSyncApp.toggleBill('${b.id}')">
                                     ${b.paid ? '↩ Mark Pending' : '✓ Mark Paid'}
                                 </button>
-                                <button class="btn-icon-soft btn-icon-danger" onclick="window.LifeSyncApp.deleteBill('${b.id}')">🗑️</button>
+                                <button class="btn-icon-soft btn-icon-danger" onclick="window.LifeSyncApp.deleteBill('${b.id}')" title="Delete">🗑️</button>
                             </div>
                         </div>
                     `;
                 }).join('');
             }
         }
+    }
+
+    function calculateBillSplit() {
+        const billInput = document.getElementById('calcBillAmount');
+        const peopleInput = document.getElementById('calcBillPeople');
+        const resultEl = document.getElementById('calcBillPerPerson');
+        if (!billInput || !peopleInput || !resultEl) return;
+
+        const bill = Math.max(0, Number(billInput.value) || 0);
+        const people = Math.max(1, Number(peopleInput.value) || 1);
+        const share = Math.round(bill / people);
+        resultEl.textContent = '₹' + share.toLocaleString('en-IN');
     }
 
     // ==========================================
@@ -932,27 +1155,20 @@
         const btnNightSafeSpend = document.getElementById('btnNightSafeSpend');
         if (btnNightSafeSpend) {
             btnNightSafeSpend.addEventListener('click', () => {
-                const amount = prompt("Enter amount spent tonight (₹):");
-                if (amount) {
-                    try {
-                        window.BudgetModule.recordNightSpend(currentUser, amount);
-                        showToast(`₹${amount} recorded in late-night safe.`, 'success');
-                        renderBudgetView();
-                    } catch (err) {
-                        showToast(err.message, 'error');
+                const modal = document.getElementById('nightSpendModalOverlay');
+                if (modal) {
+                    const form = document.getElementById('nightSpendModalForm');
+                    if (form) form.reset();
+                    openModal('nightSpendModalOverlay');
+                } else {
+                    const amount = prompt("Enter amount spent tonight (₹):");
+                    if (amount) {
+                        window.LifeSyncApp.quickNightSpend(amount);
                     }
                 }
             });
         }
 
-        const btnToggleNightSafe = document.getElementById('btnToggleNightSafe');
-        if (btnToggleNightSafe) {
-            btnToggleNightSafe.addEventListener('click', () => {
-                const isLocked = window.BudgetModule.toggleNightSafeLock(currentUser);
-                showToast(isLocked ? 'Late-night wallet locked! 🔒' : 'Wallet unlocked. 🔓', 'info');
-                renderBudgetView();
-            });
-        }
 
         // Profile Form Submit
         const profileForm = document.getElementById('profileEditForm');
@@ -1080,6 +1296,105 @@
                     renderBudgetView();
                 } catch (err) {
                     showToast(err.message, 'error');
+                }
+            });
+        }
+
+        // Goal Contribution Form Modal
+        const goalForm = document.getElementById('goalContributionForm');
+        if (goalForm) {
+            goalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amount = Number(document.getElementById('goalContributionAmount').value);
+                const note = document.getElementById('goalContributionNote').value;
+                try {
+                    window.BudgetModule.addGoalContribution(currentUser, amount, note);
+                    showToast(`Added ₹${amount.toLocaleString('en-IN')} to savings goal! 🎉 (+80 XP)`, 'success');
+                    closeModal('goalModalOverlay');
+                    renderBudgetView();
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+        }
+
+        // Real-time Runway Inputs
+        const runwaySumInput = document.getElementById('runwaySumInput');
+        const runwayBufferRange = document.getElementById('runwayBufferRange');
+        if (runwaySumInput) {
+            runwaySumInput.addEventListener('input', () => {
+                const sum = Number(runwaySumInput.value) || 0;
+                const buffer = Number(runwayBufferRange ? runwayBufferRange.value : 15) || 0;
+                window.BudgetModule.updateRunway(currentUser, sum, buffer);
+                renderBudgetView();
+            });
+        }
+        if (runwayBufferRange) {
+            runwayBufferRange.addEventListener('input', () => {
+                const sum = Number(runwaySumInput ? runwaySumInput.value : 20000) || 0;
+                const buffer = Number(runwayBufferRange.value) || 0;
+                window.BudgetModule.updateRunway(currentUser, sum, buffer);
+                renderBudgetView();
+            });
+        }
+
+        // Real-time Bill Splitter Calculator
+        const calcBillAmount = document.getElementById('calcBillAmount');
+        const calcBillPeople = document.getElementById('calcBillPeople');
+        if (calcBillAmount) calcBillAmount.addEventListener('input', calculateBillSplit);
+        if (calcBillPeople) calcBillPeople.addEventListener('input', calculateBillSplit);
+
+        // Budget Review Button
+        const btnReviewBudget = document.getElementById('btnReviewBudget');
+        if (btnReviewBudget) {
+            btnReviewBudget.addEventListener('click', () => {
+                const res = window.BudgetModule.reviewBudget(currentUser);
+                showToast(res.message, res.reviewed ? 'success' : 'info');
+                renderBudgetView();
+            });
+        }
+
+        // Late-Night Safe Big and Small Toggles
+        const btnNightSafeBigToggle = document.getElementById('btnNightSafeBigToggle');
+        const btnToggleNightSafe = document.getElementById('btnToggleNightSafe');
+        if (btnNightSafeBigToggle) btnNightSafeBigToggle.addEventListener('click', () => window.LifeSyncApp.quickNightSafeToggle());
+        if (btnToggleNightSafe) btnToggleNightSafe.addEventListener('click', () => window.LifeSyncApp.quickNightSafeToggle());
+
+        // Budget Settings Form
+        const budgetSettingsForm = document.getElementById('budgetSettingsForm');
+        if (budgetSettingsForm) {
+            budgetSettingsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const monthly = Number(document.getElementById('settingMonthlyBudgetInput').value);
+                const nightLimit = Number(document.getElementById('settingNightLimitInput').value);
+                const runwaySum = Number(document.getElementById('settingRunwaySumInput').value);
+                const runwayBuffer = Number(document.getElementById('settingRunwayBufferInput').value);
+
+                if (monthly > 0) window.BudgetModule.setMonthlyBudget(currentUser, monthly);
+                if (nightLimit > 0) window.BudgetModule.setNightSafeLimit(currentUser, nightLimit);
+                if (runwaySum > 0) window.BudgetModule.updateRunway(currentUser, runwaySum, runwayBuffer !== undefined ? runwayBuffer : 15);
+
+                showToast('Budget settings updated successfully! ✨', 'success');
+                closeModal('budgetSettingsModalOverlay');
+                renderCurrentView();
+            });
+        }
+
+        // Custom Night Spend Form
+        const nightSpendModalForm = document.getElementById('nightSpendModalForm');
+        if (nightSpendModalForm) {
+            nightSpendModalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amount = Number(document.getElementById('customNightSpendAmount').value);
+                if (amount > 0) {
+                    try {
+                        window.BudgetModule.recordNightSpend(currentUser, amount);
+                        showToast(`Logged ₹${amount} late-night spend. 🌙`, 'success');
+                        closeModal('nightSpendModalOverlay');
+                        renderCurrentView();
+                    } catch (err) {
+                        showToast(err.message, 'warning');
+                    }
                 }
             });
         }
@@ -1229,13 +1544,13 @@
         },
         toggleBill(billId) {
             window.BudgetModule.toggleBillPaid(currentUser, billId);
-            renderBudgetView();
+            renderCurrentView();
         },
         deleteBill(billId) {
             if (confirm('Delete this bill?')) {
                 window.BudgetModule.deleteBill(currentUser, billId);
                 showToast('Bill removed.', 'info');
-                renderBudgetView();
+                renderCurrentView();
             }
         },
         quickCheckInMood(mood, score) {
@@ -1258,6 +1573,60 @@
             showToast('Task marked done! Re-ranking priorities... 🧠', 'success');
             renderSmartOrganizerView();
             updateNotifications();
+        },
+        switchBudgetSubTab,
+        switchTabAndBudgetSub(subTab) {
+            switchTab('budget');
+            switchBudgetSubTab(subTab);
+        },
+        quickNightSafeToggle() {
+            const isLocked = window.BudgetModule.toggleNightSafeLock(currentUser);
+            showToast(isLocked ? 'Wallet is now LOCKED 🔒. Late-night spending blocked!' : 'Wallet unlocked 🔓.', isLocked ? 'info' : 'success');
+            renderCurrentView();
+        },
+        quickNightSpend(amount) {
+            try {
+                window.BudgetModule.recordNightSpend(currentUser, amount);
+                showToast(`Logged ₹${amount} late-night spend. 🌙`, 'info');
+                renderCurrentView();
+                updateNotifications();
+            } catch (err) {
+                showToast(err.message, 'warning');
+            }
+        },
+        openBudgetSettingsModal() {
+            const budget = window.BudgetModule.getBudget();
+            const monthlyInput = document.getElementById('settingMonthlyBudgetInput');
+            const nightInput = document.getElementById('settingNightLimitInput');
+            const runwaySum = document.getElementById('settingRunwaySumInput');
+            const runwayBuffer = document.getElementById('settingRunwayBufferInput');
+            if (monthlyInput) monthlyInput.value = budget.monthlyBudget || 15000;
+            if (nightInput) nightInput.value = (budget.nightSafe && budget.nightSafe.limit) || 500;
+            if (runwaySum) runwaySum.value = (budget.runway && budget.runway.sum) || 20000;
+            if (runwayBuffer) runwayBuffer.value = (budget.runway && budget.runway.bufferPct) !== undefined ? budget.runway.bufferPct : 15;
+            openModal('budgetSettingsModalOverlay');
+        },
+        handleResetBudgetData() {
+            if (confirm('Are you sure you want to reset all budget and expense data to defaults?')) {
+                window.BudgetModule.resetToDefault(currentUser);
+                showToast('Budget data reset to defaults.', 'info');
+                closeModal('budgetSettingsModalOverlay');
+                renderCurrentView();
+            }
+        },
+        openGoalContributionModal() {
+            document.getElementById('goalContributionForm').reset();
+            openModal('goalModalOverlay');
+        },
+        convertSplitToBill() {
+            const bill = Number(document.getElementById('calcBillAmount').value) || 0;
+            const people = Number(document.getElementById('calcBillPeople').value) || 1;
+            document.getElementById('billFormModal').reset();
+            document.getElementById('billTitleInput').value = 'Shared Expense Split';
+            document.getElementById('billAmountInput').value = bill;
+            document.getElementById('billSplitInput').value = people;
+            document.getElementById('billDateInput').value = new Date().toISOString().split('T')[0];
+            openModal('billModalOverlay');
         },
         handleNotifClick,
         openModal,

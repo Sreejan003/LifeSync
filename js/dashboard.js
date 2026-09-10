@@ -162,24 +162,88 @@
                 }).join('');
             }
 
-            // 6. COLUMN 3A: Budget Overview
+            // 6. COLUMN 3A: Student Finance Hub & Integrated Budget
             const budgetBalanceVal = document.getElementById('dashBudgetBalanceVal');
             const budgetIncomeVal = document.getElementById('dashBudgetIncomeVal');
             const budgetExpenseVal = document.getElementById('dashBudgetExpenseVal');
             const budgetMeterBar = document.getElementById('dashBudgetMeterBar');
+            const dashBudgetStreakBadge = document.getElementById('dashBudgetStreakBadge');
 
+            const profile = window.ProfileModule ? window.ProfileModule.getProfile() : (window.LifeSyncStorage.getProfile(user) || {});
             const totalIncome = budgetSummary.totalIncome || 8000;
-            const totalExpense = budgetSummary.totalExpense || 4550;
-            const totalBalance = budgetSummary.totalBalance !== undefined ? budgetSummary.totalBalance : (totalIncome - totalExpense);
+            const spentThisMonth = budgetSummary.spentThisMonth !== undefined ? budgetSummary.spentThisMonth : (budgetSummary.totalExpense || 4550);
+            const remainingBudget = budgetSummary.remainingBudget !== undefined ? budgetSummary.remainingBudget : Math.max(0, (budgetSummary.monthlyBudget || 15000) - spentThisMonth);
 
-            if (budgetBalanceVal) budgetBalanceVal.textContent = `₹ ${Math.round(totalBalance).toLocaleString('en-IN')}`;
+            if (budgetBalanceVal) budgetBalanceVal.textContent = `₹ ${Math.round(remainingBudget).toLocaleString('en-IN')}`;
             if (budgetIncomeVal) budgetIncomeVal.textContent = `₹ ${Math.round(totalIncome).toLocaleString('en-IN')}`;
-            if (budgetExpenseVal) budgetExpenseVal.textContent = `₹ ${Math.round(totalExpense).toLocaleString('en-IN')}`;
+            if (budgetExpenseVal) budgetExpenseVal.textContent = `₹ ${Math.round(spentThisMonth).toLocaleString('en-IN')}`;
+            if (dashBudgetStreakBadge) dashBudgetStreakBadge.textContent = `🔥 ${profile.budgetStreak || 12}d`;
 
             if (budgetMeterBar) {
-                const ratio = totalIncome > 0 ? Math.min(100, Math.max(10, Math.round((totalBalance / totalIncome) * 100))) : 50;
-                budgetMeterBar.style.width = `${ratio}%`;
+                const pct = budgetSummary.budgetUsagePct !== undefined ? budgetSummary.budgetUsagePct : Math.min(100, Math.round((spentThisMonth / (budgetSummary.monthlyBudget || 15000)) * 100));
+                budgetMeterBar.style.width = `${pct}%`;
+                budgetMeterBar.style.background = pct >= 100 ? '#db4665' : pct >= 80 ? '#f5a623' : '#10b981';
             }
+
+            // Feature 1: Late-Night Safe Widget on Dashboard
+            const night = budgetSummary.nightSafe || { limit: 500, spent: 0, locked: false };
+            const nightRemaining = Math.max(0, night.limit - (night.spent || 0));
+            const dashNightSafeIcon = document.getElementById('dashNightSafeIcon');
+            const dashNightSafeStatus = document.getElementById('dashNightSafeStatus');
+            const dashBtnToggleNightSafe = document.getElementById('dashBtnToggleNightSafe');
+
+            if (dashNightSafeIcon) dashNightSafeIcon.textContent = night.locked ? '🔒' : '🌙';
+            if (dashNightSafeStatus) {
+                if (night.locked) {
+                    dashNightSafeStatus.textContent = '🔒 Locked';
+                    dashNightSafeStatus.className = 'night-safe-status-pill locked';
+                } else {
+                    dashNightSafeStatus.textContent = `🔓 ₹${nightRemaining} Left`;
+                    dashNightSafeStatus.className = 'night-safe-status-pill unlocked';
+                }
+            }
+            if (dashBtnToggleNightSafe) {
+                dashBtnToggleNightSafe.textContent = night.locked ? '🔓 Unlock' : '🔒 Lock';
+                dashBtnToggleNightSafe.className = night.locked ? 'btn-xs-toggle unlocked-mode' : 'btn-xs-toggle locked-mode';
+            }
+
+            // Feature 2: Upcoming Roommate Bills on Dashboard
+            const nextBill = budgetSummary.nextDueBill;
+            const dashNextBillLabel = document.getElementById('dashNextBillLabel');
+            const dashNextBillTitle = document.getElementById('dashNextBillTitle');
+            const dashBtnPayNextBill = document.getElementById('dashBtnPayNextBill');
+
+            if (nextBill) {
+                const share = Math.round(nextBill.amount / (nextBill.split || 1));
+                if (dashNextBillLabel) dashNextBillLabel.textContent = `Due ${nextBill.date}:`;
+                if (dashNextBillTitle) dashNextBillTitle.textContent = `${escapeHtml(nextBill.title)} (₹${share})`;
+                if (dashBtnPayNextBill) {
+                    dashBtnPayNextBill.style.display = 'inline-block';
+                    dashBtnPayNextBill.textContent = '✓ Pay';
+                    dashBtnPayNextBill.onclick = (e) => {
+                        e.stopPropagation();
+                        window.LifeSyncApp.toggleBill(nextBill.id);
+                    };
+                }
+            } else {
+                if (dashNextBillLabel) dashNextBillLabel.textContent = 'Roommate Bills:';
+                if (dashNextBillTitle) dashNextBillTitle.textContent = 'All Bills Settled ✓';
+                if (dashBtnPayNextBill) dashBtnPayNextBill.style.display = 'none';
+            }
+
+            // Feature 3: Shared Savings Goal Tracker on Dashboard
+            const goal = budgetSummary.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000 };
+            const goalCurrent = Number(goal.current) || 0;
+            const goalTarget = Number(goal.target) || 8000;
+            const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
+
+            const dashGoalTitle = document.getElementById('dashGoalTitle');
+            const dashGoalPct = document.getElementById('dashGoalPct');
+            const dashGoalMiniBar = document.getElementById('dashGoalMiniBar');
+
+            if (dashGoalTitle) dashGoalTitle.textContent = `${escapeHtml(goal.title)}:`;
+            if (dashGoalPct) dashGoalPct.textContent = `${goalPct}% (₹${(goalCurrent >= 1000 ? (goalCurrent/1000).toFixed(1) + 'k' : goalCurrent)})`;
+            if (dashGoalMiniBar) dashGoalMiniBar.style.width = `${goalPct}%`;
 
             // 7. COLUMN 3B: Mental Wellness
             // Check if user has an entry today

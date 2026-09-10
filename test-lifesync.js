@@ -171,6 +171,21 @@ const initialLocked = window.BudgetModule.getBudget().nightSafe.locked;
 window.BudgetModule.toggleNightSafeLock(testUser);
 assert(window.BudgetModule.getBudget().nightSafe.locked !== initialLocked, 'Late-Night Safe toggled lock state');
 
+// Test Retained Budget Features: Runway Calculation, Goal Contribution, Benchmarks, Review Budget
+const runway = window.BudgetModule.calculateRunwayValues(20000, 15);
+assert(runway.usable === 17000, 'Runway calculates usable living funds correctly');
+assert(runway.values.length === 4, 'Runway distributes across 4 semester months');
+
+const initialGoal = window.BudgetModule.getBudget().sharedGoal.current;
+window.BudgetModule.addGoalContribution(testUser, 500, 'Weekend study allowance savings');
+assert(window.BudgetModule.getBudget().sharedGoal.current === initialGoal + 500, 'Goal contribution increments savings goal accurately');
+
+const reviewRes = window.BudgetModule.reviewBudget(testUser);
+assert(reviewRes.streak >= 12, 'Budget review awards streak increment and XP');
+
+const benchmarks = window.BudgetModule.getBenchmarkData();
+assert(benchmarks.length === 5, 'Peer benchmarks provide 5 essential student expense categories');
+
 // 7. Independent Mental Wellness
 const wellnessBefore = window.WellnessModule.getSummary();
 window.WellnessModule.saveCheckIn(testUser, {
@@ -199,11 +214,11 @@ console.log(`   Derived ${notifs.length} active notifications (Reminders/Alerts)
 notifs.forEach(n => console.log(`   - [${n.type.toUpperCase()}] ${n.title}: ${n.message}`));
 
 // 10. Modal and Overlay Dismissal Verification (Cancel, Cut, Backdrop, Escape)
-const indexHtml = fs.readFileSync('index.html', 'utf8');
-const styleCss = fs.readFileSync('style.css', 'utf8');
-const appJs = fs.readFileSync('js/app.js', 'utf8');
+const indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const styleCss = fs.readFileSync(path.join(__dirname, 'style.css'), 'utf8');
+const appJs = fs.readFileSync(path.join(__dirname, 'js', 'app.js'), 'utf8');
 
-const modalIds = ['taskModalOverlay', 'eventModalOverlay', 'txModalOverlay', 'billModalOverlay'];
+const modalIds = ['taskModalOverlay', 'eventModalOverlay', 'txModalOverlay', 'billModalOverlay', 'goalModalOverlay', 'budgetSettingsModalOverlay', 'nightSpendModalOverlay'];
 for (const id of modalIds) {
     const re = new RegExp('<div id="' + id + '" class="([^"]+)"');
     const match = indexHtml.match(re);

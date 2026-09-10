@@ -60,6 +60,9 @@
             if (data.currency !== undefined) currentProfile.currency = data.currency;
             if (data.defaultView !== undefined) currentProfile.defaultView = data.defaultView;
             if (data.notificationsEnabled !== undefined) currentProfile.notificationsEnabled = Boolean(data.notificationsEnabled);
+            if (data.budgetStreak !== undefined) currentProfile.budgetStreak = data.budgetStreak;
+            if (data.lastBudgetReviewDate !== undefined) currentProfile.lastBudgetReviewDate = data.lastBudgetReviewDate;
+            if (data.xp !== undefined) currentProfile.xp = data.xp;
 
             window.LifeSyncStorage.saveProfile(user, currentProfile);
             notifyChange();
