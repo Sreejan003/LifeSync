@@ -127,39 +127,41 @@
             const priorityTasksEl = document.getElementById('dashPriorityTaskList');
             if (priorityTasksEl) {
                 let tasksToDisplay = prioritizedTasks;
-                if (tasksToDisplay.length === 0) {
-                    tasksToDisplay = allTasks.filter(t => t.status !== 'Completed').slice(0, 4);
-                }
-
-                if (tasksToDisplay.length === 0) {
-                    tasksToDisplay = [
-                        { id: 'tsk_1', title: 'DBMS Assignment', dueDate: '2026-09-11', priority: 'High', status: 'Pending' },
-                        { id: 'tsk_2', title: 'Maths Problem Set', dueDate: '2026-09-12', priority: 'Medium', status: 'Pending' },
-                        { id: 'tsk_3', title: 'CN Lab Report', dueDate: '2026-09-13', priority: 'Medium', status: 'Pending' },
-                        { id: 'tsk_4', title: 'Read Chapter 5', dueDate: '2026-09-15', priority: 'Low', status: 'Pending' }
-                    ];
-                }
-
-                priorityTasksEl.innerHTML = tasksToDisplay.map(task => {
-                    const isDone = task.status === 'Completed';
-                    const priorityLower = (task.priority || 'Medium').toLowerCase();
-                    const badgeClass = priorityLower === 'high' ? 'badge-high' : priorityLower === 'medium' ? 'badge-medium' : 'badge-low';
-                    const dueText = formatDueText(task.dueDate);
-
-                    return `
-                        <div class="priority-task-row ${isDone ? 'completed-task' : ''}">
-                            <label class="custom-checkbox-wrap">
-                                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="window.LifeSyncApp.handleQuickTaskToggle('${task.id}')">
-                                <span class="checkbox-box"></span>
-                            </label>
-                            <div class="priority-task-text" onclick="window.LifeSyncApp.switchTab('tasks')">
-                                <span class="task-name">${escapeHtml(task.title)}</span>
-                                <span class="task-due">${escapeHtml(dueText)}</span>
-                            </div>
-                            <span class="priority-badge-pill ${badgeClass}">${task.priority}</span>
+                if (tasksToDisplay.length === 0 && allTasks.length > 0) {
+                    priorityTasksEl.innerHTML = `
+                        <div class="priority-empty-state" style="padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
+                            <div style="font-size: 26px; margin-bottom: 6px;">🎉</div>
+                            <strong>All caught up!</strong>
+                            <p style="margin: 4px 0 10px; font-size: 12px; color: var(--text-muted);">All pending tasks are completed.</p>
+                            <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddTaskModal()">+ Add Task</button>
                         </div>
                     `;
-                }).join('');
+                } else {
+                    if (tasksToDisplay.length === 0) {
+                        tasksToDisplay = allTasks.filter(t => t.status !== 'Completed').slice(0, 4);
+                    }
+
+                    priorityTasksEl.innerHTML = tasksToDisplay.map(task => {
+                        const isDone = task.status === 'Completed';
+                        const priorityLower = (task.priority || 'Medium').toLowerCase();
+                        const badgeClass = priorityLower === 'high' ? 'badge-high' : priorityLower === 'medium' ? 'badge-medium' : 'badge-low';
+                        const dueText = formatDueText(task.dueDate);
+
+                        return `
+                            <div class="priority-task-row ${isDone ? 'completed-task' : ''}">
+                                <label class="custom-checkbox-wrap">
+                                    <input type="checkbox" ${isDone ? 'checked' : ''} onchange="window.LifeSyncApp.handleQuickTaskToggle('${task.id}')">
+                                    <span class="checkbox-box"></span>
+                                </label>
+                                <div class="priority-task-text" onclick="window.LifeSyncApp.switchTab('smart')" title="View in Smart Task Organizer">
+                                    <span class="task-name">${escapeHtml(task.title)}</span>
+                                    <span class="task-due">${escapeHtml(dueText)}</span>
+                                </div>
+                                <span class="priority-badge-pill ${badgeClass}">${task.priority}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
             }
 
             // 6. COLUMN 3A: Student Finance Hub & Integrated Budget

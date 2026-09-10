@@ -10,6 +10,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('lifesync_theme');
+                if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 
 <body class="auth-page-body">
@@ -20,8 +30,13 @@
         <!-- LEFT PANEL: AUTHENTICATION FORM -->
         <div class="auth-left-panel">
             
-            <div class="auth-main-header">
-                <h1 class="auth-welcome-title">Welcome to <span>LifeSync</span></h1>
+            <div class="auth-top-bar" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+                <div class="auth-main-header">
+                    <h1 class="auth-welcome-title">Welcome to <span>LifeSync</span></h1>
+                </div>
+                <button type="button" id="btnAuthThemeToggle" class="auth-theme-toggle" aria-label="Toggle Theme" title="Toggle Theme" onclick="toggleAuthTheme()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(0,0,0,0.08); border-radius:12px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
+                    <span id="authThemeIcon">🌙</span>
+                </button>
             </div>
 
             <!-- Tab Navigation Bar -->
@@ -388,7 +403,29 @@
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/auth-page.js"></script>
-
+    <script>
+        function toggleAuthTheme() {
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            const next = isDark ? 'light' : 'dark';
+            if (next === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.body.classList.add('dark-theme');
+                const icon = document.getElementById('authThemeIcon');
+                if (icon) icon.textContent = '☀️';
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.body.classList.remove('dark-theme');
+                const icon = document.getElementById('authThemeIcon');
+                if (icon) icon.textContent = '🌙';
+            }
+            try { localStorage.setItem('lifesync_theme', next); } catch(e) {}
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            const icon = document.getElementById('authThemeIcon');
+            if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+        });
+    </script>
 </body>
 
 </html>

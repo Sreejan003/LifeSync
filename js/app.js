@@ -52,6 +52,9 @@
         window.WellnessModule.init(currentUser);
         window.ProfileModule.init(currentUser);
 
+        // Initialize theme
+        initTheme();
+
         // Render UI
         renderHeader();
         updateNotifications();
@@ -157,6 +160,61 @@
         const userDisplayNameEl = document.getElementById('userDisplayName');
         if (userAvatarEl) userAvatarEl.textContent = currentUser.avatarLetter || currentUser.username.charAt(0).toUpperCase();
         if (userDisplayNameEl) userDisplayNameEl.textContent = currentUser.username;
+    }
+
+    // ==========================================
+    // THEME MANAGEMENT (DARK / LIGHT MODE)
+    // ==========================================
+    function initTheme() {
+        const savedTheme = localStorage.getItem('lifesync_theme');
+        if (savedTheme) {
+            applyTheme(savedTheme, false);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            applyTheme('dark', false);
+        } else {
+            applyTheme('light', false);
+        }
+    }
+
+    function applyTheme(theme, showToastMsg = false) {
+        const isDark = theme === 'dark';
+        if (isDark) {
+            document.documentElement.classList.add('dark-theme');
+            document.body.classList.add('dark-theme');
+        } else {
+            document.documentElement.classList.remove('dark-theme');
+            document.body.classList.remove('dark-theme');
+        }
+
+        const sunIcon = document.getElementById('themeIconSun');
+        const moonIcon = document.getElementById('themeIconMoon');
+        const btnToggle = document.getElementById('btnThemeToggle');
+
+        if (sunIcon) sunIcon.style.display = isDark ? 'block' : 'none';
+        if (moonIcon) moonIcon.style.display = isDark ? 'none' : 'block';
+        if (btnToggle) btnToggle.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+
+        const pillLight = document.getElementById('btnThemePillLight');
+        const pillDark = document.getElementById('btnThemePillDark');
+        if (pillLight) pillLight.classList.toggle('active', !isDark);
+        if (pillDark) pillDark.classList.toggle('active', isDark);
+
+        try {
+            localStorage.setItem('lifesync_theme', theme);
+        } catch (e) {}
+
+        if (showToastMsg) {
+            showToast(isDark ? 'Dark theme enabled 🌙' : 'Light theme enabled ☀️', 'info');
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.documentElement.classList.contains('dark-theme');
+        applyTheme(isDark ? 'light' : 'dark', true);
+    }
+
+    function setTheme(theme) {
+        applyTheme(theme, true);
     }
 
     function updateNotifications() {
@@ -272,9 +330,9 @@
 
                 return `
                     <div class="task-card-row ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue-border' : ''}">
-                        <label class="task-checkbox-container">
+                        <label class="custom-checkbox-wrap" title="Toggle task completion">
                             <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="window.LifeSyncApp.toggleTask('${task.id}')">
-                            <span class="custom-checkmark"></span>
+                            <span class="checkbox-box"></span>
                         </label>
                         <div class="task-info-block">
                             <div class="task-row-title ${isCompleted ? 'line-through' : ''}">${escapeHtml(task.title)}</div>
@@ -313,7 +371,7 @@
 
         if (prioritizedTasks.length === 0) {
             container.innerHTML = '';
-            if (emptyState) emptyState.style.display = 'flex';
+            if (emptyState) emptyState.style.display = 'block';
             if (topBannerEl) topBannerEl.style.display = 'none';
             return;
         }
@@ -349,9 +407,9 @@
             return `
                 <div class="smart-task-row">
                     <div class="smart-rank-badge">#${idx + 1}</div>
-                    <label class="task-checkbox-container">
+                    <label class="custom-checkbox-wrap" title="Mark done & re-rank">
                         <input type="checkbox" onchange="window.LifeSyncApp.toggleTaskAndRefreshSmart('${task.id}')">
-                        <span class="custom-checkmark"></span>
+                        <span class="checkbox-box"></span>
                     </label>
                     <div class="smart-task-info">
                         <div class="smart-task-title">${escapeHtml(task.title)}</div>
@@ -1219,7 +1277,10 @@
                         showToast('New task added! ✦', 'success');
                     }
                     closeModal('taskModalOverlay');
-                    renderTasksView();
+                    renderCurrentView();
+                    if (currentTab !== 'tasks') {
+                        renderTasksView();
+                    }
                     updateNotifications();
                 } catch (err) {
                     showToast(err.message, 'error');
@@ -1476,20 +1537,29 @@
         switchTab,
         toggleTask(taskId) {
             window.TasksModule.toggleComplete(currentUser, taskId);
-            renderTasksView();
+            renderCurrentView();
+            if (currentTab !== 'tasks') {
+                renderTasksView();
+            }
             updateNotifications();
         },
         handleQuickTaskToggle(taskId) {
             window.TasksModule.toggleComplete(currentUser, taskId);
             showToast('Task marked as completed! 🎯', 'success');
             renderCurrentView();
+            if (currentTab !== 'tasks') {
+                renderTasksView();
+            }
             updateNotifications();
         },
         deleteTask(taskId) {
             if (confirm('Delete this task?')) {
                 window.TasksModule.deleteTask(currentUser, taskId);
                 showToast('Task removed.', 'info');
-                renderTasksView();
+                renderCurrentView();
+                if (currentTab !== 'tasks') {
+                    renderTasksView();
+                }
                 updateNotifications();
             }
         },
@@ -1572,6 +1642,7 @@
             window.TasksModule.toggleComplete(currentUser, taskId);
             showToast('Task marked done! Re-ranking priorities... 🧠', 'success');
             renderSmartOrganizerView();
+            renderTasksView();
             updateNotifications();
         },
         switchBudgetSubTab,
@@ -1632,7 +1703,10 @@
         openModal,
         closeModal,
         closeAllModals,
-        showToast
+        showToast,
+        toggleTheme,
+        setTheme,
+        initTheme
     };
 
     document.addEventListener('DOMContentLoaded', checkAuthAndInit);

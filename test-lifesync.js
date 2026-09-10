@@ -144,6 +144,38 @@ console.log(`   Top Task: "${topTask.title}", Score: ${topTask.smartScore}, Reas
 assert(topTask.smartScore > 0, 'Top task has positive urgency score');
 assert(topTask.reasonTag && topTask.reasonTag.length > 0, 'Smart Task Organizer attaches explanatory urgency reason');
 
+// Verify scores are in strictly descending order
+for (let i = 0; i < prioritizedTasks.length - 1; i++) {
+    assert(prioritizedTasks[i].smartScore >= prioritizedTasks[i + 1].smartScore,
+        `Tasks sorted descending by smartScore (index ${i} vs ${i + 1})`);
+}
+
+// Verify ISO timestamp and robust date handling
+const isoTask = window.TasksModule.addTask(testUser, {
+    title: 'ISO Timestamp Deadline Task',
+    dueDate: new Date(Date.now() + 86400000).toISOString(),
+    priority: 'High',
+    category: 'Study'
+});
+const isoRanked = window.SmartTaskOrganizer.getPrioritizedTasks().find(t => t.id === isoTask.id);
+assert(isoRanked && !isNaN(isoRanked.daysDiff) && !isNaN(isoRanked.smartScore),
+    'Smart Task Organizer parses ISO format dueDate without NaN');
+
+// Verify overdue urgency preservation
+const overdueTask = window.TasksModule.addTask(testUser, {
+    title: 'Operating Systems Past Project',
+    dueDate: '2020-01-01',
+    priority: 'High',
+    category: 'Study'
+});
+const overdueRanked = window.SmartTaskOrganizer.getPrioritizedTasks().find(t => t.id === overdueTask.id);
+assert(overdueRanked && overdueRanked.reasonType === 'danger' && overdueRanked.reasonTag.includes('Overdue'),
+    'Smart Task Organizer preserves danger/Overdue tag even when academic boost matches');
+
+// Clean up test tasks
+window.TasksModule.deleteTask(testUser, isoTask.id);
+window.TasksModule.deleteTask(testUser, overdueTask.id);
+
 // 6. Independent Budget Planner
 const budgetBefore = window.BudgetModule.getSummary();
 window.BudgetModule.addTransaction(testUser, {
@@ -231,6 +263,15 @@ assert(appJs.includes("m.classList.remove('hidden')") && appJs.includes("m.class
 assert(appJs.includes("'Escape'"), 'Escape key dismissal is wired');
 assert(appJs.includes('e.target === overlay'), 'Backdrop click dismissal is wired');
 console.log('✓ PASS: All shared modals start hidden and dismiss correctly via Cancel, Cut, Backdrop, & Escape');
+
+// 11. Smart Task Organizer UI & Dark Mode Validation
+assert(styleCss.includes('.dark-theme .smart-task-row'), 'style.css has dark theme rules for .smart-task-row');
+assert(styleCss.includes('.dark-theme .smart-top-banner'), 'style.css has dark theme rules for .smart-top-banner');
+assert(styleCss.includes('.dark-theme .task-card-row'), 'style.css has dark theme rules for .task-card-row');
+assert(styleCss.includes('.priority-pill') && styleCss.includes('.category-pill'), 'style.css contains priority and category pill styles');
+assert(appJs.includes('toggleTaskAndRefreshSmart'), 'app.js exports toggleTaskAndRefreshSmart');
+assert(indexHtml.includes('id="smartOrganizerTaskList"'), 'index.html contains smartOrganizerTaskList container');
+console.log('✓ PASS: Smart Task Organizer dark mode styles and interactive DOM bindings are verified');
 
 console.log('\n🎉 ALL LIFESYNC INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉');
 
