@@ -305,8 +305,8 @@
             if (!profile) {
                 profile = window.LifeSyncStorage.getProfile(user);
             }
-            if (!profile.budgetStreak) profile.budgetStreak = 12;
-            if (!profile.xp) profile.xp = 450;
+            if (profile.budgetStreak === undefined || profile.budgetStreak === null) profile.budgetStreak = 0;
+            if (profile.xp === undefined || profile.xp === null) profile.xp = 0;
 
             if (profile.lastBudgetReviewDate === todayStr) {
                 return { reviewed: false, streak: profile.budgetStreak, xp: profile.xp, message: 'Already reviewed today! Keep it up 🔥' };
@@ -339,12 +339,13 @@
         // --- TWO-WAY SYNC WITH STANDALONE BUDGETBUDDY ---
         syncWithBudgetBuddy() {
             try {
+                const activeProfile = window.ProfileModule ? window.ProfileModule.getProfile() : null;
                 const buddyData = {
                     profile: {
-                        name: 'Ananya',
-                        streak: 12,
-                        lastReviewDate: null,
-                        xp: 450
+                        name: (activeProfile && activeProfile.name) ? activeProfile.name : 'Student',
+                        streak: (activeProfile && activeProfile.budgetStreak) ? activeProfile.budgetStreak : 0,
+                        lastReviewDate: (activeProfile && activeProfile.lastBudgetReviewDate) ? activeProfile.lastBudgetReviewDate : null,
+                        xp: (activeProfile && activeProfile.xp) ? activeProfile.xp : 0
                     },
                     runway: currentBudget.runway || { sum: 18000, bufferPct: 15 },
                     nightSafe: currentBudget.nightSafe || { limit: 350, spent: 112, locked: false },

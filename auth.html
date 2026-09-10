@@ -10,8 +10,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Immediate theme bootstrap & third-party extension error boundary -->
     <script>
         (function() {
+            // Suppress noisy third-party extension / DevTools VM errors (e.g. Web-Vitals reportAllChanges/startTime)
+            window.addEventListener('error', function(e) {
+                const msg = (e && e.message) ? e.message : '';
+                const stack = (e && e.error && e.error.stack) ? e.error.stack : '';
+                if (msg.includes('startTime') || stack.includes('reportAllChanges') || stack.includes('web-vitals')) {
+                    if (e.preventDefault) e.preventDefault();
+                    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                    return true;
+                }
+            }, true);
+
             try {
                 const savedTheme = localStorage.getItem('lifesync_theme');
                 if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

@@ -332,15 +332,17 @@
 
     function getDefaultProfile(user) {
         return {
-            name: user && user.username && user.username !== 'Student' ? user.username : 'Ananya',
-            email: user ? user.email : 'ananya@lifesync.edu',
-            university: 'National Institute of Technology',
-            major: 'Computer Science & Engineering',
-            yearSemester: '3rd Year / 5th Semester',
-            studentId: 'STU-2026-8841',
+            name: (user && user.username) ? user.username : 'Student',
+            email: (user && user.email) ? user.email : '',
+            university: '',
+            major: '',
+            yearSemester: '',
+            studentId: '',
             currency: '₹',
             notificationsEnabled: true,
-            defaultView: 'dashboard'
+            defaultView: 'dashboard',
+            budgetStreak: 0,
+            xp: 0
         };
     }
 

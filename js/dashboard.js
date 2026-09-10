@@ -31,16 +31,16 @@
         render(user) {
             if (!user) return;
 
-            // 1. Dynamic Greeting & Header
+            // 1. Dynamic Time-Based Greeting & Header
             const greetingEl = document.querySelector('.dash-greeting-title');
             const greetingNameEl = document.getElementById('dashGreetingName');
             const now = new Date();
             const currentHour = now.getHours();
             let greetingWord = 'Good Morning';
             if (currentHour >= 12 && currentHour < 17) greetingWord = 'Good Afternoon';
-            else if (currentHour >= 17) greetingWord = 'Good Evening';
+            else if (currentHour >= 17 || currentHour < 4) greetingWord = 'Good Evening';
 
-            const displayName = user.username && user.username !== 'Student' ? user.username : 'Ananya';
+            const displayName = (user && user.username) ? user.username : 'Student';
             if (greetingEl) {
                 greetingEl.innerHTML = `${greetingWord}, <span id="dashGreetingName">${escapeHtml(displayName)}</span>! 👋`;
             } else if (greetingNameEl) {
@@ -48,79 +48,77 @@
             }
 
             // 2. Query Data from Modules
-            const taskStats = window.TasksModule ? window.TasksModule.getStats() : { total: 19, pending: 7, completed: 12 };
+            const taskStats = window.TasksModule ? window.TasksModule.getStats() : { total: 0, pending: 0, completed: 0 };
             const allTasks = window.TasksModule ? window.TasksModule.getTasks() : [];
             const prioritizedTasks = window.SmartTaskOrganizer ? window.SmartTaskOrganizer.getTopPrioritizedTasks(4) : [];
-            const budgetSummary = window.BudgetModule ? window.BudgetModule.getSummary() : { totalIncome: 8000, totalExpense: 4550, totalBalance: 3450 };
-            const wellnessSummary = window.WellnessModule ? window.WellnessModule.getSummary() : { streak: 5, todayEntry: null };
+            const budgetSummary = window.BudgetModule ? window.BudgetModule.getSummary() : { totalIncome: 0, totalExpense: 0, totalBalance: 0 };
+            const wellnessSummary = window.WellnessModule ? window.WellnessModule.getSummary() : { streak: 0, todayEntry: null };
 
-            // 3. Populate 4 Top Metric Cards
+            // 3. Populate 4 Top Metric Cards (Using Real Data)
             const statPending = document.getElementById('dashStatPendingTasks');
             const statCompleted = document.getElementById('dashStatCompletedTasks');
             const statUpcoming = document.getElementById('dashStatUpcomingEvents');
             const statFocusTask = document.getElementById('dashStatFocusTask');
             const statFocusDue = document.getElementById('dashStatFocusDue');
 
-            if (statPending) statPending.textContent = taskStats.pending || 7;
-            if (statCompleted) statCompleted.textContent = taskStats.completed || 12;
+            if (statPending) statPending.textContent = (taskStats && taskStats.pending !== undefined) ? taskStats.pending : 0;
+            if (statCompleted) statCompleted.textContent = (taskStats && taskStats.completed !== undefined) ? taskStats.completed : 0;
 
             // Upcoming events count
             const allEvents = window.CalendarModule ? window.CalendarModule.getEvents() : [];
-            const upcomingEvents = allEvents.filter(e => {
-                const todayStr = new Date().toISOString().split('T')[0];
-                return e.date >= todayStr;
-            });
-            if (statUpcoming) statUpcoming.textContent = upcomingEvents.length || 3;
+            const todayDateStr = new Date().toISOString().split('T')[0];
+            const upcomingEvents = allEvents.filter(e => e.date >= todayDateStr);
+            if (statUpcoming) statUpcoming.textContent = upcomingEvents.length;
 
-            // Today's focus: Top task
-            const focusTask = prioritizedTasks.length > 0 ? prioritizedTasks[0] : allTasks[0];
+            // Today's focus: Top task or clean empty state
+            const pendingTasks = allTasks.filter(t => t.status !== 'Completed');
+            const focusTask = prioritizedTasks.length > 0 ? prioritizedTasks[0] : (pendingTasks.length > 0 ? pendingTasks[0] : null);
             if (focusTask) {
                 if (statFocusTask) statFocusTask.textContent = focusTask.title;
                 if (statFocusDue) statFocusDue.textContent = formatDueText(focusTask.dueDate);
             } else {
-                if (statFocusTask) statFocusTask.textContent = 'DBMS Assignment';
-                if (statFocusDue) statFocusDue.textContent = 'Due Tomorrow';
+                if (statFocusTask) statFocusTask.textContent = 'No pending tasks';
+                if (statFocusDue) statFocusDue.textContent = 'All caught up! 🎉';
             }
 
             // 4. COLUMN 1: Today's Schedule (Timeline View)
             const scheduleTimelineEl = document.getElementById('dashTodayScheduleTimeline');
             if (scheduleTimelineEl) {
-                const todayStr = new Date().toISOString().split('T')[0];
-                let todayEvents = allEvents.filter(e => e.date === todayStr);
+                const todayEvents = allEvents.filter(e => e.date === todayDateStr);
 
-                // Fallback demo schedule if no events for today yet
                 if (todayEvents.length === 0) {
-                    todayEvents = [
-                        { time: '09:00 AM', title: 'DBMS Lecture', location: 'Room 204' },
-                        { time: '11:00 AM', title: 'Computer Networks', location: 'Room 105' },
-                        { time: '01:00 PM', title: 'Library Session', location: 'Central Library' },
-                        { time: '04:00 PM', title: 'Study Group', location: 'Online' }
-                    ];
+                    scheduleTimelineEl.innerHTML = `
+                        <div class="empty-timeline-state" style="padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                            <div style="font-size: 24px; margin-bottom: 6px;">📅</div>
+                            <strong style="color: var(--text-main);">No events scheduled for today</strong>
+                            <p style="margin: 4px 0 10px; font-size: 12px; color: var(--text-muted);">Your schedule is clear for today.</p>
+                            <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddEventModal()">+ Add Event</button>
+                        </div>
+                    `;
+                } else {
+                    const dotColors = ['#633bf5', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
+                    scheduleTimelineEl.innerHTML = `
+                        <div class="timeline-track-list">
+                            ${todayEvents.slice(0, 4).map((evt, idx) => {
+                                const dotColor = dotColors[idx % dotColors.length];
+                                const locationText = evt.location || evt.description || 'Campus';
+                                return `
+                                    <div class="timeline-row-item" onclick="window.LifeSyncApp.switchTab('calendar')">
+                                        <div class="timeline-time-col">${escapeHtml(evt.time || '10:00 AM')}</div>
+                                        <div class="timeline-node-col">
+                                            <div class="timeline-node-dot" style="background-color: ${dotColor};"></div>
+                                            ${idx < todayEvents.slice(0, 4).length - 1 ? '<div class="timeline-node-line"></div>' : ''}
+                                        </div>
+                                        <div class="timeline-content-col">
+                                            <div class="timeline-event-title">${escapeHtml(evt.title)}</div>
+                                            <div class="timeline-event-loc">${escapeHtml(locationText)}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
                 }
-
-                const dotColors = ['#633bf5', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
-
-                scheduleTimelineEl.innerHTML = `
-                    <div class="timeline-track-list">
-                        ${todayEvents.slice(0, 4).map((evt, idx) => {
-                            const dotColor = dotColors[idx % dotColors.length];
-                            const locationText = evt.location || evt.description || 'Campus';
-                            return `
-                                <div class="timeline-row-item" onclick="window.LifeSyncApp.switchTab('calendar')">
-                                    <div class="timeline-time-col">${escapeHtml(evt.time || '10:00 AM')}</div>
-                                    <div class="timeline-node-col">
-                                        <div class="timeline-node-dot" style="background-color: ${dotColor};"></div>
-                                        ${idx < todayEvents.slice(0, 4).length - 1 ? '<div class="timeline-node-line"></div>' : ''}
-                                    </div>
-                                    <div class="timeline-content-col">
-                                        <div class="timeline-event-title">${escapeHtml(evt.title)}</div>
-                                        <div class="timeline-event-location">${escapeHtml(locationText)}</div>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
             }
 
             // 5. COLUMN 2: Priority Tasks List with Checkboxes & Pills
@@ -131,16 +129,21 @@
                     priorityTasksEl.innerHTML = `
                         <div class="priority-empty-state" style="padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
                             <div style="font-size: 26px; margin-bottom: 6px;">🎉</div>
-                            <strong>All caught up!</strong>
+                            <strong style="color: var(--text-main);">All caught up!</strong>
                             <p style="margin: 4px 0 10px; font-size: 12px; color: var(--text-muted);">All pending tasks are completed.</p>
                             <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddTaskModal()">+ Add Task</button>
                         </div>
                     `;
+                } else if (tasksToDisplay.length === 0) {
+                    priorityTasksEl.innerHTML = `
+                        <div class="priority-empty-state" style="padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
+                            <div style="font-size: 26px; margin-bottom: 6px;">📝</div>
+                            <strong style="color: var(--text-main);">No tasks created</strong>
+                            <p style="margin: 4px 0 10px; font-size: 12px; color: var(--text-muted);">Add your assignments and study goals.</p>
+                            <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddTaskModal()">+ Add Task</button>
+                        </div>
+                    `;
                 } else {
-                    if (tasksToDisplay.length === 0) {
-                        tasksToDisplay = allTasks.filter(t => t.status !== 'Completed').slice(0, 4);
-                    }
-
                     priorityTasksEl.innerHTML = tasksToDisplay.map(task => {
                         const isDone = task.status === 'Completed';
                         const priorityLower = (task.priority || 'Medium').toLowerCase();
@@ -172,24 +175,26 @@
             const dashBudgetStreakBadge = document.getElementById('dashBudgetStreakBadge');
 
             const profile = window.ProfileModule ? window.ProfileModule.getProfile() : (window.LifeSyncStorage.getProfile(user) || {});
-            const totalIncome = budgetSummary.totalIncome || 8000;
-            const spentThisMonth = budgetSummary.spentThisMonth !== undefined ? budgetSummary.spentThisMonth : (budgetSummary.totalExpense || 4550);
-            const remainingBudget = budgetSummary.remainingBudget !== undefined ? budgetSummary.remainingBudget : Math.max(0, (budgetSummary.monthlyBudget || 15000) - spentThisMonth);
+            const totalIncome = Number(budgetSummary.totalIncome) || 0;
+            const spentThisMonth = budgetSummary.spentThisMonth !== undefined ? Number(budgetSummary.spentThisMonth) : (Number(budgetSummary.totalExpense) || 0);
+            const monthlyLimit = Number(budgetSummary.monthlyBudget) || 15000;
+            const remainingBudget = budgetSummary.remainingBudget !== undefined ? Number(budgetSummary.remainingBudget) : Math.max(0, monthlyLimit - spentThisMonth);
+            const userBudgetStreak = (profile && profile.budgetStreak !== undefined) ? profile.budgetStreak : 0;
 
             if (budgetBalanceVal) budgetBalanceVal.textContent = `₹ ${Math.round(remainingBudget).toLocaleString('en-IN')}`;
             if (budgetIncomeVal) budgetIncomeVal.textContent = `₹ ${Math.round(totalIncome).toLocaleString('en-IN')}`;
             if (budgetExpenseVal) budgetExpenseVal.textContent = `₹ ${Math.round(spentThisMonth).toLocaleString('en-IN')}`;
-            if (dashBudgetStreakBadge) dashBudgetStreakBadge.textContent = `🔥 ${profile.budgetStreak || 12}d`;
+            if (dashBudgetStreakBadge) dashBudgetStreakBadge.textContent = `🔥 ${userBudgetStreak}d`;
 
             if (budgetMeterBar) {
-                const pct = budgetSummary.budgetUsagePct !== undefined ? budgetSummary.budgetUsagePct : Math.min(100, Math.round((spentThisMonth / (budgetSummary.monthlyBudget || 15000)) * 100));
+                const pct = monthlyLimit > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyLimit) * 100)) : 0;
                 budgetMeterBar.style.width = `${pct}%`;
                 budgetMeterBar.style.background = pct >= 100 ? '#db4665' : pct >= 80 ? '#f5a623' : '#10b981';
             }
 
             // Feature 1: Late-Night Safe Widget on Dashboard
             const night = budgetSummary.nightSafe || { limit: 500, spent: 0, locked: false };
-            const nightRemaining = Math.max(0, night.limit - (night.spent || 0));
+            const nightRemaining = Math.max(0, (night.limit || 500) - (night.spent || 0));
             const dashNightSafeIcon = document.getElementById('dashNightSafeIcon');
             const dashNightSafeStatus = document.getElementById('dashNightSafeStatus');
             const dashBtnToggleNightSafe = document.getElementById('dashBtnToggleNightSafe');
@@ -234,21 +239,26 @@
             }
 
             // Feature 3: Shared Savings Goal Tracker on Dashboard
-            const goal = budgetSummary.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000 };
-            const goalCurrent = Number(goal.current) || 0;
-            const goalTarget = Number(goal.target) || 8000;
-            const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
-
+            const goal = budgetSummary.sharedGoal;
             const dashGoalTitle = document.getElementById('dashGoalTitle');
             const dashGoalPct = document.getElementById('dashGoalPct');
             const dashGoalMiniBar = document.getElementById('dashGoalMiniBar');
 
-            if (dashGoalTitle) dashGoalTitle.textContent = `${escapeHtml(goal.title)}:`;
-            if (dashGoalPct) dashGoalPct.textContent = `${goalPct}% (₹${(goalCurrent >= 1000 ? (goalCurrent/1000).toFixed(1) + 'k' : goalCurrent)})`;
-            if (dashGoalMiniBar) dashGoalMiniBar.style.width = `${goalPct}%`;
+            if (goal && goal.title) {
+                const goalCurrent = Number(goal.current) || 0;
+                const goalTarget = Number(goal.target) || 1;
+                const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
+
+                if (dashGoalTitle) dashGoalTitle.textContent = `${escapeHtml(goal.title)}:`;
+                if (dashGoalPct) dashGoalPct.textContent = `${goalPct}% (₹${(goalCurrent >= 1000 ? (goalCurrent/1000).toFixed(1) + 'k' : goalCurrent)})`;
+                if (dashGoalMiniBar) dashGoalMiniBar.style.width = `${goalPct}%`;
+            } else {
+                if (dashGoalTitle) dashGoalTitle.textContent = 'Savings Goal:';
+                if (dashGoalPct) dashGoalPct.textContent = 'None active';
+                if (dashGoalMiniBar) dashGoalMiniBar.style.width = '0%';
+            }
 
             // 7. COLUMN 3B: Mental Wellness
-            // Check if user has an entry today
             const todayEntry = wellnessSummary.todayEntry;
             const moodBtns = document.querySelectorAll('.mood-face-btn');
             moodBtns.forEach(btn => {
@@ -262,9 +272,9 @@
 
             // 8. Study Streak
             const streakSubtitle = document.getElementById('dashStreakSubtitle');
-            const streakCount = wellnessSummary.streak || 5;
+            const streakCount = (wellnessSummary && wellnessSummary.streak !== undefined) ? wellnessSummary.streak : 0;
             if (streakSubtitle) {
-                streakSubtitle.textContent = `You're on a ${streakCount}-day streak!`;
+                streakSubtitle.textContent = streakCount > 0 ? `You're on a ${streakCount}-day streak!` : 'Start your daily check-in streak today!';
             }
         }
     };

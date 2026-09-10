@@ -78,7 +78,7 @@
         // sessionStorage clears on tab/browser close, so app.js will force re-login on fresh open.
         sessionStorage.setItem('ls_session_active', '1');
         setTimeout(() => {
-            window.location.href = "index.html";
+            window.location.replace("index.html");
         }, 500);
     }
 
@@ -134,7 +134,7 @@
                 const user = typeof AuthSystem !== 'undefined' ? AuthSystem.getCurrentUser() : null;
                 const sessionActive = sessionStorage.getItem('ls_session_active');
                 if (user && sessionActive) {
-                    window.location.href = "index.html";
+                    window.location.replace("index.html");
                 }
             }
         });
@@ -144,7 +144,7 @@
             const currentUser = AuthSystem.getCurrentUser();
             const sessionActive = sessionStorage.getItem('ls_session_active');
             if (currentUser && sessionActive) {
-                window.location.href = "index.html";
+                window.location.replace("index.html");
                 return;
             }
         }

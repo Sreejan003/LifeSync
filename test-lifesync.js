@@ -213,7 +213,7 @@ window.BudgetModule.addGoalContribution(testUser, 500, 'Weekend study allowance 
 assert(window.BudgetModule.getBudget().sharedGoal.current === initialGoal + 500, 'Goal contribution increments savings goal accurately');
 
 const reviewRes = window.BudgetModule.reviewBudget(testUser);
-assert(reviewRes.streak >= 12, 'Budget review awards streak increment and XP');
+assert(reviewRes.streak >= 1, 'Budget review awards streak increment and XP');
 
 const benchmarks = window.BudgetModule.getBenchmarkData();
 assert(benchmarks.length === 5, 'Peer benchmarks provide 5 essential student expense categories');
@@ -272,6 +272,22 @@ assert(styleCss.includes('.priority-pill') && styleCss.includes('.category-pill'
 assert(appJs.includes('toggleTaskAndRefreshSmart'), 'app.js exports toggleTaskAndRefreshSmart');
 assert(indexHtml.includes('id="smartOrganizerTaskList"'), 'index.html contains smartOrganizerTaskList container');
 console.log('✓ PASS: Smart Task Organizer dark mode styles and interactive DOM bindings are verified');
+
+// 12. Profile Avatar Validation (Photo Removed)
+assert(!indexHtml.includes('id="userAvatarImg"'), 'Profile photo img element is removed from header');
+assert(indexHtml.includes('id="userAvatarLetter"'), 'Letter avatar fallback is present in header');
+assert(styleCss.includes('.user-avatar-circle'), 'style.css contains .user-avatar-circle style');
+console.log('✓ PASS: Profile photo removed and verified; clean monogram avatar displayed');
+
+// 13. Dynamic Data Validation (No Hardcoded Fallbacks or Static Names)
+const storageJs = fs.readFileSync(path.join(__dirname, 'js', 'storage.js'), 'utf8');
+const dashboardJs = fs.readFileSync(path.join(__dirname, 'js', 'dashboard.js'), 'utf8');
+
+assert(!indexHtml.includes('>Ananya<'), 'Hardcoded Ananya name removed from index.html greeting');
+assert(!dashboardJs.includes("'Ananya'"), 'Hardcoded Ananya fallback removed from dashboard.js');
+assert(!storageJs.includes("'Ananya'"), 'Hardcoded Ananya fallback removed from storage.js');
+assert(!dashboardJs.includes('|| 7;') && !dashboardJs.includes('|| 12;'), 'Hardcoded numeric task stat fallbacks removed from dashboard.js');
+console.log('✓ PASS: All hardcoded user identities and static metric fallbacks eliminated');
 
 console.log('\n🎉 ALL LIFESYNC INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉');
 

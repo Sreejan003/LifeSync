@@ -144,16 +144,12 @@
 
         const userAvatarLetter = document.getElementById('userAvatarLetter');
         const dashGreetingName = document.getElementById('dashGreetingName');
-        const userAvatarImg = document.getElementById('userAvatarImg');
 
         if (userAvatarLetter) {
             userAvatarLetter.textContent = currentUser.avatarLetter || currentUser.username.charAt(0).toUpperCase();
         }
         if (dashGreetingName) {
             dashGreetingName.textContent = currentUser.username;
-        }
-        if (userAvatarImg) {
-            userAvatarImg.title = currentUser.username;
         }
 
         const userAvatarEl = document.getElementById('userAvatarDisplay');
@@ -176,7 +172,7 @@
         }
     }
 
-    function applyTheme(theme, showToastMsg = false) {
+    function applyTheme(theme) {
         const isDark = theme === 'dark';
         if (isDark) {
             document.documentElement.classList.add('dark-theme');
@@ -202,19 +198,15 @@
         try {
             localStorage.setItem('lifesync_theme', theme);
         } catch (e) {}
-
-        if (showToastMsg) {
-            showToast(isDark ? 'Dark theme enabled 🌙' : 'Light theme enabled ☀️', 'info');
-        }
     }
 
     function toggleTheme() {
         const isDark = document.documentElement.classList.contains('dark-theme');
-        applyTheme(isDark ? 'light' : 'dark', true);
+        applyTheme(isDark ? 'light' : 'dark');
     }
 
     function setTheme(theme) {
-        applyTheme(theme, true);
+        applyTheme(theme);
     }
 
     function updateNotifications() {
@@ -586,7 +578,7 @@
 
         // 1. Streak & Gamification Header
         const streakCountEl = document.getElementById('budgetStreakCount');
-        if (streakCountEl) streakCountEl.textContent = profile.budgetStreak || 12;
+        if (streakCountEl) streakCountEl.textContent = (profile && profile.budgetStreak !== undefined) ? profile.budgetStreak : 0;
 
         const btnReview = document.getElementById('btnReviewBudget');
         const todayStr = new Date().toISOString().split('T')[0];
