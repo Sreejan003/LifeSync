@@ -220,13 +220,16 @@
      * Simulates Google Auth login flow and issues session JWT token.
      */
     function signInWithGoogle(googleData = {}) {
-        if (!googleData.email || !googleData.email.trim()) {
-            throw new Error('Please enter a valid Google email address.');
-        }
+        const defaultEmail = 'student.google@gmail.com';
+        const defaultName = 'Google Student';
+        const googleEmail = (googleData.email && googleData.email.trim()) 
+            ? googleData.email.trim().toLowerCase() 
+            : defaultEmail;
+        const googleUsername = (googleData.username && googleData.username.trim())
+            ? googleData.username.trim()
+            : (googleEmail.split('@')[0]);
 
         const users = getUsersFromStorage();
-        const googleEmail = googleData.email.trim().toLowerCase();
-        const googleUsername = (googleData.username || googleEmail.split('@')[0]).trim();
         const initialLetter = googleUsername.charAt(0).toUpperCase() || 'G';
 
         let user = users.find(u => u.email.toLowerCase() === googleEmail);
@@ -314,12 +317,134 @@
         }
     }
 
+    // ==========================================
+    // 4. ASYNC BACKEND CONNECTED AUTH SERVICES
+    // ==========================================
+
+    async function signUpAsync({ username, email, password }) {
+        if (typeof window !== 'undefined' && window.LifeSyncAPI && typeof fetch !== 'undefined') {
+            try {
+                const res = await window.LifeSyncAPI.register(username, email, password);
+                if (res && res.token) {
+                    setTokenInStorage(res.token);
+
+                    const initialLetter = username.trim().charAt(0).toUpperCase() || 'S';
+                    const userObj = {
+                        id: res.user.id,
+                        username: res.user.name,
+                        email: res.user.email,
+                        avatarLetter: res.user.avatarLetter || initialLetter,
+                        createdAt: res.user.createdAt || new Date().toISOString()
+                    };
+
+                    const users = getUsersFromStorage();
+                    const existingIdx = users.findIndex(u => u.id === userObj.id || u.email === userObj.email);
+                    if (existingIdx !== -1) {
+                        users[existingIdx] = userObj;
+                    } else {
+                        users.push(userObj);
+                    }
+                    saveUsersToStorage(users);
+
+                    const currentUser = getCurrentUser();
+                    notifyAuthStateChanged(currentUser);
+                    return currentUser;
+                }
+            } catch (err) {
+                // If it's an API validation error (e.g., duplicate email), rethrow to show to user
+                if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
+                    throw err;
+                }
+                console.warn('Backend registration failed, falling back to local session:', err.message);
+            }
+        }
+        return signUp({ username, email, password });
+    }
+
+    async function signInAsync({ email, password }) {
+        if (typeof window !== 'undefined' && window.LifeSyncAPI && typeof fetch !== 'undefined') {
+            try {
+                const res = await window.LifeSyncAPI.login(email, password);
+                if (res && res.token) {
+                    setTokenInStorage(res.token);
+
+                    const initialLetter = res.user.name.charAt(0).toUpperCase() || 'S';
+                    const userObj = {
+                        id: res.user.id,
+                        username: res.user.name,
+                        email: res.user.email,
+                        avatarLetter: res.user.avatarLetter || initialLetter,
+                        createdAt: res.user.createdAt || new Date().toISOString()
+                    };
+
+                    const users = getUsersFromStorage();
+                    const existingIdx = users.findIndex(u => u.id === userObj.id || u.email === userObj.email);
+                    if (existingIdx !== -1) {
+                        users[existingIdx] = userObj;
+                    } else {
+                        users.push(userObj);
+                    }
+                    saveUsersToStorage(users);
+
+                    const currentUser = getCurrentUser();
+                    notifyAuthStateChanged(currentUser);
+                    return currentUser;
+                }
+            } catch (err) {
+                if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
+                    throw err;
+                }
+                console.warn('Backend login failed, falling back to local session:', err.message);
+            }
+        }
+        return signIn({ email, password });
+    }
+
+    async function signInWithGoogleAsync(googleData = {}) {
+        if (typeof window !== 'undefined' && window.LifeSyncAPI && typeof fetch !== 'undefined') {
+            try {
+                const res = await window.LifeSyncAPI.googleAuth(googleData.username, googleData.email);
+                if (res && res.token) {
+                    setTokenInStorage(res.token);
+
+                    const userObj = {
+                        id: res.user.id,
+                        username: res.user.name,
+                        email: res.user.email,
+                        avatarLetter: res.user.avatarLetter || 'G',
+                        isGoogleUser: true,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    const users = getUsersFromStorage();
+                    const existingIdx = users.findIndex(u => u.id === userObj.id || u.email === userObj.email);
+                    if (existingIdx !== -1) {
+                        users[existingIdx] = userObj;
+                    } else {
+                        users.push(userObj);
+                    }
+                    saveUsersToStorage(users);
+
+                    const currentUser = getCurrentUser();
+                    notifyAuthStateChanged(currentUser);
+                    return currentUser;
+                }
+            } catch (err) {
+                console.warn('Backend Google Auth failed, falling back to local session:', err.message);
+            }
+        }
+        return signInWithGoogle(googleData);
+    }
+
     // Expose Auth module globally
     window.AuthSystem = {
         getCurrentUser,
         signUp,
+        signUpAsync,
         signIn,
+        signInAsync,
         signInWithGoogle,
+        signInWithGoogleAsync,
         updateUsername,
         signOut,
         onAuthStateChanged
