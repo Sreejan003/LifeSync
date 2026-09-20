@@ -1115,3 +1115,194 @@ body {
         width: 100%;
     }
 }
+
+/* ==============================================
+   DARK MODE
+   Activated when <body class="dark-theme"> is set
+=============================================== */
+
+body.dark-theme {
+    background: url('../images/auth_dark_bg.png') center center / cover fixed;
+    background-color: #0b0e1b;
+    color: #e2e8f0;
+}
+
+/* Top nav bar */
+body.dark-theme .todo-container > div:first-child,
+html.dark-theme .todo-container > div:first-child {
+    background: rgba(15, 20, 40, 0.88) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Add-task card */
+body.dark-theme .add-task-card {
+    background: rgba(18, 24, 48, 0.90);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.40);
+}
+
+body.dark-theme .input-wrapper {
+    background: #111628;
+    border-color: rgba(255,255,255,0.10);
+}
+
+body.dark-theme .input-wrapper:focus-within {
+    border-color: #7048e8;
+    background: #161b33;
+    box-shadow: 0 0 0 4px rgba(112,72,232,0.15);
+}
+
+body.dark-theme #task_list {
+    color: #e2e8f0;
+}
+
+body.dark-theme #task_list::placeholder {
+    color: #4a5568;
+}
+
+body.dark-theme .priority-wrapper label {
+    color: #94a3b8;
+}
+
+body.dark-theme .priority-wrapper select {
+    background: #111628;
+    border-color: rgba(255,255,255,0.10);
+    color: #e2e8f0;
+}
+
+/* Stat cards */
+body.dark-theme .pending-card {
+    background: linear-gradient(135deg, #1a1540, #1e1950);
+    border-color: rgba(112,72,232,0.25);
+}
+
+body.dark-theme .completed-card {
+    background: linear-gradient(135deg, #0d2020, #0f2a24);
+    border-color: rgba(32,184,121,0.20);
+}
+
+body.dark-theme .total-card {
+    background: linear-gradient(135deg, #231a0a, #2a200f);
+    border-color: rgba(245,166,35,0.20);
+}
+
+body.dark-theme .stat-card span {
+    color: #94a3b8;
+}
+
+body.dark-theme .stat-card strong {
+    color: #f1f5f9;
+}
+
+/* Tasks card */
+body.dark-theme .tasks-card {
+    background: rgba(14, 20, 40, 0.90);
+    border-color: rgba(255,255,255,0.07);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.45);
+}
+
+body.dark-theme .tasks-heading h2 {
+    color: #f1f5f9;
+}
+
+body.dark-theme .tasks-heading p {
+    color: #64748b;
+}
+
+body.dark-theme .delete-all {
+    background: rgba(219,70,101,0.12);
+    color: #f472b6;
+    border: 1px solid rgba(219,70,101,0.20);
+}
+
+body.dark-theme .delete-all:hover {
+    background: rgba(219,70,101,0.22);
+}
+
+/* Individual task rows */
+body.dark-theme .task {
+    background: #111628;
+    border-color: rgba(255,255,255,0.07);
+    color: #e2e8f0;
+}
+
+body.dark-theme .task:hover {
+    border-color: rgba(112,72,232,0.40);
+    box-shadow: 0 7px 20px rgba(0,0,0,0.35);
+}
+
+body.dark-theme .text {
+    color: #cbd5e1;
+}
+
+body.dark-theme .task.completed {
+    background: linear-gradient(90deg, #0d1a14, #111628);
+    opacity: 0.7;
+}
+
+body.dark-theme .task.completed .text {
+    color: #475569;
+}
+
+body.dark-theme .check {
+    background: #1e2640;
+    border-color: #334155;
+}
+
+body.dark-theme .high-priority {
+    background: rgba(112,72,232,0.15);
+    color: #a78bfa;
+    border-color: rgba(112,72,232,0.30);
+}
+
+body.dark-theme .low-priority {
+    background: rgba(148,163,184,0.10);
+    color: #94a3b8;
+    border-color: rgba(148,163,184,0.20);
+}
+
+/* Empty state */
+body.dark-theme .empty-icon {
+    background: linear-gradient(135deg, #1a1540, #1e1950);
+    color: #a78bfa;
+}
+
+body.dark-theme .empty-state h3 {
+    color: #e2e8f0;
+}
+
+body.dark-theme .empty-state p {
+    color: #64748b;
+}
+
+/* Progress circle inner */
+body.dark-theme .progress-inner {
+    background: #0b0e1b;
+}
+
+body.dark-theme .progress-text {
+    color: #94a3b8;
+}
+
+body.dark-theme .subtitle {
+    color: #94a3b8;
+}
+
+/* Motivation banner */
+body.dark-theme .motivation {
+    background-image: none;
+    background: linear-gradient(135deg, #1a1540, #0d1a28);
+    border-color: rgba(255,255,255,0.06);
+}
+
+body.dark-theme .motivation h2 {
+    color: #a78bfa;
+}
+
+body.dark-theme .motivation p {
+    color: #94a3b8;
+}
+
+body.dark-theme .quote-icon {
+    color: #7048e8;
+}

@@ -12,16 +12,33 @@
     const TOKEN_KEY = 'lifesync_token';
 
     function getBaseUrl() {
-        if (typeof window !== 'undefined' && window.location && window.location.origin) {
-            // If running via HTTP server
-            if (window.location.protocol.startsWith('http')) {
-                return window.location.origin + '/api';
+        if (typeof window !== 'undefined') {
+            if (window.__LIFESYNC_API_URL__) return window.__LIFESYNC_API_URL__.replace(/\/+$/, '');
+            if (window.LIFESYNC_API_URL) return window.LIFESYNC_API_URL.replace(/\/+$/, '');
+            try {
+                const custom = localStorage.getItem('lifesync_api_url');
+                if (custom) return custom.replace(/\/+$/, '');
+            } catch (e) {}
+
+            if (window.location) {
+                const hostname = window.location.hostname || 'localhost';
+                const port = window.location.port;
+
+                // When frontend is served from a static dev server (e.g., VS Code Live Server on 5500/5501,
+                // Vite on 5173, etc.), the static server does not host the backend Express /api routes.
+                // Direct API calls to the LifeSync backend server running on port 5000.
+                const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+                if (isLocal && port && port !== '5000') {
+                    return `http://${hostname}:5000/api`;
+                }
+
+                if (window.location.origin && window.location.protocol && window.location.protocol.startsWith('http')) {
+                    return window.location.origin + '/api';
+                }
             }
         }
         return 'http://localhost:5000/api';
     }
-
-    const API_BASE = getBaseUrl();
 
     function getToken() {
         try {
@@ -42,7 +59,8 @@
     }
 
     async function request(endpoint, options = {}) {
-        const url = `${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+        const base = getBaseUrl();
+        const url = `${base}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
         const token = getToken();
 
         const headers = {

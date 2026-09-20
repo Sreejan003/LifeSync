@@ -8,6 +8,19 @@
     <title>LifeSync - To Do List</title>
 
     <link rel="stylesheet" href="style.css">
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('lifesync_theme');
+                if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark-theme');
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.classList.add('dark-theme');
+                    });
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 
 <body>

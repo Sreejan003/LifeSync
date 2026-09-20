@@ -210,7 +210,7 @@
 
         try {
             localStorage.setItem('lifesync_theme', theme);
-        } catch (e) {}
+        } catch (e) { }
 
         if (showToastMsg) {
             showToast(isDark ? 'Dark theme enabled 🌙' : 'Light theme enabled ☀️', 'info');
@@ -572,7 +572,7 @@
 
     function switchBudgetSubTab(subTabId) {
         currentBudgetSubTab = subTabId;
-        
+
         // Update subnav buttons
         const subBtns = document.querySelectorAll('.bsub-btn');
         subBtns.forEach(b => {

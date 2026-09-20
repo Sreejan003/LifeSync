@@ -156,7 +156,7 @@
                 time: '09:00 AM',
                 category: 'Study',
                 priority: 'High',
-                location: 'Room 204',
+                location: 'Room 2.04',
                 description: 'Entity Relationship modeling and B+ Tree indexing.',
                 hasReminder: true
             },
@@ -167,7 +167,7 @@
                 time: '11:00 AM',
                 category: 'Study',
                 priority: 'Medium',
-                location: 'Room 105',
+                location: 'Room 1.05',
                 description: 'TCP/IP protocol stack and window flow control.',
                 hasReminder: true
             },
@@ -332,8 +332,8 @@
 
     function getDefaultProfile(user) {
         return {
-            name: user && user.username && user.username !== 'Student' ? user.username : 'Ananya',
-            email: user ? user.email : 'ananya@lifesync.edu',
+            name: user && user.username && user.username !== 'Student' ? user.username : 'Alex Morgan',
+            email: user ? user.email : 'alex@lifesync.edu',
             university: 'National Institute of Technology',
             major: 'Computer Science & Engineering',
             yearSemester: '3rd Year / 5th Semester',
@@ -632,7 +632,7 @@
                     }
                 }
             } catch (err) {
-                console.warn('Backend hydration notice:', err.message);
+                console.info('Backend hydration notice: Backend sync unavailable or skipped (' + err.message + '). Continuing in local storage mode.');
             }
         }
     };

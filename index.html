@@ -10,21 +10,23 @@
     <!-- Google Fonts for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Immediate theme bootstrap to prevent flash of un-themed content -->
     <script>
-        (function() {
+        (function () {
             try {
-                const savedTheme = localStorage.getItem('lifesync_theme');
+                const savedTheme = localStorage.getItem('lifesync_theme') || 'dark';
                 if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.classList.add('dark-theme');
+                    document.body && document.body.classList.add('dark-theme');
                 }
-            } catch (e) {}
+            } catch (e) { }
         })();
     </script>
 </head>
 
-<body class="dashboard-body">
+<body class="dashboard-body dark-theme">
 
     <!-- Top Navigation Header -->
     <header class="top-navbar">
@@ -32,7 +34,8 @@
             <!-- Left: Mobile Menu Toggle & Brand (mobile only) -->
             <div class="nav-left">
                 <button type="button" id="btnMobileMenu" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round">
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -43,8 +46,10 @@
             <!-- Center: Search Bar -->
             <div class="nav-center">
                 <div class="topbar-search-wrap">
-                    <input type="text" id="topbarSearchInput" class="topbar-search-input" placeholder="Search anything...">
-                    <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <input type="text" id="topbarSearchInput" class="topbar-search-input"
+                        placeholder="Search anything ...">
+                    <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
@@ -54,8 +59,11 @@
             <!-- Right: Theme Toggle, Notifications & User Avatar -->
             <div class="nav-right">
                 <!-- Theme Toggle Button -->
-                <button type="button" id="btnThemeToggle" class="btn-icon-header" aria-label="Toggle Dark / Light Mode" title="Toggle Theme" onclick="window.LifeSyncApp.toggleTheme()">
-                    <svg id="themeIconSun" class="theme-icon-svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <button type="button" id="btnThemeToggle" class="btn-icon-header" aria-label="Toggle Dark / Light Mode"
+                    title="Toggle Theme" onclick="window.LifeSyncApp.toggleTheme()">
+                    <svg id="themeIconSun" class="theme-icon-svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        style="display:none;">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
                         <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -66,19 +74,23 @@
                         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                    <svg id="themeIconMoon" class="theme-icon-svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg id="themeIconMoon" class="theme-icon-svg" width="19" height="19" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
 
                 <!-- Notification Bell -->
                 <div class="notification-trigger-wrap">
-                    <button type="button" id="btnNotificationTrigger" class="btn-icon-header" aria-label="Notifications" title="Notifications">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button type="button" id="btnNotificationTrigger" class="btn-icon-header" aria-label="Notifications"
+                        title="Notifications">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                        <span id="notifBadge" class="notif-badge" style="display:none;">0</span>
+                        <span id="notifBadge" class="notif-badge">3</span>
                     </button>
 
                     <!-- Notifications Dropdown -->
@@ -94,7 +106,9 @@
                 <!-- User Profile Avatar -->
                 <div class="user-pill-header" onclick="window.LifeSyncApp.switchTab('profile')" title="Student Profile">
                     <div class="user-avatar-circle">
-                        <img id="userAvatarImg" src="images/ananya_student_avatar.jpg" alt="Ananya" class="user-avatar-photo" onerror="this.style.display='none'; document.getElementById('userAvatarLetter').style.display='flex';">
+                        <img id="userAvatarPhoto" src="images/ananya_student_avatar.jpg" alt="Alex Morgan"
+                            class="user-avatar-photo"
+                            onerror="this.style.display='none'; document.getElementById('userAvatarLetter').style.display='flex';">
                         <span id="userAvatarLetter" class="avatar-letter-fallback" style="display:none;">A</span>
                     </div>
                 </div>
@@ -114,12 +128,12 @@
             <div class="sidebar-brand-block" onclick="window.LifeSyncApp.switchTab('dashboard')">
                 <div class="brand-badge-icon">
                     <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                        <rect x="3" y="3" width="11" height="11" rx="4" fill="#633bf5"/>
-                        <rect x="18" y="3" width="11" height="11" rx="4" fill="#8b5cf6"/>
-                        <rect x="3" y="18" width="11" height="11" rx="4" fill="#8b5cf6"/>
-                        <rect x="18" y="18" width="11" height="11" rx="4" fill="#633bf5"/>
-                        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
-                        <circle cx="16" cy="16" r="2" fill="#5b36f5"/>
+                        <rect x="3" y="3" width="11" height="11" rx="4" fill="#633bf5" />
+                        <rect x="18" y="3" width="11" height="11" rx="4" fill="#8b5cf6" />
+                        <rect x="3" y="18" width="11" height="11" rx="4" fill="#8b5cf6" />
+                        <rect x="18" y="18" width="11" height="11" rx="4" fill="#633bf5" />
+                        <circle cx="16" cy="16" r="4" fill="#ffffff" />
+                        <circle cx="16" cy="16" r="2" fill="#5b36f5" />
                     </svg>
                 </div>
                 <span class="brand-title-text">LifeSync</span>
@@ -127,16 +141,20 @@
 
             <!-- Navigation Links -->
             <nav class="sidebar-nav">
-                <button type="button" class="nav-item-btn active" data-tab="dashboard" onclick="window.LifeSyncApp.switchTab('dashboard')">
-                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="nav-item-btn active" data-tab="dashboard"
+                    onclick="window.LifeSyncApp.switchTab('dashboard')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                     <span class="nav-text">Dashboard</span>
                 </button>
 
-                <button type="button" class="nav-item-btn" data-tab="tasks" onclick="window.LifeSyncApp.switchTab('tasks')">
-                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="nav-item-btn" data-tab="tasks"
+                    onclick="window.LifeSyncApp.switchTab('tasks')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="6" x2="21" y2="6"></line>
                         <line x1="8" y1="12" x2="21" y2="12"></line>
                         <line x1="8" y1="18" x2="21" y2="18"></line>
@@ -147,8 +165,10 @@
                     <span class="nav-text">To-Do List</span>
                 </button>
 
-                <button type="button" class="nav-item-btn" data-tab="calendar" onclick="window.LifeSyncApp.switchTab('calendar')">
-                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="nav-item-btn" data-tab="calendar"
+                    onclick="window.LifeSyncApp.switchTab('calendar')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -157,24 +177,34 @@
                     <span class="nav-text">Calendar & Reminders</span>
                 </button>
 
-                <button type="button" class="nav-item-btn" data-tab="smart" onclick="window.LifeSyncApp.switchTab('smart')">
-                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                <button type="button" class="nav-item-btn" data-tab="smart"
+                    onclick="window.LifeSyncApp.switchTab('smart')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                        </polygon>
                     </svg>
                     <span class="nav-text">Task Organizer</span>
                 </button>
 
-                <button type="button" class="nav-item-btn" data-tab="budget" onclick="window.LifeSyncApp.switchTab('budget')">
-                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="nav-item-btn" data-tab="budget"
+                    onclick="window.LifeSyncApp.switchTab('budget')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                         <line x1="2" y1="10" x2="22" y2="10"></line>
                     </svg>
                     <span class="nav-text">Budget Planner</span>
                 </button>
 
-                <button type="button" class="nav-item-btn" data-tab="wellness" onclick="window.LifeSyncApp.switchTab('wellness')">
-                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                <button type="button" class="nav-item-btn" data-tab="wellness"
+                    onclick="window.LifeSyncApp.switchTab('wellness')">
+                    <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                        </path>
                     </svg>
                     <span class="nav-text">Mental Wellness</span>
                 </button>
@@ -193,7 +223,8 @@
 
                 <!-- Logout Button -->
                 <button type="button" id="btnLogout" class="sidebar-logout-btn" title="Sign Out">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
                         <line x1="12" y1="2" x2="12" y2="12"></line>
                     </svg>
@@ -212,7 +243,8 @@
 
                 <!-- Greeting Section -->
                 <div class="dash-greeting-section">
-                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Ananya</span>! 👋</h1>
+                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Alex Morgan</span>! 👋
+                    </h1>
                     <p class="dash-greeting-subtitle">Stay organized. Stay focused. You've got this!</p>
                 </div>
 
@@ -221,7 +253,8 @@
                     <!-- 1. Tasks Pending -->
                     <div class="metric-card metric-lavender" onclick="window.LifeSyncApp.switchTab('tasks')">
                         <div class="metric-icon-box box-purple">
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#633bf5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#633bf5"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -238,7 +271,8 @@
                     <!-- 2. Tasks Completed -->
                     <div class="metric-card metric-mint" onclick="window.LifeSyncApp.switchTab('tasks')">
                         <div class="metric-icon-box box-green">
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#16a34a"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
                             </svg>
@@ -253,7 +287,8 @@
                     <!-- 3. Upcoming Events -->
                     <div class="metric-card metric-amber" onclick="window.LifeSyncApp.switchTab('calendar')">
                         <div class="metric-icon-box box-amber">
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#d97706"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -270,7 +305,8 @@
                     <!-- 4. Today's Focus -->
                     <div class="metric-card metric-rose" onclick="window.LifeSyncApp.switchTab('smart')">
                         <div class="metric-icon-box box-rose">
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e11d48"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <circle cx="12" cy="12" r="6"></circle>
                                 <circle cx="12" cy="12" r="2"></circle>
@@ -291,7 +327,8 @@
                     <div class="dash-panel-card">
                         <div class="panel-card-header">
                             <div class="panel-title-with-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#633bf5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#633bf5"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                     <line x1="16" y1="2" x2="16" y2="6"></line>
                                     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -299,7 +336,8 @@
                                 </svg>
                                 <h3>Today's Schedule</h3>
                             </div>
-                            <button type="button" class="panel-header-link link-purple" onclick="window.LifeSyncApp.switchTab('calendar')">View Calendar</button>
+                            <button type="button" class="panel-header-link link-purple"
+                                onclick="window.LifeSyncApp.switchTab('calendar')">View Calendar</button>
                         </div>
                         <div id="dashTodayScheduleTimeline" class="schedule-timeline-container">
                             <!-- Injected by DashboardModule -->
@@ -313,132 +351,106 @@
                                 <span class="star-icon">⭐</span>
                                 <h3>Priority Tasks</h3>
                             </div>
-                            <button type="button" class="panel-header-link link-purple" onclick="window.LifeSyncApp.switchTab('smart')" title="Open Smart Task Organizer">Smart View →</button>
+                            <button type="button" class="panel-header-link link-purple"
+                                onclick="window.LifeSyncApp.switchTab('smart')" title="Open Smart Task Organizer">Smart
+                                View →</button>
                         </div>
                         <div id="dashPriorityTaskList" class="priority-tasks-container">
                             <!-- Injected by DashboardModule -->
                         </div>
                     </div>
 
-                    <!-- COLUMN 3: Budget Overview & Mental Wellness stacked -->
-                    <div class="dash-col-stacked">
-
-                        <!-- Card 3A: Student Finance Hub & Budget (Fully Integrated) -->
-                        <div class="dash-panel-card card-compact dash-budget-integrated-card">
-                            <div class="panel-card-header">
-                                <div class="panel-title-with-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                                        <line x1="2" y1="10" x2="22" y2="10"></line>
-                                    </svg>
-                                    <h3>Student Finance Hub</h3>
-                                </div>
-                                <div class="dash-budget-header-actions">
-                                    <span id="dashBudgetStreakBadge" class="badge-streak-sm" title="Budget Review Streak">🔥 12d</span>
-                                    <button type="button" class="panel-header-link link-green" onclick="window.LifeSyncApp.switchTab('budget')">Open Hub →</button>
-                                </div>
+                    <!-- COLUMN 3: Student Finance Hub (Matches Design Mockup) -->
+                    <div class="dash-panel-card dash-budget-integrated-card">
+                        <div class="panel-card-header">
+                            <div class="panel-title-with-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                                </svg>
+                                <h3>Student Finance Hub</h3>
                             </div>
-                            <div class="budget-overview-content">
-                                <!-- Balance & Monthly Allowance Row -->
-                                <div class="dash-budget-top-row">
-                                    <div>
-                                        <div class="budget-total-balance-label">Available Balance</div>
-                                        <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹ 3,450</div>
-                                    </div>
-                                    <div class="dash-budget-quick-actions">
-                                        <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddTxModal()" title="Record income or expense">+ Add Spend</button>
-                                    </div>
-                                </div>
-
-                                <div class="budget-in-out-row">
-                                    <div class="budget-in-col">
-                                        <span class="in-out-label">Income</span>
-                                        <span class="in-out-val" id="dashBudgetIncomeVal">₹ 8,000</span>
-                                    </div>
-                                    <div class="budget-out-col">
-                                        <span class="in-out-label">Spent This Month</span>
-                                        <span class="in-out-val" id="dashBudgetExpenseVal">₹ 4,550</span>
-                                    </div>
-                                </div>
-                                <div class="budget-meter-track" title="Monthly spending progress">
-                                    <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 57%;"></div>
-                                </div>
-
-                                <!-- Integrated Feature 1: Late-Night Safe Quick Bar -->
-                                <div class="dash-finance-mini-box dash-night-safe-mini">
-                                    <div class="mini-box-header">
-                                        <div class="mini-box-title">
-                                            <span id="dashNightSafeIcon">🌙</span>
-                                            <span>Late-Night Safe:</span>
-                                            <strong id="dashNightSafeStatus" class="night-safe-status-pill">🔓 ₹380 Left</strong>
-                                        </div>
-                                        <button type="button" id="dashBtnToggleNightSafe" class="btn-xs-toggle" onclick="window.LifeSyncApp.quickNightSafeToggle()">🔒 Lock</button>
-                                    </div>
-                                    <div class="dash-night-quick-chips">
-                                        <button type="button" class="dash-chip-btn" onclick="window.LifeSyncApp.quickNightSpend(50)">+₹50 Snack</button>
-                                        <button type="button" class="dash-chip-btn" onclick="window.LifeSyncApp.quickNightSpend(100)">+₹100 Auto</button>
-                                        <button type="button" class="dash-chip-btn" onclick="window.LifeSyncApp.quickNightSpend(200)">+₹200 Meal</button>
-                                    </div>
-                                </div>
-
-                                <!-- Integrated Feature 2: Upcoming Roommate Bills Quick Alert -->
-                                <div class="dash-finance-mini-box dash-bills-mini" id="dashBillsMiniBox">
-                                    <div class="mini-box-header">
-                                        <div class="mini-box-title">
-                                            <span>🧾</span>
-                                            <span id="dashNextBillLabel">Next Bill:</span>
-                                            <strong id="dashNextBillTitle">Wi-Fi (₹200 share)</strong>
-                                        </div>
-                                        <button type="button" id="dashBtnPayNextBill" class="btn-xs-action">✓ Mark Paid</button>
-                                    </div>
-                                </div>
-
-                                <!-- Integrated Feature 3: Shared Savings Goal Mini Bar -->
-                                <div class="dash-finance-mini-box dash-goal-mini">
-                                    <div class="mini-box-header">
-                                        <div class="mini-box-title">
-                                            <span>🎯</span>
-                                            <span id="dashGoalTitle">Tech Fund:</span>
-                                            <strong id="dashGoalPct">56% (₹4.5k)</strong>
-                                        </div>
-                                        <button type="button" class="btn-xs-link" onclick="window.LifeSyncApp.openGoalContributionModal()">+ Add</button>
-                                    </div>
-                                    <div class="dash-mini-progress">
-                                        <div id="dashGoalMiniBar" class="dash-mini-progress-fill" style="width: 56%;"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Quick Sub-Tab Shortcuts -->
-                                <div class="dash-finance-shortcuts">
-                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('runway')">◈ Runway</button>
-                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('benchmark')">◎ Peer Benchmark</button>
-                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('night')">☾ Late Safe</button>
-                                    <button type="button" class="finance-shortcut-pill" onclick="window.LifeSyncApp.switchTabAndBudgetSub('split')">⇄ Bills & Goals</button>
-                                </div>
+                            <div class="dash-budget-header-actions">
+                                <span id="dashBudgetStreakBadge" class="badge-streak-sm"
+                                    title="Budget Review Streak">1.2k</span>
+                                <button type="button" class="panel-header-link link-green"
+                                    onclick="window.LifeSyncApp.switchTab('budget')">Open Hub</button>
                             </div>
                         </div>
-
-                        <!-- Card 3B: Mental Wellness -->
-                        <div class="dash-panel-card card-compact">
-                            <div class="panel-card-header">
-                                <div class="panel-title-with-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#633bf5" stroke="#633bf5">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                    </svg>
-                                    <h3>Mental Wellness</h3>
+                        <div class="budget-overview-content">
+                            <!-- Balance & Monthly Allowance Row -->
+                            <div class="dash-budget-top-row">
+                                <div>
+                                    <div class="budget-total-balance-label">Available Balance</div>
+                                    <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹10,450</div>
                                 </div>
-                                <button type="button" class="panel-header-link link-purple" onclick="window.LifeSyncApp.switchTab('wellness')">Check-in</button>
+                                <div class="dash-budget-quick-actions">
+                                    <button type="button" class="btn-xs-primary"
+                                        onclick="window.LifeSyncApp.openAddTxModal()" title="Record income or expense">+
+                                        Add Spend</button>
+                                </div>
                             </div>
-                            <div class="wellness-card-content">
-                                <p class="wellness-question">How are you feeling today?</p>
-                                <div class="wellness-mood-faces-row">
-                                    <button type="button" class="mood-face-btn" data-mood="excited" data-score="5" title="Great" onclick="window.LifeSyncApp.quickCheckInMood('excited', 5)">😃</button>
-                                    <button type="button" class="mood-face-btn" data-mood="happy" data-score="4" title="Good" onclick="window.LifeSyncApp.quickCheckInMood('happy', 4)">🙂</button>
-                                    <button type="button" class="mood-face-btn" data-mood="neutral" data-score="3" title="Okay" onclick="window.LifeSyncApp.quickCheckInMood('neutral', 3)">😐</button>
-                                    <button type="button" class="mood-face-btn" data-mood="sad" data-score="2" title="Down" onclick="window.LifeSyncApp.quickCheckInMood('sad', 2)">🙁</button>
-                                    <button type="button" class="mood-face-btn" data-mood="stressed" data-score="1" title="Stressed" onclick="window.LifeSyncApp.quickCheckInMood('stressed', 1)">😫</button>
+
+                            <div class="budget-in-out-row">
+                                <div class="budget-in-col">
+                                    <span class="in-out-label">Income</span>
+                                    <span class="in-out-val" id="dashBudgetIncomeVal">₹ 8,000</span>
                                 </div>
-                                <p class="wellness-footer-note">Take care of your mind. You matter!</p>
+                                <div class="budget-out-col">
+                                    <span class="in-out-label">Spent This Month</span>
+                                    <span class="in-out-val" id="dashBudgetExpenseVal">₹ 4,550</span>
+                                </div>
+                            </div>
+                            <div class="budget-meter-track" title="Monthly spending progress">
+                                <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 57%;"></div>
+                            </div>
+
+                            <!-- Integrated Feature 1: Late-Night Safe Quick Bar -->
+                            <div class="dash-finance-mini-box dash-night-safe-mini">
+                                <div class="mini-box-header">
+                                    <div class="mini-box-title">
+                                        <span id="dashNightSafeIcon" style="color: #f43f5e;">🌙</span>
+                                        <span>Late - Night Safety</span>
+                                        <strong id="dashNightSafeStatus" class="night-safe-status-pill unlocked">₹350
+                                            Late</strong>
+                                    </div>
+                                    <button type="button" id="dashBtnToggleNightSafe" class="btn-xs-toggle locked-mode"
+                                        onclick="window.LifeSyncApp.quickNightSafeToggle()">🔒 Lock</button>
+                                </div>
+                                <div class="dash-night-quick-chips">
+                                    <button type="button" class="dash-chip-btn"
+                                        onclick="window.LifeSyncApp.quickNightSpend(20)">+₹20 Snack</button>
+                                    <button type="button" class="dash-chip-btn"
+                                        onclick="window.LifeSyncApp.quickNightSpend(100)">+₹100 Auto</button>
+                                    <button type="button" class="dash-chip-btn"
+                                        onclick="window.LifeSyncApp.quickNightSpend(200)">+₹200 Meal</button>
+                                </div>
+                            </div>
+
+                            <!-- Integrated Feature 2: Upcoming Roommate Bills Quick Alert -->
+                            <div class="dash-finance-mini-box dash-bills-mini" id="dashBillsMiniBox">
+                                <div class="mini-box-header">
+                                    <div class="mini-box-title">
+                                        <span class="mini-icon-circle">📅</span>
+                                        <span id="dashNextBillLabel">Due 2025-... (₹200)</span>
+                                        <strong id="dashNextBillTitle">Dorm Wi-Fi Fiber (₹200)</strong>
+                                    </div>
+                                    <button type="button" id="dashBtnPayNextBill" class="btn-xs-action">Paid</button>
+                                </div>
+                            </div>
+
+                            <!-- Integrated Feature 3: Shared Savings Goal Mini Bar -->
+                            <div class="dash-finance-mini-box dash-goal-mini">
+                                <div class="mini-box-header">
+                                    <div class="mini-box-title">
+                                        <span class="mini-icon-circle">🍴</span>
+                                        <span id="dashGoalTitle">Textbooks & Stationery Fund</span>
+                                        <strong id="dashGoalPct">56% (₹4.5k)</strong>
+                                    </div>
+                                    <button type="button" class="btn-xs-link"
+                                        onclick="window.LifeSyncApp.openGoalContributionModal()">Add</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -457,7 +469,8 @@
                             <p class="motivation-quote">"Small steps every day lead to big changes tomorrow."</p>
                         </div>
                         <div class="motivation-illustration-side">
-                            <img src="images/student_sunrise_motivation.jpg" alt="Student Sunrise Illustration" class="motivation-img">
+                            <img src="images/student_sunrise_motivation.jpg" alt="Student Sunrise Illustration"
+                                class="motivation-img">
                         </div>
                     </div>
 
@@ -465,8 +478,11 @@
                     <div class="dash-panel-card streak-card">
                         <div class="panel-card-header">
                             <div class="panel-title-with-icon">
-                                <svg class="streak-flame-svg" width="18" height="18" viewBox="0 0 24 24" fill="#2563eb" stroke="#2563eb">
-                                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                                <svg class="streak-flame-svg" width="18" height="18" viewBox="0 0 24 24" fill="#2563eb"
+                                    stroke="#2563eb">
+                                    <path
+                                        d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z">
+                                    </path>
                                 </svg>
                                 <h3>Study Streak</h3>
                             </div>
@@ -474,11 +490,16 @@
                         <div class="streak-content">
                             <p class="streak-subtitle" id="dashStreakSubtitle">You're on a 5-day streak!</p>
                             <div class="streak-bubbles-row" id="dashStreakBubbles">
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">M</span></div>
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">T</span></div>
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">W</span></div>
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span class="day-label">T</span></div>
-                                <div class="streak-day-bubble current"><span class="day-letter">F</span><span class="day-label">F</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
+                                        class="day-label">M</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
+                                        class="day-label">T</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
+                                        class="day-label">W</span></div>
+                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
+                                        class="day-label">T</span></div>
+                                <div class="streak-day-bubble current"><span class="day-letter">F</span><span
+                                        class="day-label">F</span></div>
                             </div>
                         </div>
                     </div>
@@ -529,7 +550,8 @@
                 <div class="tasks-controls-card">
                     <div class="search-input-wrap">
                         <span class="search-icon">🔍</span>
-                        <input type="text" id="taskSearchInput" placeholder="Search tasks, categories, or notes..." autocomplete="off">
+                        <input type="text" id="taskSearchInput" placeholder="Search tasks, categories, or notes..."
+                            autocomplete="off">
                     </div>
 
                     <div class="filters-row">
@@ -585,7 +607,8 @@
                     <div>
                         <span class="page-label">AI-POWERED PRIORITIZATION</span>
                         <h1>Smart Task Organizer</h1>
-                        <p class="subtitle">Intelligently ranked tasks combining deadlines, priority levels, and upcoming academic events.</p>
+                        <p class="subtitle">Intelligently ranked tasks combining deadlines, priority levels, and
+                            upcoming academic events.</p>
                     </div>
                     <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTaskModal()">
                         <span>+ Add New Task</span>
@@ -597,8 +620,10 @@
                     <div class="how-it-works-icon">🧠</div>
                     <div class="how-it-works-text">
                         <strong>How the Smart Organizer works:</strong>
-                        Combines your To-Do list deadlines, priority flags, and Calendar events (exams, classes) to calculate a real-world
-                        <em>urgency score</em>. Tasks near exams or class deadlines get an automatic boost so you always know what to tackle first.
+                        Combines your To-Do list deadlines, priority flags, and Calendar events (exams, classes) to
+                        calculate a real-world
+                        <em>urgency score</em>. Tasks near exams or class deadlines get an automatic boost so you always
+                        know what to tackle first.
                     </div>
                     <div class="how-it-works-legend">
                         <span class="legend-dot-sm" style="background:#ef4444;"></span> Overdue / Due Today
@@ -707,34 +732,47 @@
                     <div>
                         <div class="header-label-row">
                             <span class="page-label">STUDENT FINANCE HUB</span>
-                            <span id="budgetStreakPill" class="budget-streak-pill">🔥 <span id="budgetStreakCount">12</span> Days Streak</span>
+                            <span id="budgetStreakPill" class="budget-streak-pill">🔥 <span
+                                    id="budgetStreakCount">12</span> Days Streak</span>
                         </div>
                         <h1>Budget & Expense Tracker</h1>
-                        <p class="subtitle">Runway calculator, peer benchmarks, late-night safe, roommate splits, and savings goals.</p>
+                        <p class="subtitle">Runway calculator, peer benchmarks, late-night safe, roommate splits, and
+                            savings goals.</p>
                     </div>
                     <div class="view-header-actions">
-                        <button type="button" id="btnReviewBudget" class="btn-review-budget" title="Review today's finances to boost your streak and earn +50 XP">✓ Review Budget (+50 XP)</button>
-                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.openBudgetSettingsModal()" title="Configure monthly limit, curfew limit, and defaults">⚙️ Budget Settings</button>
-                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.openAddBillModal()">+ Split Bill</button>
-                        <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTxModal()">+ Add Transaction</button>
+                        <button type="button" id="btnReviewBudget" class="btn-review-budget"
+                            title="Review today's finances to boost your streak and earn +50 XP">✓ Review Budget (+50
+                            XP)</button>
+                        <button type="button" class="btn-secondary"
+                            onclick="window.LifeSyncApp.openBudgetSettingsModal()"
+                            title="Configure monthly limit, curfew limit, and defaults">⚙️ Budget Settings</button>
+                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.openAddBillModal()">+
+                            Split Bill</button>
+                        <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddTxModal()">+ Add
+                            Transaction</button>
                     </div>
                 </div>
 
                 <!-- Budget Sub-Navigation (Matching original BudgetBuddy) -->
                 <div class="budget-subnav-bar">
-                    <button type="button" class="bsub-btn active" data-bsub="overview" onclick="window.LifeSyncApp.switchBudgetSubTab('overview')">
+                    <button type="button" class="bsub-btn active" data-bsub="overview"
+                        onclick="window.LifeSyncApp.switchBudgetSubTab('overview')">
                         <span>⌂</span> Overview
                     </button>
-                    <button type="button" class="bsub-btn" data-bsub="runway" onclick="window.LifeSyncApp.switchBudgetSubTab('runway')">
+                    <button type="button" class="bsub-btn" data-bsub="runway"
+                        onclick="window.LifeSyncApp.switchBudgetSubTab('runway')">
                         <span>◈</span> Financial Runway
                     </button>
-                    <button type="button" class="bsub-btn" data-bsub="benchmark" onclick="window.LifeSyncApp.switchBudgetSubTab('benchmark')">
+                    <button type="button" class="bsub-btn" data-bsub="benchmark"
+                        onclick="window.LifeSyncApp.switchBudgetSubTab('benchmark')">
                         <span>◎</span> Peer Benchmark
                     </button>
-                    <button type="button" class="bsub-btn" data-bsub="night" onclick="window.LifeSyncApp.switchBudgetSubTab('night')">
+                    <button type="button" class="bsub-btn" data-bsub="night"
+                        onclick="window.LifeSyncApp.switchBudgetSubTab('night')">
                         <span>☾</span> Late-Night Safe
                     </button>
-                    <button type="button" class="bsub-btn" data-bsub="split" onclick="window.LifeSyncApp.switchBudgetSubTab('split')">
+                    <button type="button" class="bsub-btn" data-bsub="split"
+                        onclick="window.LifeSyncApp.switchBudgetSubTab('split')">
                         <span>⇄</span> Bills & Goals
                     </button>
                 </div>
@@ -758,7 +796,8 @@
                         <div class="budget-stat-box highlight-box">
                             <span class="box-label">Remaining Monthly Budget</span>
                             <strong id="budgetValRemainingBudget">₹0</strong>
-                            <small>Limit: <span id="budgetValMonthlyLimit">₹15,000</span> (Spent: <span id="budgetValMonthlySpent">₹0</span>)</small>
+                            <small>Limit: <span id="budgetValMonthlyLimit">₹15,000</span> (Spent: <span
+                                    id="budgetValMonthlySpent">₹0</span>)</small>
                         </div>
                     </div>
 
@@ -781,7 +820,8 @@
                         <div class="budget-tx-panel card-box">
                             <div class="panel-header">
                                 <h3>Transactions History</h3>
-                                <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.openAddTxModal()">+ Log Transaction</button>
+                                <button type="button" class="btn-link-action"
+                                    onclick="window.LifeSyncApp.openAddTxModal()">+ Log Transaction</button>
                             </div>
                             <div id="budgetTransactionsList" class="tx-list"></div>
                         </div>
@@ -795,7 +835,8 @@
                                         <span class="box-label">SEMESTER RUNWAY</span>
                                         <h3>◈ 4-Month Spending Curve</h3>
                                     </div>
-                                    <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.switchBudgetSubTab('runway')">Configure →</button>
+                                    <button type="button" class="btn-link-action"
+                                        onclick="window.LifeSyncApp.switchBudgetSubTab('runway')">Configure →</button>
                                 </div>
                                 <div class="runway-bars-grid" id="dashRunwayBars">
                                     <!-- Dynamic 4-Month Bars rendered by JS -->
@@ -813,18 +854,24 @@
                                         <span class="box-label">STUDENT PROTECTION</span>
                                         <h3>🌙 Late-Night Safe</h3>
                                     </div>
-                                    <button type="button" id="btnToggleNightSafe" class="btn-sm-secondary">🔒 Lock Night Spending</button>
+                                    <button type="button" id="btnToggleNightSafe" class="btn-sm-secondary">🔒 Lock Night
+                                        Spending</button>
                                 </div>
-                                <p class="night-safe-text">Prevent impulsive late-night food ordering. Protects your wallet after 10 PM.</p>
+                                <p class="night-safe-text">Prevent impulsive late-night food ordering. Protects your
+                                    wallet after 10 PM.</p>
                                 <div class="night-safe-stat-row">
                                     <div>Safe Limit: <strong id="budgetNightSafeLimit">₹500</strong></div>
                                     <div>Available: <strong id="budgetNightSafeRemaining">₹380</strong></div>
                                 </div>
                                 <div class="night-quick-spend-row">
-                                    <button type="button" class="btn-quick-chip" onclick="window.LifeSyncApp.quickNightSpend(50)">+₹50 Snack</button>
-                                    <button type="button" class="btn-quick-chip" onclick="window.LifeSyncApp.quickNightSpend(100)">+₹100 Auto</button>
-                                    <button type="button" class="btn-quick-chip" onclick="window.LifeSyncApp.quickNightSpend(200)">+₹200 Meal</button>
-                                    <button type="button" id="btnNightSafeSpend" class="btn-quick-chip" title="Record custom spend amount">+ Custom</button>
+                                    <button type="button" class="btn-quick-chip"
+                                        onclick="window.LifeSyncApp.quickNightSpend(50)">+₹50 Snack</button>
+                                    <button type="button" class="btn-quick-chip"
+                                        onclick="window.LifeSyncApp.quickNightSpend(100)">+₹100 Auto</button>
+                                    <button type="button" class="btn-quick-chip"
+                                        onclick="window.LifeSyncApp.quickNightSpend(200)">+₹200 Meal</button>
+                                    <button type="button" id="btnNightSafeSpend" class="btn-quick-chip"
+                                        title="Record custom spend amount">+ Custom</button>
                                 </div>
                             </div>
                         </div>
@@ -838,7 +885,8 @@
                             <div>
                                 <span class="box-label">FINANCIAL RUNWAY MODEL</span>
                                 <h2>Semester Spending Curve & Cash Runway</h2>
-                                <p class="section-desc">Estimate how long your semester allowance and savings will sustain you with safety buffer padding.</p>
+                                <p class="section-desc">Estimate how long your semester allowance and savings will
+                                    sustain you with safety buffer padding.</p>
                             </div>
                             <div class="runway-kpi-badge">
                                 <span class="kpi-title">Monthly Safe Cap</span>
@@ -891,7 +939,8 @@
                         <div class="runway-chart-container">
                             <div class="chart-header">
                                 <h4>Projected Semester Monthly Distribution</h4>
-                                <span class="chart-subtitle">Weighted by exam season, festivals, and campus calendar</span>
+                                <span class="chart-subtitle">Weighted by exam season, festivals, and campus
+                                    calendar</span>
                             </div>
                             <div class="runway-bars-interactive" id="runwayBarsContainer">
                                 <!-- Rendered dynamically by calculateRunwayUI -->
@@ -907,11 +956,13 @@
                             <div>
                                 <span class="box-label">PEER EXPENDITURE BENCHMARK</span>
                                 <h2>Campus Average Spending Comparison</h2>
-                                <p class="section-desc">See how your typical monthly expense allocations compare against average university students in your tier.</p>
+                                <p class="section-desc">See how your typical monthly expense allocations compare against
+                                    average university students in your tier.</p>
                             </div>
                             <div class="benchmark-legend">
                                 <span class="legend-item"><span class="legend-dot dot-you"></span> You</span>
-                                <span class="legend-item"><span class="legend-dot dot-peers"></span> College Peers</span>
+                                <span class="legend-item"><span class="legend-dot dot-peers"></span> College
+                                    Peers</span>
                             </div>
                         </div>
 
@@ -931,10 +982,12 @@
                             <div class="night-status-info">
                                 <span class="box-label">STUDENT IMPULSE PROTECTION</span>
                                 <h2 id="nightSafeStatusTitle">Night Wallet is Locked</h2>
-                                <p id="nightSafeStatusSubtitle">Curfew is active after 10 PM. Impulsive food deliveries and late-night shopping are blocked.</p>
+                                <p id="nightSafeStatusSubtitle">Curfew is active after 10 PM. Impulsive food deliveries
+                                    and late-night shopping are blocked.</p>
                             </div>
                             <div class="night-action-wrap">
-                                <button type="button" id="btnNightSafeBigToggle" class="btn-primary">🔓 Unlock Wallet</button>
+                                <button type="button" id="btnNightSafeBigToggle" class="btn-primary">🔓 Unlock
+                                    Wallet</button>
                             </div>
                         </div>
 
@@ -959,7 +1012,8 @@
                                 <span id="nightDedicatedUsagePct">24%</span>
                             </div>
                             <div class="progress-track">
-                                <div id="nightDedicatedBar" class="progress-fill progress-night" style="width: 24%;"></div>
+                                <div id="nightDedicatedBar" class="progress-fill progress-night" style="width: 24%;">
+                                </div>
                             </div>
                         </div>
 
@@ -967,17 +1021,20 @@
                             <h4>Quick Spend Actions</h4>
                             <p>Quickly log small late-night necessities within your safety cap:</p>
                             <div class="night-buttons-row">
-                                <button type="button" class="btn-night-action" onclick="window.LifeSyncApp.quickNightSpend(50)">
+                                <button type="button" class="btn-night-action"
+                                    onclick="window.LifeSyncApp.quickNightSpend(50)">
                                     <span class="action-icon">☕</span>
                                     <span>Midnight Chai / Snack</span>
                                     <strong>+₹50</strong>
                                 </button>
-                                <button type="button" class="btn-night-action" onclick="window.LifeSyncApp.quickNightSpend(100)">
+                                <button type="button" class="btn-night-action"
+                                    onclick="window.LifeSyncApp.quickNightSpend(100)">
                                     <span class="action-icon">🛺</span>
                                     <span>Late Night Transit / Auto</span>
                                     <strong>+₹100</strong>
                                 </button>
-                                <button type="button" class="btn-night-action" onclick="window.LifeSyncApp.quickNightSpend(200)">
+                                <button type="button" class="btn-night-action"
+                                    onclick="window.LifeSyncApp.quickNightSpend(200)">
                                     <span class="action-icon">🍕</span>
                                     <span>Late Night Campus Food</span>
                                     <strong>+₹200</strong>
@@ -1013,7 +1070,8 @@
                                 <span>Each Person Owes:</span>
                                 <strong id="calcBillPerPerson">₹400</strong>
                             </div>
-                            <button type="button" class="btn-secondary" style="width:100%; margin-top:12px;" onclick="window.LifeSyncApp.convertSplitToBill()">+ Save as Shared Bill</button>
+                            <button type="button" class="btn-secondary" style="width:100%; margin-top:12px;"
+                                onclick="window.LifeSyncApp.convertSplitToBill()">+ Save as Shared Bill</button>
                         </div>
 
                         <!-- Shared Savings Goal -->
@@ -1023,14 +1081,16 @@
                                     <span class="box-label">SAVINGS TARGET</span>
                                     <h3 id="goalTitleDisplay">Emergency Deposit / Tech Fund</h3>
                                 </div>
-                                <button type="button" class="btn-link-action" onclick="window.LifeSyncApp.openGoalContributionModal()">+ Add Funds</button>
+                                <button type="button" class="btn-link-action"
+                                    onclick="window.LifeSyncApp.openGoalContributionModal()">+ Add Funds</button>
                             </div>
                             <div class="goal-amount-row">
                                 <strong id="goalCurrentDisplay">₹4,500</strong>
                                 <span class="goal-target-sub">Target: <span id="goalTargetDisplay">₹8,000</span></span>
                             </div>
                             <div class="progress-track" style="margin: 12px 0;">
-                                <div id="goalProgressBar" class="progress-fill progress-emerald" style="width: 56%;"></div>
+                                <div id="goalProgressBar" class="progress-fill progress-emerald" style="width: 56%;">
+                                </div>
                             </div>
                             <div class="goal-meta-row">
                                 <span>Progress: <strong id="goalPctDisplay">56%</strong></span>
@@ -1047,7 +1107,8 @@
                                 <span class="box-label">RECURRING UTILITIES</span>
                                 <h3>🧾 Upcoming Roommate Shared Bills</h3>
                             </div>
-                            <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddBillModal()">+ Add Shared Bill</button>
+                            <button type="button" class="btn-primary" onclick="window.LifeSyncApp.openAddBillModal()">+
+                                Add Shared Bill</button>
                         </div>
                         <div id="budgetBillsDedicatedList" class="bills-dedicated-grid">
                             <!-- Populated dynamically -->
@@ -1065,7 +1126,8 @@
                     <div>
                         <span class="page-label">MINDFULNESS & WELLBEING</span>
                         <h1>Mental Wellness & Mood Log</h1>
-                        <p class="subtitle">Take a moment to check in with yourself. Cultivate mindfulness during busy semesters.</p>
+                        <p class="subtitle">Take a moment to check in with yourself. Cultivate mindfulness during busy
+                            semesters.</p>
                     </div>
                     <div class="wellness-streak-badge">
                         <span id="wellnessStreakVal">5 Days 🔥</span>
@@ -1118,11 +1180,13 @@
                     <!-- Reflection Notes -->
                     <div class="form-group" style="margin-top:15px;">
                         <label for="wellnessNotesInput">Daily Reflection / Journal (Optional)</label>
-                        <textarea id="wellnessNotesInput" rows="3" maxlength="500" placeholder="What contributed to how you felt today? Completed assignment, good conversation, or exam stress?"></textarea>
+                        <textarea id="wellnessNotesInput" rows="3" maxlength="500"
+                            placeholder="What contributed to how you felt today? Completed assignment, good conversation, or exam stress?"></textarea>
                     </div>
 
                     <div class="checkin-footer-actions">
-                        <button type="button" id="btnSaveWellnessCheckin" class="btn-primary">Save Today's Check-in 💜</button>
+                        <button type="button" id="btnSaveWellnessCheckin" class="btn-primary">Save Today's Check-in
+                            💜</button>
                         <span id="wellnessStatusMsg" class="wellness-msg-text"></span>
                     </div>
                 </div>
@@ -1151,7 +1215,9 @@
                 <!-- Non-Clinical Notice -->
                 <div class="wellness-disclaimer-card">
                     <span>💡</span>
-                    <p>Notice: LifeSync Wellness is a reflective student self-care log and does not provide clinical or medical diagnosis. If you feel overwhelmed, reach out to your university counseling center or a trusted mentor.</p>
+                    <p>Notice: LifeSync Wellness is a reflective student self-care log and does not provide clinical or
+                        medical diagnosis. If you feel overwhelmed, reach out to your university counseling center or a
+                        trusted mentor.</p>
                 </div>
             </section>
 
@@ -1164,7 +1230,8 @@
                     <div>
                         <span class="page-label">PERFORMANCE & HABITS</span>
                         <h1>Unified Student Analytics</h1>
-                        <p class="subtitle">Holistic data across your productivity, time commitments, finances, and wellness.</p>
+                        <p class="subtitle">Holistic data across your productivity, time commitments, finances, and
+                            wellness.</p>
                     </div>
                 </div>
 
@@ -1176,7 +1243,8 @@
                             <div class="rate-large" id="analyticsProdRate">0%</div>
                             <div class="rate-desc">
                                 <div>Tasks Completed: <strong id="analyticsProdCompleted">0</strong></div>
-                                <div>Overdue Count: <strong id="analyticsProdOverdue" class="expense-text">0</strong></div>
+                                <div>Overdue Count: <strong id="analyticsProdOverdue" class="expense-text">0</strong>
+                                </div>
                             </div>
                         </div>
                         <h4 class="sub-heading-chart">Tasks Completed (Past 7 Days)</h4>
@@ -1234,11 +1302,13 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="profileUniInput">University / Institute</label>
-                                    <input type="text" id="profileUniInput" placeholder="National Institute of Technology">
+                                    <input type="text" id="profileUniInput"
+                                        placeholder="National Institute of Technology">
                                 </div>
                                 <div class="form-group">
                                     <label for="profileMajorInput">Major / Degree</label>
-                                    <input type="text" id="profileMajorInput" placeholder="Computer Science & Engineering">
+                                    <input type="text" id="profileMajorInput"
+                                        placeholder="Computer Science & Engineering">
                                 </div>
                             </div>
 
@@ -1253,7 +1323,8 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn-primary" style="margin-top:15px;">Save Profile Changes</button>
+                            <button type="submit" class="btn-primary" style="margin-top:15px;">Save Profile
+                                Changes</button>
                         </form>
                     </div>
                 </div>
@@ -1274,11 +1345,14 @@
                     <div class="settings-item-row">
                         <div>
                             <strong>Theme Appearance (Dark / Light Mode)</strong>
-                            <p class="text-muted-sm">Switch between sleek obsidian dark theme and crisp daylight mode.</p>
+                            <p class="text-muted-sm">Switch between sleek obsidian dark theme and crisp daylight mode.
+                            </p>
                         </div>
                         <div class="theme-segmented-control">
-                            <button type="button" class="btn-theme-pill" id="btnThemePillLight" onclick="window.LifeSyncApp.setTheme('light')">☀️ Light</button>
-                            <button type="button" class="btn-theme-pill" id="btnThemePillDark" onclick="window.LifeSyncApp.setTheme('dark')">🌙 Dark</button>
+                            <button type="button" class="btn-theme-pill" id="btnThemePillLight"
+                                onclick="window.LifeSyncApp.setTheme('light')">☀️ Light</button>
+                            <button type="button" class="btn-theme-pill" id="btnThemePillDark"
+                                onclick="window.LifeSyncApp.setTheme('dark')">🌙 Dark</button>
                         </div>
                     </div>
 
@@ -1298,7 +1372,8 @@
                     <div class="settings-item-row">
                         <div>
                             <strong>Smart Task Organizer Boost</strong>
-                            <p class="text-muted-sm">Automatically prioritize study tasks when exams approach in your calendar.</p>
+                            <p class="text-muted-sm">Automatically prioritize study tasks when exams approach in your
+                                calendar.</p>
                         </div>
                         <input type="checkbox" checked disabled>
                     </div>
@@ -1318,7 +1393,8 @@
 
     <!-- Mobile Bottom Navigation Bar -->
     <nav class="mobile-bottom-nav">
-        <button type="button" class="mobile-nav-btn active" data-tab="dashboard" onclick="window.LifeSyncApp.switchTab('dashboard')">
+        <button type="button" class="mobile-nav-btn active" data-tab="dashboard"
+            onclick="window.LifeSyncApp.switchTab('dashboard')">
             <span class="mob-icon">⌂</span>
             <span>Home</span>
         </button>
@@ -1326,7 +1402,8 @@
             <span class="mob-icon">📋</span>
             <span>Tasks</span>
         </button>
-        <button type="button" class="mobile-nav-btn" data-tab="calendar" onclick="window.LifeSyncApp.switchTab('calendar')">
+        <button type="button" class="mobile-nav-btn" data-tab="calendar"
+            onclick="window.LifeSyncApp.switchTab('calendar')">
             <span class="mob-icon">📅</span>
             <span>Cal</span>
         </button>
@@ -1334,7 +1411,8 @@
             <span class="mob-icon">💰</span>
             <span>Budget</span>
         </button>
-        <button type="button" class="mobile-nav-btn" data-tab="wellness" onclick="window.LifeSyncApp.switchTab('wellness')">
+        <button type="button" class="mobile-nav-btn" data-tab="wellness"
+            onclick="window.LifeSyncApp.switchTab('wellness')">
             <span class="mob-icon">💜</span>
             <span>Mood</span>
         </button>
@@ -1346,21 +1424,25 @@
          ========================================================= -->
 
     <!-- 1. Task Modal (Add / Edit) -->
-    <div id="taskModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <div id="taskModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="taskModalTitle">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="taskModalTitle">Add New Task</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('taskModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('taskModalOverlay')"
+                    title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="taskFormModal">
                 <input type="hidden" id="taskEditId">
                 <div class="form-group">
                     <label for="taskTitleInput">Task Title *</label>
-                    <input type="text" id="taskTitleInput" placeholder="e.g. Complete OS Chapter 4 Problem Set" required>
+                    <input type="text" id="taskTitleInput" placeholder="e.g. Complete OS Chapter 4 Problem Set"
+                        required>
                 </div>
                 <div class="form-group">
                     <label for="taskDescInput">Description / Notes</label>
-                    <textarea id="taskDescInput" rows="2" placeholder="Implementation details or textbook page numbers..."></textarea>
+                    <textarea id="taskDescInput" rows="2"
+                        placeholder="Implementation details or textbook page numbers..."></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1387,7 +1469,8 @@
                     </select>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('taskModalOverlay')">Cancel</button>
+                    <button type="button" class="btn-secondary"
+                        onclick="window.LifeSyncApp.closeModal('taskModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Save Task</button>
                 </div>
             </form>
@@ -1395,16 +1478,19 @@
     </div>
 
     <!-- 2. Calendar Event Modal (Add Event / Exam) -->
-    <div id="eventModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+    <div id="eventModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="eventModalTitle">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="eventModalTitle">Add Schedule Event / Exam</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('eventModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('eventModalOverlay')"
+                    title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="eventFormModal">
                 <div class="form-group">
                     <label for="eventTitleInput">Event Title / Subject *</label>
-                    <input type="text" id="eventTitleInput" placeholder="e.g. Midterm Examination / Chemistry Lab" required>
+                    <input type="text" id="eventTitleInput" placeholder="e.g. Midterm Examination / Chemistry Lab"
+                        required>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1438,10 +1524,12 @@
                 </div>
                 <div class="form-group">
                     <label for="eventDescInput">Description / Location</label>
-                    <textarea id="eventDescInput" rows="2" placeholder="Room number, topics covered, or syllabus notes..."></textarea>
+                    <textarea id="eventDescInput" rows="2"
+                        placeholder="Room number, topics covered, or syllabus notes..."></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('eventModalOverlay')">Cancel</button>
+                    <button type="button" class="btn-secondary"
+                        onclick="window.LifeSyncApp.closeModal('eventModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Add to Schedule</button>
                 </div>
             </form>
@@ -1449,11 +1537,13 @@
     </div>
 
     <!-- 3. Budget Transaction Modal -->
-    <div id="txModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="txModalTitle">
+    <div id="txModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="txModalTitle">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="txModalTitle">Add Financial Transaction</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('txModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('txModalOverlay')"
+                    title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="txFormModal">
                 <div class="form-group">
@@ -1498,7 +1588,8 @@
                     <input type="text" id="txDescInput" placeholder="Optional details...">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('txModalOverlay')">Cancel</button>
+                    <button type="button" class="btn-secondary"
+                        onclick="window.LifeSyncApp.closeModal('txModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Record Transaction</button>
                 </div>
             </form>
@@ -1506,11 +1597,13 @@
     </div>
 
     <!-- 4. Split Bill Modal -->
-    <div id="billModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="billModalTitle">
+    <div id="billModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="billModalTitle">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="billModalTitle">Add Shared Bill to Split</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('billModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('billModalOverlay')"
+                    title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="billFormModal">
                 <div class="form-group">
@@ -1532,7 +1625,8 @@
                     <input type="date" id="billDateInput">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('billModalOverlay')">Cancel</button>
+                    <button type="button" class="btn-secondary"
+                        onclick="window.LifeSyncApp.closeModal('billModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Add Shared Bill</button>
                 </div>
             </form>
@@ -1540,11 +1634,13 @@
     </div>
 
     <!-- 5. Goal Contribution Modal -->
-    <div id="goalModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
+    <div id="goalModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="goalModalTitle">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="goalModalTitle">Add Savings Contribution</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('goalModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('goalModalOverlay')"
+                    title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="goalContributionForm">
                 <div class="form-group">
@@ -1556,7 +1652,8 @@
                     <input type="text" id="goalContributionNote" placeholder="e.g. Saved from weekend coffee">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('goalModalOverlay')">Cancel</button>
+                    <button type="button" class="btn-secondary"
+                        onclick="window.LifeSyncApp.closeModal('goalModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Add Funds (+80 XP)</button>
                 </div>
             </form>
@@ -1564,16 +1661,20 @@
     </div>
 
     <!-- 6. Budget Settings Modal -->
-    <div id="budgetSettingsModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="budgetSettingsTitle">
+    <div id="budgetSettingsModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="budgetSettingsTitle">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="budgetSettingsTitle">⚙️ Budget & Finance Settings</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('budgetSettingsModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close"
+                    onclick="window.LifeSyncApp.closeModal('budgetSettingsModalOverlay')" title="Close dialog"
+                    aria-label="Close dialog">&times;</button>
             </div>
             <form id="budgetSettingsForm">
                 <div class="form-group">
                     <label for="settingMonthlyBudgetInput">Monthly Spending Limit (₹) *</label>
-                    <input type="number" id="settingMonthlyBudgetInput" min="1000" step="500" placeholder="15000" required>
+                    <input type="number" id="settingMonthlyBudgetInput" min="1000" step="500" placeholder="15000"
+                        required>
                     <small class="form-hint">Maximum targeted expenses per month.</small>
                 </div>
                 <div class="form-group">
@@ -1592,9 +1693,11 @@
                     </div>
                 </div>
                 <div class="modal-actions" style="justify-content: space-between;">
-                    <button type="button" class="btn-danger-outline" onclick="window.LifeSyncApp.handleResetBudgetData()">Reset Defaults</button>
+                    <button type="button" class="btn-danger-outline"
+                        onclick="window.LifeSyncApp.handleResetBudgetData()">Reset Defaults</button>
                     <div style="display: flex; gap: 8px;">
-                        <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('budgetSettingsModalOverlay')">Cancel</button>
+                        <button type="button" class="btn-secondary"
+                            onclick="window.LifeSyncApp.closeModal('budgetSettingsModalOverlay')">Cancel</button>
                         <button type="submit" class="btn-primary">Save Settings</button>
                     </div>
                 </div>
@@ -1603,11 +1706,14 @@
     </div>
 
     <!-- 7. Custom Night Spend Modal -->
-    <div id="nightSpendModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="nightSpendModalTitle">
+    <div id="nightSpendModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="nightSpendModalTitle">
         <div class="modal-dialog modal-dialog-sm">
             <div class="modal-header">
                 <h3 id="nightSpendModalTitle">🌙 Record Night Spend</h3>
-                <button type="button" class="modal-close" onclick="window.LifeSyncApp.closeModal('nightSpendModalOverlay')" title="Close dialog" aria-label="Close dialog">&times;</button>
+                <button type="button" class="modal-close"
+                    onclick="window.LifeSyncApp.closeModal('nightSpendModalOverlay')" title="Close dialog"
+                    aria-label="Close dialog">&times;</button>
             </div>
             <form id="nightSpendModalForm">
                 <div class="form-group">
@@ -1619,7 +1725,8 @@
                     <input type="text" id="customNightSpendNote" placeholder="e.g. Midnight printout, bottled water">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="window.LifeSyncApp.closeModal('nightSpendModalOverlay')">Cancel</button>
+                    <button type="button" class="btn-secondary"
+                        onclick="window.LifeSyncApp.closeModal('nightSpendModalOverlay')">Cancel</button>
                     <button type="submit" class="btn-primary">Log Spend</button>
                 </div>
             </form>

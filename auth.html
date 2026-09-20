@@ -16,6 +16,11 @@
                 const savedTheme = localStorage.getItem('lifesync_theme');
                 if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.classList.add('dark-theme');
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.classList.add('dark-theme');
+                        const icon = document.getElementById('authThemeIcon');
+                        if (icon) icon.textContent = '☀️';
+                    });
                 }
             } catch (e) {}
         })();
