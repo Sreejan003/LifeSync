@@ -75,15 +75,16 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 // Initialize Database and Start Server
-async function startServer() {
+async function startServer(portToUse) {
     try {
         await db.initDatabase();
 
-        const server = app.listen(PORT, () => {
+        const activePort = portToUse !== undefined ? portToUse : (process.env.PORT || 5000);
+        const server = app.listen(activePort, () => {
             console.log(`=================================================`);
-            console.log(`🚀 LifeSync Backend Server Running on Port ${PORT}`);
-            console.log(`🌐 Local URL:   http://localhost:${PORT}`);
-            console.log(`🩺 Healthcheck: http://localhost:${PORT}/api/health`);
+            console.log(`🚀 LifeSync Backend Server Running on Port ${activePort}`);
+            console.log(`🌐 Local URL:   http://localhost:${activePort}`);
+            console.log(`🩺 Healthcheck: http://localhost:${activePort}/api/health`);
             console.log(`📦 Database:    ${db.getDriver().toUpperCase()}`);
             console.log(`=================================================`);
         });
@@ -91,7 +92,7 @@ async function startServer() {
         return server;
     } catch (err) {
         console.error('❌ Failed to start server:', err);
-        process.exit(1);
+        return null;
     }
 }
 

@@ -64,8 +64,7 @@ function assert(condition, message) {
 async function runIsolationTests() {
     console.log('--- Starting LifeSync Multi-User Tenant Isolation Tests ---\n');
 
-    process.env.PORT = 0;
-    serverInstance = await startServer();
+    serverInstance = await startServer(0);
     const port = serverInstance.address().port;
     baseUrl = `http://localhost:${port}`;
 

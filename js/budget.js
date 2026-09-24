@@ -97,8 +97,12 @@
         },
 
         deleteTransaction(user, txId) {
-            currentBudget.transactions = currentBudget.transactions.filter(t => t.id !== txId);
-            window.LifeSyncStorage.saveBudget(user, currentBudget);
+            currentBudget.transactions = currentBudget.transactions.filter(t => String(t.id) !== String(txId));
+            if (window.LifeSyncStorage && window.LifeSyncStorage.deleteTransaction) {
+                window.LifeSyncStorage.deleteTransaction(user, txId);
+            } else {
+                window.LifeSyncStorage.saveBudget(user, currentBudget);
+            }
             notifyChange();
         },
 
@@ -203,7 +207,7 @@
         },
 
         toggleBillPaid(user, billId) {
-            const bill = currentBudget.bills.find(b => b.id === billId);
+            const bill = currentBudget.bills.find(b => String(b.id) === String(billId));
             if (bill) {
                 bill.paid = !bill.paid;
                 window.LifeSyncStorage.saveBudget(user, currentBudget);
@@ -212,7 +216,7 @@
         },
 
         deleteBill(user, billId) {
-            currentBudget.bills = currentBudget.bills.filter(b => b.id !== billId);
+            currentBudget.bills = currentBudget.bills.filter(b => String(b.id) !== String(billId));
             window.LifeSyncStorage.saveBudget(user, currentBudget);
             notifyChange();
         },

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LifeSync - Unified Student Productivity & Life Management</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.5">
     <!-- Google Fonts for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -106,10 +106,8 @@
                 <!-- User Profile Avatar -->
                 <div class="user-pill-header" onclick="window.LifeSyncApp.switchTab('profile')" title="Student Profile">
                     <div class="user-avatar-circle">
-                        <img id="userAvatarPhoto" src="images/ananya_student_avatar.jpg" alt="Alex Morgan"
-                            class="user-avatar-photo"
-                            onerror="this.style.display='none'; document.getElementById('userAvatarLetter').style.display='flex';">
-                        <span id="userAvatarLetter" class="avatar-letter-fallback" style="display:none;">A</span>
+                        <!-- Dynamic letter avatar — populated by renderHeader() from authenticated user data -->
+                        <span id="userAvatarLetter" class="avatar-letter-fallback" style="display:flex;">A</span>
                     </div>
                 </div>
             </div>
@@ -895,7 +893,7 @@
                         </div>
 
                         <!-- Runway Inputs -->
-                        <div class="runway-controls-grid">
+                        <div class="runway-controls-grid grid-control-runaway grid-control-runway">
                             <div class="control-box">
                                 <label for="runwaySumInput">Total Available Allowance / Savings (₹)</label>
                                 <div class="input-with-symbol">

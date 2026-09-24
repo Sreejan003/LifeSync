@@ -27,20 +27,26 @@
         }
 
         // FRESH-OPEN GUARD: sessionStorage is cleared when the browser/tab closes.
-        // If no 'ls_session_active' flag exists, the user opened a fresh browser session.
-        // Force them to log in again regardless of any stored JWT token.
+        // If no 'ls_session_active' flag exists, check for a "Remember Me" localStorage flag.
+        // If that also doesn't exist, force the user to log in again.
         const sessionActive = sessionStorage.getItem('ls_session_active');
-        if (!sessionActive) {
+        const sessionRemembered = localStorage.getItem('ls_session_remembered');
+        if (!sessionActive && !sessionRemembered) {
             // Do NOT sign out here — just redirect to auth.html.
             // The JWT stays intact so auth.html can re-validate without losing the account.
             // auth-page.js will only auto-skip login if BOTH jwt AND sessionActive are present.
             window.location.replace('auth.html');
             return;
         }
+        // If remembered, reinstate the session flag so the rest of the app works normally
+        if (!sessionActive && sessionRemembered) {
+            sessionStorage.setItem('ls_session_active', '1');
+        }
 
         currentUser = AuthSystem.getCurrentUser();
         if (!currentUser) {
             sessionStorage.removeItem('ls_session_active');
+            localStorage.removeItem('ls_session_remembered');
             window.location.replace('auth.html');
             return;
         }
@@ -51,6 +57,19 @@
         window.BudgetModule.init(currentUser);
         window.WellnessModule.init(currentUser);
         window.ProfileModule.init(currentUser);
+
+        // Listen for task changes to ensure immediate re-rendering of all dependent views
+        window.TasksModule.onChange(() => {
+            renderTasksView();
+            renderSmartOrganizerView();
+            if (window.DashboardModule && currentUser) {
+                window.DashboardModule.render(currentUser);
+            }
+            if (currentTab === 'calendar') {
+                renderCalendarView();
+            }
+            updateNotifications();
+        });
 
         // Asynchronously sync latest data from REST backend
         if (window.LifeSyncStorage && window.LifeSyncStorage.syncFromBackend) {
@@ -287,34 +306,38 @@
 
         // Render Smart Task Organizer Priority Banner on Tasks View
         if (smartOrganizerContainer && window.SmartTaskOrganizer) {
-            const topTask = window.SmartTaskOrganizer.getTopPrioritizedTasks(1)[0];
-            if (topTask) {
-                smartOrganizerContainer.innerHTML = `
-                    <div class="smart-task-alert-card">
-                        <div class="smart-alert-badge">⚡ SMART TASK ORGANIZER PRIORITY</div>
-                        <div class="smart-alert-body">
-                            <div class="smart-alert-title">${escapeHtml(topTask.title)}</div>
-                            <div class="smart-alert-meta">
-                                <span>${topTask.reasonTag}</span>
-                                <span>•</span>
-                                <span>Priority: ${topTask.priority}</span>
-                                <span>•</span>
-                                <span>Due: ${topTask.dueDate || 'No Date'}</span>
+            try {
+                const topTask = window.SmartTaskOrganizer.getTopPrioritizedTasks(1)[0];
+                if (topTask) {
+                    smartOrganizerContainer.innerHTML = `
+                        <div class="smart-task-alert-card">
+                            <div class="smart-alert-badge">⚡ SMART TASK ORGANIZER PRIORITY</div>
+                            <div class="smart-alert-body">
+                                <div class="smart-alert-title">${escapeHtml(topTask.title)}</div>
+                                <div class="smart-alert-meta">
+                                    <span>${topTask.reasonTag}</span>
+                                    <span>•</span>
+                                    <span>Priority: ${topTask.priority}</span>
+                                    <span>•</span>
+                                    <span>Due: ${topTask.dueDate || 'No Date'}</span>
+                                </div>
                             </div>
+                            <button class="btn-sm-primary" onclick="window.LifeSyncApp.handleQuickTaskToggle('${topTask.id}')">✓ Mark Done</button>
                         </div>
-                        <button class="btn-sm-primary" onclick="window.LifeSyncApp.handleQuickTaskToggle('${topTask.id}')">✓ Mark Done</button>
-                    </div>
-                `;
-                smartOrganizerContainer.style.display = 'block';
-            } else {
+                    `;
+                    smartOrganizerContainer.style.display = 'block';
+                } else {
+                    smartOrganizerContainer.innerHTML = '';
+                    smartOrganizerContainer.style.display = 'none';
+                }
+            } catch (e) {
                 smartOrganizerContainer.style.display = 'none';
             }
         }
 
-        const tasks = window.TasksModule.getFilteredAndSortedTasks();
         const stats = window.TasksModule.getStats();
 
-        // Update task stats cards
+        // Update task stats counters — always, even if list el is missing
         const countTotal = document.getElementById('taskCountTotal');
         const countPending = document.getElementById('taskCountPending');
         const countCompleted = document.getElementById('taskCountCompleted');
@@ -327,39 +350,48 @@
 
         if (!taskListEl) return;
 
+        const tasks = window.TasksModule.getFilteredAndSortedTasks();
+
         if (tasks.length === 0) {
             taskListEl.innerHTML = '';
             if (emptyStateEl) emptyStateEl.style.display = 'block';
         } else {
             if (emptyStateEl) emptyStateEl.style.display = 'none';
-            taskListEl.innerHTML = tasks.map(task => {
-                const isCompleted = task.status === 'Completed';
-                const isOverdue = task.dueDate && task.dueDate < new Date().toISOString().split('T')[0] && !isCompleted;
-                const priorityClass = task.priority.toLowerCase() === 'high' ? 'priority-high' : task.priority.toLowerCase() === 'medium' ? 'priority-med' : 'priority-low';
+            try {
+                taskListEl.innerHTML = tasks.map(task => {
+                    const isCompleted = task.status === 'Completed';
+                    const isOverdue = task.dueDate && task.dueDate < new Date().toISOString().split('T')[0] && !isCompleted;
+                    const priority = (task.priority || 'Medium');
+                    const priorityClass = priority.toLowerCase() === 'high' ? 'priority-high' : priority.toLowerCase() === 'medium' ? 'priority-med' : 'priority-low';
+                    const statusSlug = (task.status || 'pending').toLowerCase().replace(/\s+/g, '-');
 
-                return `
-                    <div class="task-card-row ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue-border' : ''}">
-                        <label class="custom-checkbox-wrap" title="Toggle task completion">
-                            <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="window.LifeSyncApp.toggleTask('${task.id}')">
-                            <span class="checkbox-box"></span>
-                        </label>
-                        <div class="task-info-block">
-                            <div class="task-row-title ${isCompleted ? 'line-through' : ''}">${escapeHtml(task.title)}</div>
-                            ${task.description ? `<div class="task-row-desc">${escapeHtml(task.description)}</div>` : ''}
-                            <div class="task-row-badges">
-                                <span class="priority-pill ${priorityClass}">${task.priority}</span>
-                                <span class="category-pill">${task.category}</span>
-                                ${task.dueDate ? `<span class="deadline-pill ${isOverdue ? 'pill-overdue' : ''}">📅 ${task.dueDate}</span>` : ''}
-                                <span class="status-pill status-${task.status.toLowerCase().replace(' ', '-')}">${task.status}</span>
+                    return `
+                        <div class="task-card-row ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue-border' : ''}">
+                            <label class="custom-checkbox-wrap" title="Toggle task completion">
+                                <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="window.LifeSyncApp.toggleTask('${task.id}')">
+                                <span class="checkbox-box"></span>
+                            </label>
+                            <div class="task-info-block">
+                                <div class="task-row-title ${isCompleted ? 'line-through' : ''}">${escapeHtml(task.title)}</div>
+                                ${task.description ? `<div class="task-row-desc">${escapeHtml(task.description)}</div>` : ''}
+                                <div class="task-row-badges">
+                                    <span class="priority-pill ${priorityClass}">${priority}</span>
+                                    <span class="category-pill">${escapeHtml(task.category || 'General')}</span>
+                                    ${task.dueDate ? `<span class="deadline-pill ${isOverdue ? 'pill-overdue' : ''}">📅 ${task.dueDate}</span>` : ''}
+                                    <span class="status-pill status-${statusSlug}">${task.status || 'Pending'}</span>
+                                </div>
+                            </div>
+                            <div class="task-actions-btns">
+                                <button class="btn-icon-soft" title="Edit Task" onclick="window.LifeSyncApp.openEditTaskModal('${task.id}')">✏️</button>
+                                <button class="btn-icon-soft btn-icon-danger" title="Delete Task" onclick="window.LifeSyncApp.deleteTask('${task.id}')">🗑️</button>
                             </div>
                         </div>
-                        <div class="task-actions-btns">
-                            <button class="btn-icon-soft" title="Edit Task" onclick="window.LifeSyncApp.openEditTaskModal('${task.id}')">✏️</button>
-                            <button class="btn-icon-soft btn-icon-danger" title="Delete Task" onclick="window.LifeSyncApp.deleteTask('${task.id}')">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } catch (renderErr) {
+                console.error('Task render error:', renderErr);
+                taskListEl.innerHTML = `<div class="empty-list-notice">Error rendering tasks. Please refresh the page.</div>`;
+            }
         }
     }
 
@@ -1128,12 +1160,466 @@
             }
         });
 
+        // ── Global Topbar Search ──────────────────────────────────────────────
+        const topbarSearchInput = document.getElementById('topbarSearchInput');
+        let searchDropdown = null;
+        let searchDebounceTimer = null;
+        let activeSearchIdx = -1;
+        let currentSearchResults = [];
+
+        function createOrGetSearchDropdown() {
+            if (!searchDropdown) {
+                searchDropdown = document.createElement('div');
+                searchDropdown.id = 'globalSearchDropdown';
+                searchDropdown.className = 'global-search-dropdown';
+                const wrap = document.querySelector('.topbar-search-wrap');
+                if (wrap) wrap.appendChild(searchDropdown);
+            }
+            return searchDropdown;
+        }
+
+        function hideSearchDropdown() {
+            if (searchDropdown) {
+                searchDropdown.classList.remove('show');
+            }
+            activeSearchIdx = -1;
+        }
+
+        function runGlobalSearch(rawQuery) {
+            const query = (rawQuery || '').trim();
+            if (!query) {
+                hideSearchDropdown();
+                return;
+            }
+
+            const q = query.toLowerCase();
+            const tokens = q.split(/\s+/).filter(Boolean);
+            const isUniversalQuery = q.includes('anything') || q === 'search' || q === 'all' || q === '*';
+            const matchesText = (targetText) => {
+                if (isUniversalQuery) return true;
+                if (!targetText) return false;
+                const low = String(targetText).toLowerCase();
+                return tokens.every(tok => low.includes(tok)) || low.includes(q);
+            };
+
+            const results = [];
+
+            // 1. Navigation Pages & Core Subsections
+            const appPages = [
+                {
+                    icon: '🏠',
+                    label: 'Dashboard & Overview',
+                    sub: 'Navigation · KPI cards, daily timeline, priority tasks, finance summary',
+                    keywords: 'dashboard home overview stats kpi schedule priority summary',
+                    action: () => { switchTab('dashboard'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '⚡',
+                    label: 'Smart Task Organizer',
+                    sub: 'Tool · AI priority ranking with academic boosts and urgency scoring',
+                    keywords: 'smart organizer ai priority boost urgency ranking deadlines exam prep',
+                    action: () => { switchTab('smart'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '📝',
+                    label: 'Tasks & To-Do List',
+                    sub: 'Navigation · Filter by status, priority, category, or search assignments',
+                    keywords: 'tasks todo to-do list assignments homework pending completed study',
+                    action: () => { switchTab('tasks'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '📅',
+                    label: 'Academic Calendar & Timetable',
+                    sub: 'Navigation · Monthly grid, classes, study sessions, exam countdowns',
+                    keywords: 'calendar schedule timetable classes exams events dates deadlines lecture',
+                    action: () => { switchTab('calendar'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '💰',
+                    label: 'Student Budget Planner',
+                    sub: 'Navigation · Income, expense tracking, allowance, monthly budget progress',
+                    keywords: 'budget finance money wallet transactions allowance expenses income',
+                    action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('overview'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🛫',
+                    label: 'Semester Runway Model',
+                    sub: 'Budget Feature · 4-month burn rate calculation with emergency cushion',
+                    keywords: 'runway burn rate semester curve allowance cash buffer savings living fund cushion',
+                    action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('runway'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '👥',
+                    label: 'Peer Expense Benchmarks',
+                    sub: 'Budget Feature · Compare spending with college student averages',
+                    keywords: 'peer benchmarks comparison average student spending dining rent books entertainment',
+                    action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('benchmark'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🌙',
+                    label: 'Late-Night Safe Spending',
+                    sub: 'Budget Feature · Lock nighttime impulse purchases after 10 PM curfew',
+                    keywords: 'night safe late night curfew impulse swiggy zomato food lock cap limit',
+                    action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('night'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🧘',
+                    label: 'Mental Wellness & Mood Tracker',
+                    sub: 'Navigation · Daily mood check-ins, stress scale, guided breathing',
+                    keywords: 'wellness mental health mood stress de-stress zen breathing journal feelings',
+                    action: () => { switchTab('wellness'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '📊',
+                    label: 'Productivity & Analytics',
+                    sub: 'Navigation · Weekly trends, study hours, task completion, finance breakdown',
+                    keywords: 'analytics charts weekly trend reports insights metrics productivity statistics',
+                    action: () => { switchTab('analytics'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '⚙️',
+                    label: 'Academic Profile & Settings',
+                    sub: 'Navigation · Major, semester, college info, notification preferences',
+                    keywords: 'profile settings account user semester academic major university college',
+                    action: () => { switchTab('profile'); hideSearchDropdown(); }
+                }
+            ];
+
+            appPages.forEach(p => {
+                if (matchesText(p.label) || matchesText(p.keywords) || matchesText(p.sub)) {
+                    results.push({ ...p, category: 'Page' });
+                }
+            });
+
+            // 2. Quick Actions
+            const quickActions = [
+                {
+                    icon: '➕',
+                    label: 'Add New Task',
+                    sub: 'Action · Create a new assignment or study task with priority',
+                    keywords: 'add task create task new task assignment homework todo',
+                    action: () => { openModal('taskModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🗓️',
+                    label: 'Schedule New Event / Exam',
+                    sub: 'Action · Add a lecture, exam, study session, or deadline to calendar',
+                    keywords: 'add event schedule event new exam lecture meeting deadline appointment',
+                    action: () => { openModal('eventModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '💳',
+                    label: 'Log Transaction / Expense',
+                    sub: 'Action · Record new income or student expense item',
+                    keywords: 'add transaction log expense add income record payment spent money purchase',
+                    action: () => { openModal('txModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '📑',
+                    label: 'Split a Bill / Add Bill',
+                    sub: 'Action · Split rent, Wi-Fi, groceries with roommates',
+                    keywords: 'split bill add bill roommate rent wifi electricity utilities',
+                    action: () => { openModal('billModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🎯',
+                    label: 'Set Savings Goal',
+                    sub: 'Action · Track emergency fund, gadget, or tuition savings',
+                    keywords: 'add goal set goal savings target fund emergency deposit',
+                    action: () => { openModal('goalModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🦉',
+                    label: 'Log Late-Night Order',
+                    sub: 'Action · Record late-night food or snack expense against safe limit',
+                    keywords: 'log night spend late night order swiggy zomato snacks curfew food',
+                    action: () => { openModal('nightSpendModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '⚙️',
+                    label: 'Budget Settings & Limits',
+                    sub: 'Action · Configure monthly limit, runway buffer, and night curfew cap',
+                    keywords: 'budget settings configure limit monthly target buffer percentage night safe cap',
+                    action: () => { openModal('budgetSettingsModalOverlay'); hideSearchDropdown(); }
+                },
+                {
+                    icon: '🌓',
+                    label: 'Toggle Dark / Light Mode',
+                    sub: 'Action · Switch color theme instantly',
+                    keywords: 'toggle theme dark mode light mode switch theme dark night appearance',
+                    action: () => {
+                        if (window.LifeSyncApp && window.LifeSyncApp.toggleTheme) {
+                            window.LifeSyncApp.toggleTheme();
+                        }
+                        hideSearchDropdown();
+                    }
+                }
+            ];
+
+            quickActions.forEach(a => {
+                if (matchesText(a.label) || matchesText(a.keywords) || matchesText(a.sub)) {
+                    results.push({ ...a, category: 'Action' });
+                }
+            });
+
+            // 3. User Tasks
+            try {
+                if (window.TasksModule && typeof window.TasksModule.getTasks === 'function') {
+                    const tasks = window.TasksModule.getTasks() || [];
+                    tasks.forEach(t => {
+                        const title = t.title || '';
+                        const desc = t.description || '';
+                        const cat = t.category || '';
+                        const pri = t.priority || '';
+                        const stat = t.status || '';
+                        const due = t.dueDate || '';
+
+                        if (matchesText(`${title} ${desc} ${cat} ${pri} ${stat} ${due}`)) {
+                            results.push({
+                                icon: stat === 'Completed' ? '✅' : '📋',
+                                label: title || 'Untitled Task',
+                                sub: `Task · ${pri} · ${stat}${due ? ' · Due ' + due : ''}${cat ? ' · ' + cat : ''}`,
+                                category: 'Task',
+                                action: () => {
+                                    switchTab('tasks');
+                                    const taskSearchInput = document.getElementById('taskSearchInput');
+                                    if (taskSearchInput) {
+                                        taskSearchInput.value = title;
+                                        if (typeof handleFilterChange === 'function') handleFilterChange();
+                                    }
+                                    hideSearchDropdown();
+                                }
+                            });
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('Global search task query error:', err);
+            }
+
+            // 4. Calendar Events & Exams
+            try {
+                if (window.CalendarModule && typeof window.CalendarModule.getEvents === 'function') {
+                    const events = window.CalendarModule.getEvents() || [];
+                    events.forEach(e => {
+                        const title = e.title || '';
+                        const desc = e.description || '';
+                        const cat = e.category || '';
+                        const date = e.date || '';
+                        const time = e.time || '';
+
+                        if (matchesText(`${title} ${desc} ${cat} ${date} ${time}`)) {
+                            results.push({
+                                icon: cat === 'Exam' ? '🎯' : '📅',
+                                label: title || 'Untitled Event',
+                                sub: `Calendar · ${cat || 'Event'}${date ? ' · ' + date : ''}${time ? ' ' + time : ''}`,
+                                category: 'Event',
+                                action: () => { switchTab('calendar'); hideSearchDropdown(); }
+                            });
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('Global search calendar query error:', err);
+            }
+
+            // 5. Budget Transactions, Bills, and Goals
+            try {
+                if (window.BudgetModule && typeof window.BudgetModule.getBudget === 'function') {
+                    const budget = window.BudgetModule.getBudget() || {};
+
+                    // Transactions
+                    if (Array.isArray(budget.transactions)) {
+                        budget.transactions.forEach(t => {
+                            const title = t.title || t.description || t.category || '';
+                            const desc = t.description || '';
+                            const cat = t.category || '';
+                            const type = t.type || 'expense';
+                            const amt = String(Math.abs(Number(t.amount) || 0));
+
+                            if (matchesText(`${title} ${desc} ${cat} ${type} ${amt}`)) {
+                                const sign = type === 'income' ? '+' : '-';
+                                results.push({
+                                    icon: type === 'income' ? '💚' : '💸',
+                                    label: title || 'Transaction',
+                                    sub: `Finance · ${sign}₹${Number(amt).toLocaleString('en-IN')}${cat ? ' · ' + cat : ''}`,
+                                    category: 'Finance',
+                                    action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('overview'); hideSearchDropdown(); }
+                                });
+                            }
+                        });
+                    }
+
+                    // Bills
+                    if (Array.isArray(budget.bills)) {
+                        budget.bills.forEach(b => {
+                            const title = b.title || '';
+                            const cat = b.category || '';
+                            const due = b.dueDate || '';
+                            const amt = String(Number(b.amount) || 0);
+
+                            if (matchesText(`${title} ${cat} ${due} ${amt}`)) {
+                                results.push({
+                                    icon: '📑',
+                                    label: title || 'Recurring Bill',
+                                    sub: `Bill · ₹${Number(amt).toLocaleString('en-IN')}${due ? ' · Due ' + due : ''}`,
+                                    category: 'Bill',
+                                    action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('overview'); hideSearchDropdown(); }
+                                });
+                            }
+                        });
+                    }
+
+                    // Goals
+                    if (budget.sharedGoal && budget.sharedGoal.title) {
+                        const g = budget.sharedGoal;
+                        if (matchesText(`${g.title} goal savings ${g.target} ${g.current}`)) {
+                            results.push({
+                                icon: '🎯',
+                                label: g.title,
+                                sub: `Goal · ₹${(Number(g.current) || 0).toLocaleString('en-IN')} / ₹${(Number(g.target) || 0).toLocaleString('en-IN')}`,
+                                category: 'Goal',
+                                action: () => { switchTab('budget'); if (typeof switchBudgetSubTab === 'function') switchBudgetSubTab('overview'); hideSearchDropdown(); }
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Global search budget query error:', err);
+            }
+
+            // 6. Mental Wellness Check-ins
+            try {
+                if (window.WellnessModule && typeof window.WellnessModule.getRecords === 'function') {
+                    const records = window.WellnessModule.getRecords() || [];
+                    records.forEach(w => {
+                        const mood = w.mood || '';
+                        const note = w.note || '';
+                        const date = w.date || '';
+
+                        if (matchesText(`${mood} ${note} ${date} wellness`)) {
+                            results.push({
+                                icon: '🧘',
+                                label: `Mood Check-in: ${mood}`,
+                                sub: `Wellness · Stress ${w.stress || 2}/5${note ? ' · ' + note.slice(0, 35) + '...' : ''}`,
+                                category: 'Wellness',
+                                action: () => { switchTab('wellness'); hideSearchDropdown(); }
+                            });
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('Global search wellness query error:', err);
+            }
+
+            const dd = createOrGetSearchDropdown();
+            currentSearchResults = results.slice(0, 10);
+            activeSearchIdx = -1;
+
+            if (currentSearchResults.length === 0) {
+                dd.innerHTML = `
+                    <div class="search-empty">
+                        <div>No exact match for "<strong>${escapeHtml(query)}</strong>"</div>
+                        <div style="font-size: 11.5px; margin-top: 6px; color: #94a3b8;">
+                            Try searching for <em>tasks, calendar, budget, runway, exams</em>, or actions like <em>"add task"</em>.
+                        </div>
+                    </div>
+                `;
+            } else {
+                dd.innerHTML = currentSearchResults.map((r, i) => `
+                    <div class="search-result-row" data-idx="${i}">
+                        <span class="search-result-icon">${r.icon}</span>
+                        <div class="search-result-info">
+                            <div class="search-result-label">${escapeHtml(r.label)}</div>
+                            <div class="search-result-sub">${escapeHtml(r.sub)}</div>
+                        </div>
+                        ${r.category ? `<span class="search-badge-category">${escapeHtml(r.category)}</span>` : ''}
+                    </div>
+                `).join('');
+
+                dd.querySelectorAll('.search-result-row').forEach((row, i) => {
+                    row.addEventListener('click', () => {
+                        currentSearchResults[i].action();
+                    });
+                });
+            }
+            dd.classList.add('show');
+        }
+
+        function updateSelectedSearchRow() {
+            if (!searchDropdown) return;
+            const rows = searchDropdown.querySelectorAll('.search-result-row');
+            rows.forEach((r, idx) => {
+                if (idx === activeSearchIdx) {
+                    r.classList.add('selected');
+                    r.scrollIntoView({ block: 'nearest' });
+                } else {
+                    r.classList.remove('selected');
+                }
+            });
+        }
+
+        if (topbarSearchInput) {
+            topbarSearchInput.addEventListener('input', (e) => {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => runGlobalSearch(e.target.value), 140);
+            });
+            topbarSearchInput.addEventListener('focus', (e) => {
+                if (e.target.value && e.target.value.trim()) {
+                    runGlobalSearch(e.target.value);
+                }
+            });
+            topbarSearchInput.addEventListener('keydown', (e) => {
+                if (!searchDropdown || !searchDropdown.classList.contains('show')) {
+                    if (e.key === 'ArrowDown') {
+                        runGlobalSearch(topbarSearchInput.value);
+                    }
+                    return;
+                }
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (currentSearchResults.length > 0) {
+                        activeSearchIdx = (activeSearchIdx + 1) % currentSearchResults.length;
+                        updateSelectedSearchRow();
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (currentSearchResults.length > 0) {
+                        activeSearchIdx = (activeSearchIdx - 1 + currentSearchResults.length) % currentSearchResults.length;
+                        updateSelectedSearchRow();
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentSearchResults.length > 0) {
+                        const targetIdx = activeSearchIdx >= 0 ? activeSearchIdx : 0;
+                        if (currentSearchResults[targetIdx]) {
+                            currentSearchResults[targetIdx].action();
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSearchDropdown();
+                    topbarSearchInput.blur();
+                }
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            const searchWrap = document.querySelector('.topbar-search-wrap');
+            if (searchWrap && !searchWrap.contains(e.target)) {
+                hideSearchDropdown();
+            }
+        });
+        // ─────────────────────────────────────────────────────────────────────
+
+
         // Logout
         const logoutBtn = document.getElementById('btnLogout');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                // Clear session flag FIRST so auth.html doesn't auto-skip login
+                // Clear session flags FIRST so auth.html doesn't auto-skip login
                 sessionStorage.removeItem('ls_session_active');
+                localStorage.removeItem('ls_session_remembered');  // Clear "Remember Me" flag on explicit logout
                 AuthSystem.signOut();
                 showToast('Signed out successfully', 'info');
                 setTimeout(() => {
@@ -1545,29 +2031,56 @@
     window.LifeSyncApp = {
         switchTab,
         toggleTask(taskId) {
-            window.TasksModule.toggleComplete(currentUser, taskId);
-            renderCurrentView();
-            if (currentTab !== 'tasks') {
-                renderTasksView();
+            try {
+                window.TasksModule.toggleComplete(currentUser, taskId);
+            } catch (e) {
+                showToast('Error updating task: ' + e.message, 'error');
+                return;
+            }
+            renderTasksView();
+            renderSmartOrganizerView();
+            if (window.DashboardModule && currentUser) {
+                window.DashboardModule.render(currentUser);
+            }
+            if (currentTab !== 'tasks' && currentTab !== 'smart' && currentTab !== 'dashboard') {
+                renderCurrentView();
             }
             updateNotifications();
         },
         handleQuickTaskToggle(taskId) {
-            window.TasksModule.toggleComplete(currentUser, taskId);
+            try {
+                window.TasksModule.toggleComplete(currentUser, taskId);
+            } catch (e) {
+                showToast('Error updating task: ' + e.message, 'error');
+                return;
+            }
             showToast('Task marked as completed! 🎯', 'success');
-            renderCurrentView();
-            if (currentTab !== 'tasks') {
-                renderTasksView();
+            renderTasksView();
+            renderSmartOrganizerView();
+            if (window.DashboardModule && currentUser) {
+                window.DashboardModule.render(currentUser);
+            }
+            if (currentTab !== 'tasks' && currentTab !== 'smart' && currentTab !== 'dashboard') {
+                renderCurrentView();
             }
             updateNotifications();
         },
         deleteTask(taskId) {
             if (confirm('Delete this task?')) {
-                window.TasksModule.deleteTask(currentUser, taskId);
+                try {
+                    window.TasksModule.deleteTask(currentUser, taskId);
+                } catch (e) {
+                    showToast('Error deleting task: ' + e.message, 'error');
+                    return;
+                }
                 showToast('Task removed.', 'info');
-                renderCurrentView();
-                if (currentTab !== 'tasks') {
-                    renderTasksView();
+                renderTasksView();
+                renderSmartOrganizerView();
+                if (window.DashboardModule && currentUser) {
+                    window.DashboardModule.render(currentUser);
+                }
+                if (currentTab !== 'tasks' && currentTab !== 'smart' && currentTab !== 'dashboard') {
+                    renderCurrentView();
                 }
                 updateNotifications();
             }
@@ -1580,7 +2093,7 @@
             openModal('taskModalOverlay');
         },
         openEditTaskModal(taskId) {
-            const task = window.TasksModule.getTasks().find(t => t.id === taskId);
+            const task = window.TasksModule.getTasks().find(t => String(t.id) === String(taskId));
             if (!task) return;
             document.getElementById('taskEditId').value = task.id;
             document.getElementById('taskTitleInput').value = task.title;
@@ -1613,7 +2126,8 @@
             if (confirm('Delete this transaction?')) {
                 window.BudgetModule.deleteTransaction(currentUser, txId);
                 showToast('Transaction deleted.', 'info');
-                renderBudgetView();
+                renderCurrentView();
+                updateNotifications();
             }
         },
         openAddBillModal() {
@@ -1648,10 +2162,18 @@
             }
         },
         toggleTaskAndRefreshSmart(taskId) {
-            window.TasksModule.toggleComplete(currentUser, taskId);
+            try {
+                window.TasksModule.toggleComplete(currentUser, taskId);
+            } catch (e) {
+                showToast('Error updating task: ' + e.message, 'error');
+                return;
+            }
             showToast('Task marked done! Re-ranking priorities... 🧠', 'success');
             renderSmartOrganizerView();
             renderTasksView();
+            if (window.DashboardModule && currentUser) {
+                window.DashboardModule.render(currentUser);
+            }
             updateNotifications();
         },
         switchBudgetSubTab,

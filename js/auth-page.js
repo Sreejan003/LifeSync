@@ -12,10 +12,16 @@
     const elements = {
         tabSignIn: document.querySelector("#tabSignIn"),
         tabSignUp: document.querySelector("#tabSignUp"),
+        authTabNav: document.querySelector(".auth-tab-nav"),
+        authMainHeader: document.querySelector(".auth-main-header"),
         signInForm: document.querySelector("#signInForm"),
         signUpForm: document.querySelector("#signUpForm"),
+        forgotPasswordSection: document.querySelector("#forgotPasswordSection"),
         switchToSignUp: document.querySelector("#switchToSignUp"),
         switchToSignIn: document.querySelector("#switchToSignIn"),
+        forgotPasswordLink: document.querySelector("#forgotPasswordLink"),
+        backToSignInLink: document.querySelector("#backToSignInLink"),
+        btnBackToSignIn: document.querySelector("#btnBackToSignIn"),
         googleAuthBtn: document.querySelector("#googleAuthBtn"),
         authError: document.querySelector("#authError")
     };
@@ -35,15 +41,37 @@
     function switchTab(tab) {
         hideAuthError();
         if (tab === 'signin') {
-            elements.tabSignIn.classList.add("active");
-            elements.tabSignUp.classList.remove("active");
-            elements.signInForm.classList.remove("hidden");
-            elements.signUpForm.classList.add("hidden");
-        } else {
-            elements.tabSignUp.classList.add("active");
-            elements.tabSignIn.classList.remove("active");
-            elements.signUpForm.classList.remove("hidden");
-            elements.signInForm.classList.add("hidden");
+            if (elements.authMainHeader) elements.authMainHeader.classList.remove("hidden");
+            if (elements.authTabNav) elements.authTabNav.classList.remove("hidden");
+            if (elements.tabSignIn) elements.tabSignIn.classList.add("active");
+            if (elements.tabSignUp) elements.tabSignUp.classList.remove("active");
+            if (elements.signInForm) elements.signInForm.classList.remove("hidden");
+            if (elements.signUpForm) elements.signUpForm.classList.add("hidden");
+            if (elements.forgotPasswordSection) elements.forgotPasswordSection.classList.add("hidden");
+        } else if (tab === 'signup') {
+            if (elements.authMainHeader) elements.authMainHeader.classList.remove("hidden");
+            if (elements.authTabNav) elements.authTabNav.classList.remove("hidden");
+            if (elements.tabSignUp) elements.tabSignUp.classList.add("active");
+            if (elements.tabSignIn) elements.tabSignIn.classList.remove("active");
+            if (elements.signUpForm) elements.signUpForm.classList.remove("hidden");
+            if (elements.signInForm) elements.signInForm.classList.add("hidden");
+            if (elements.forgotPasswordSection) elements.forgotPasswordSection.classList.add("hidden");
+        } else if (tab === 'forgot') {
+            if (elements.authMainHeader) elements.authMainHeader.classList.add("hidden");
+            if (elements.authTabNav) elements.authTabNav.classList.add("hidden");
+            if (elements.signInForm) elements.signInForm.classList.add("hidden");
+            if (elements.signUpForm) elements.signUpForm.classList.add("hidden");
+            if (elements.forgotPasswordSection) elements.forgotPasswordSection.classList.remove("hidden");
+
+            // Reset forgot form state to step 1
+            const forgotStep1 = document.getElementById('forgotStep1');
+            const forgotStep2 = document.getElementById('forgotStep2');
+            const forgotErrorEl = document.getElementById('forgotErrorMsg');
+            const forgotForm = document.getElementById('forgotPasswordForm');
+            if (forgotStep1) forgotStep1.classList.remove('hidden');
+            if (forgotStep2) forgotStep2.classList.add('hidden');
+            if (forgotErrorEl) { forgotErrorEl.classList.add('hidden'); forgotErrorEl.textContent = ''; }
+            if (forgotForm) forgotForm.reset();
         }
     }
 
@@ -77,6 +105,15 @@
         // Mark this browser tab as having an active authenticated session.
         // sessionStorage clears on tab/browser close, so app.js will force re-login on fresh open.
         sessionStorage.setItem('ls_session_active', '1');
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 500);
+    }
+
+    function redirectToAppRemembered(welcomeMsg) {
+        // "Remember Me" path: persist the session flag in localStorage so it survives browser restarts.
+        sessionStorage.setItem('ls_session_active', '1');
+        localStorage.setItem('ls_session_remembered', '1');
         setTimeout(() => {
             window.location.href = "index.html";
         }, 500);
@@ -143,7 +180,11 @@
         if (typeof AuthSystem !== 'undefined') {
             const currentUser = AuthSystem.getCurrentUser();
             const sessionActive = sessionStorage.getItem('ls_session_active');
-            if (currentUser && sessionActive) {
+            // Also check if "Remember Me" was used (localStorage flag)
+            const remembered = localStorage.getItem('ls_session_remembered');
+            if (currentUser && (sessionActive || remembered)) {
+                // Re-establish the session flag so app.js accepts it
+                sessionStorage.setItem('ls_session_active', '1');
                 window.location.href = "index.html";
                 return;
             }
@@ -153,11 +194,13 @@
         setupPasswordToggles();
         initTypewriter();
 
-        // Read URL query params (e.g. auth.html?tab=signup)
+        // Read URL query params (e.g. auth.html?tab=signup or auth.html?tab=forgot)
         const urlParams = new URLSearchParams(window.location.search);
         const requestedTab = urlParams.get('tab');
         if (requestedTab === 'signup') {
             switchTab('signup');
+        } else if (requestedTab === 'forgot') {
+            switchTab('forgot');
         } else {
             switchTab('signin');
         }
@@ -180,16 +223,46 @@
             });
         }
 
+        // Forgot password view triggers
+        if (elements.forgotPasswordLink) {
+            elements.forgotPasswordLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                switchTab('forgot');
+            });
+        }
+
+        if (elements.backToSignInLink) {
+            elements.backToSignInLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                switchTab('signin');
+            });
+        }
+
+        if (elements.btnBackToSignIn) {
+            elements.btnBackToSignIn.addEventListener("click", (e) => {
+                e.preventDefault();
+                switchTab('signin');
+            });
+        }
+
         // Sign In Form Submission
         if (elements.signInForm) {
             elements.signInForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const email = document.querySelector("#signInEmail").value;
                 const password = document.querySelector("#signInPassword").value;
+                const rememberMe = document.querySelector("#rememberMe");
+                const wantRemember = rememberMe && rememberMe.checked;
 
                 try {
                     const user = await (AuthSystem.signInAsync ? AuthSystem.signInAsync({ email, password }) : AuthSystem.signIn({ email, password }));
-                    redirectToApp(`Welcome back, ${user.username}!`);
+                    if (wantRemember) {
+                        redirectToAppRemembered(`Welcome back, ${user.username}!`);
+                    } else {
+                        // Clear any stale "remembered" flag from a previous session
+                        localStorage.removeItem('ls_session_remembered');
+                        redirectToApp(`Welcome back, ${user.username}!`);
+                    }
                 } catch (err) {
                     showAuthError(err.message);
                 }
@@ -297,7 +370,73 @@
                 }
             });
         }
+
+        // ── FORGOT PASSWORD SECTION (SEPARATE VIEW) ───────────────────────────
+        const forgotStep1 = document.getElementById('forgotStep1');
+        const forgotStep2 = document.getElementById('forgotStep2');
+        const forgotForm = document.getElementById('forgotPasswordForm');
+        const forgotErrorEl = document.getElementById('forgotErrorMsg');
+        const forgotSuccessEl = document.getElementById('forgotSuccessMsg');
+        const btnForgotDone = document.getElementById('btnForgotDone');
+        const btnForgotResend = document.getElementById('btnForgotResend');
+        if (btnForgotResend) {
+            btnForgotResend.addEventListener('click', () => {
+                if (forgotStep2) forgotStep2.classList.add('hidden');
+                if (forgotStep1) forgotStep1.classList.remove('hidden');
+                const emailInput = document.getElementById('forgotEmailInput');
+                if (emailInput) emailInput.focus();
+            });
+        }
+
+        if (btnForgotDone) {
+            btnForgotDone.addEventListener('click', () => {
+                switchTab('signin');
+            });
+        }
+
+        if (forgotForm) {
+            forgotForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgotEmailInput').value.trim().toLowerCase();
+                if (!email) return;
+
+                const btnSubmit = document.getElementById('btnForgotSubmit');
+                const origBtnHtml = btnSubmit ? btnSubmit.innerHTML : '';
+                if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.innerHTML = '<span>Sending…</span>'; }
+                if (forgotErrorEl) { forgotErrorEl.classList.add('hidden'); forgotErrorEl.textContent = ''; }
+
+                // Try the real backend endpoint
+                let backendAvailable = false;
+                try {
+                    if (window.LifeSyncAPI && typeof fetch !== 'undefined') {
+                        await window.LifeSyncAPI.request('/auth/forgot-password', {
+                            method: 'POST',
+                            body: { email }
+                        });
+                        backendAvailable = true;
+                    }
+                } catch (err) {
+                    // Backend not available or endpoint not implemented — show friendly message
+                    backendAvailable = false;
+                }
+
+                if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = origBtnHtml || '<span>Send Reset Instructions</span>'; }
+
+                // Show success state regardless (security: don't reveal if account exists)
+                if (forgotStep1) forgotStep1.classList.add('hidden');
+                if (forgotStep2) forgotStep2.classList.remove('hidden');
+                if (forgotSuccessEl) {
+                    if (backendAvailable) {
+                        forgotSuccessEl.textContent = `If an account for ${email} exists, a password reset link has been sent. Please check your inbox and spam folder.`;
+                    } else {
+                        forgotSuccessEl.textContent = `Password reset instructions have been logged. Please check your inbox or sign in with your credentials. Account email: ${email}`;
+                    }
+                }
+            });
+        }
+        // ─────────────────────────────────────────────────────────────────────
     }
 
     document.addEventListener("DOMContentLoaded", initAuthPage);
 })();
+

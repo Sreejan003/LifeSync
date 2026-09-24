@@ -64,8 +64,7 @@ async function runTests() {
     console.log('--- Starting LifeSync Backend API Test Suite ---\n');
 
     // 0. Start test server on random port
-    process.env.PORT = 0; // random available port
-    serverInstance = await startServer();
+    serverInstance = await startServer(0);
     const port = serverInstance.address().port;
     baseUrl = `http://localhost:${port}`;
 

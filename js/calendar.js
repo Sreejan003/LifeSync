@@ -65,7 +65,7 @@
         },
 
         updateEvent(user, eventId, updates) {
-            const ev = currentEvents.find(e => e.id === eventId);
+            const ev = currentEvents.find(e => String(e.id) === String(eventId));
             if (!ev) throw new Error('Event not found.');
 
             if (updates.title !== undefined) ev.title = updates.title.trim();
@@ -82,8 +82,12 @@
         },
 
         deleteEvent(user, eventId) {
-            currentEvents = currentEvents.filter(e => e.id !== eventId);
-            window.LifeSyncStorage.saveEvents(user, currentEvents);
+            currentEvents = currentEvents.filter(e => String(e.id) !== String(eventId));
+            if (window.LifeSyncStorage && window.LifeSyncStorage.deleteEvent) {
+                window.LifeSyncStorage.deleteEvent(user, eventId);
+            } else {
+                window.LifeSyncStorage.saveEvents(user, currentEvents);
+            }
             notifyChange();
         },
 

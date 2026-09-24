@@ -218,7 +218,7 @@ function renderTasks() {
         deleteButton.addEventListener("click", () => {
 
             tasks = tasks.filter(
-                t => t.id !== task.id
+                t => String(t.id) !== String(task.id)
             );
 
             saveTasks();

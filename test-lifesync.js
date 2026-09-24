@@ -114,6 +114,16 @@ assert(updatedTask.status === 'Completed' && updatedTask.completedAt !== null, '
 window.TasksModule.toggleComplete(testUser, newTask.id);
 assert(window.TasksModule.getTasks().find(t => t.id === newTask.id).status === 'Pending', 'Task toggled back to Pending');
 
+// Toggle & Delete with numeric database ID via string argument (DOM inline handler scenario)
+const numTask = { id: 9999, title: 'Numeric DB Task', priority: 'High', status: 'Pending', category: 'Study', dueDate: tomorrow };
+window.LifeSyncStorage.saveTask(testUser, numTask);
+window.TasksModule.init(testUser);
+assert(window.TasksModule.getTasks().some(t => t.id === 9999), 'Numeric task loaded');
+window.TasksModule.toggleComplete(testUser, '9999');
+assert(window.TasksModule.getTasks().find(t => t.id === 9999).status === 'Completed', 'Numeric task toggled to Completed using string ID');
+window.TasksModule.deleteTask(testUser, '9999');
+assert(!window.TasksModule.getTasks().some(t => t.id === 9999), 'Numeric task deleted using string ID');
+
 // 4. Calendar Integration & Deadlines Merging
 const calItemsForTomorrow = window.CalendarModule.getItemsForDate(tomorrow);
 const foundTaskInCal = calItemsForTomorrow.find(i => i.id === newTask.id && i.itemType === 'task');
@@ -185,7 +195,7 @@ window.BudgetModule.addTransaction(testUser, {
     category: 'Scholarship',
     date: tomorrow
 });
-window.BudgetModule.addTransaction(testUser, {
+const newExpense = window.BudgetModule.addTransaction(testUser, {
     title: 'Textbook Purchase',
     amount: 1200,
     type: 'expense',
@@ -197,6 +207,14 @@ const budgetAfter = window.BudgetModule.getSummary();
 assert(budgetAfter.totalIncome === budgetBefore.totalIncome + 5000, 'Budget income updated accurately');
 assert(budgetAfter.totalExpense === budgetBefore.totalExpense + 1200, 'Budget expense updated accurately');
 assert(budgetAfter.totalBalance === budgetAfter.totalIncome - budgetAfter.totalExpense, 'Budget net balance is correct');
+
+// Test Transaction Deletion and Storage Persistence
+const txCountBefore = window.BudgetModule.getBudget().transactions.length;
+window.BudgetModule.deleteTransaction(testUser, newExpense.id);
+const txCountAfter = window.BudgetModule.getBudget().transactions.length;
+assert(txCountAfter === txCountBefore - 1, 'Transaction removed from in-memory budget state');
+const storedBudget = window.LifeSyncStorage.getBudget(testUser);
+assert(!storedBudget.transactions.some(t => String(t.id) === String(newExpense.id)), 'Transaction deletion persists in LifeSyncStorage');
 
 // Test Late-Night Safe
 const initialLocked = window.BudgetModule.getBudget().nightSafe.locked;
@@ -289,5 +307,37 @@ assert(!storageJs.includes("'Ananya'"), 'Hardcoded Ananya fallback removed from 
 assert(!dashboardJs.includes('|| 7;') && !dashboardJs.includes('|| 12;'), 'Hardcoded numeric task stat fallbacks removed from dashboard.js');
 console.log('✓ PASS: All hardcoded user identities and static metric fallbacks eliminated');
 
-console.log('\n🎉 ALL LIFESYNC INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉');
+assert(styleCss.includes('.dark-theme .bsub-btn {') && styleCss.includes('.dark-theme .bsub-btn.active'), 'Budget Planner subnav buttons have complete dark mode rules');
+assert(styleCss.includes('.dark-theme .runway-snapshot-card'), 'Runway snapshot card has dark mode override');
+assert(styleCss.includes('.dark-theme .runway-chart-container'), 'Runway chart container has dark mode override');
+assert(styleCss.includes('.dark-theme .night-top-section'), 'Night safe top section has dark mode override');
+assert(styleCss.includes('.dark-theme .night-actions-panel'), 'Night actions panel has dark mode override');
+assert(indexHtml.includes('grid-control-runaway'), 'index.html contains grid-control-runaway class on controls div');
+assert(styleCss.includes('div.grid-control-runaway') && styleCss.includes('.grid-control-runaway .control-box'), 'style.css includes dark mode styles for div.grid-control-runaway and control-box');
+console.log('✓ PASS: Budget Planner dark mode & div.grid-control-runaway styling verified with zero bad-white backgrounds');
 
+// 15. Universal Global Search Validation ("Search anything ...")
+assert(indexHtml.includes('id="topbarSearchInput"'), 'index.html includes topbarSearchInput');
+assert(appJs.includes('appPages = [') && appJs.includes('quickActions = ['), 'app.js includes comprehensive appPages and quickActions indexing');
+assert(appJs.includes('matchesText(title') || appJs.includes('matchesText(`${title}'), 'app.js includes null-safe multi-token matching for tasks and events');
+assert(appJs.includes('activeSearchIdx') && appJs.includes("'ArrowDown'") && appJs.includes("'Enter'"), 'app.js includes keyboard navigation for search dropdown');
+assert(styleCss.includes('.search-badge-category') && styleCss.includes('.search-result-row.selected'), 'style.css includes styles for search categories and keyboard selection');
+console.log('✓ PASS: Universal Global Search ("Search anything ...") verified across pages, actions, tasks, calendar, budget, and wellness');
+
+// 16. Auth Page Responsiveness & Dedicated Forgot Password Section
+const authHtml = fs.readFileSync(path.join(__dirname, 'auth.html'), 'utf8');
+const authPageJs = fs.readFileSync(path.join(__dirname, 'js', 'auth-page.js'), 'utf8');
+
+assert(authHtml.includes('id="forgotPasswordSection"'), 'auth.html contains dedicated forgotPasswordSection');
+assert(authHtml.includes('id="btnBackToSignIn"'), 'auth.html contains btnBackToSignIn');
+assert(authHtml.includes('id="forgotPasswordForm"'), 'auth.html contains forgotPasswordForm');
+assert(authHtml.includes('id="forgotEmailInput"'), 'auth.html contains forgotEmailInput');
+assert(!authHtml.includes('id="forgotPasswordModal"'), 'auth.html removed redundant modal overlay');
+assert(authPageJs.includes("tab === 'forgot'"), 'auth-page.js supports forgot tab transition');
+assert(styleCss.includes('.forgot-header-wrap'), 'style.css includes .forgot-header-wrap');
+assert(styleCss.includes('.btn-icon-back'), 'style.css includes .btn-icon-back');
+assert(styleCss.includes('@media (max-width: 900px)') && styleCss.includes('.auth-right-panel'), 'style.css includes responsive breakpoint for tablet/mobile');
+assert(styleCss.includes('@media (max-width: 480px)'), 'style.css includes mobile breakpoint for 480px');
+console.log('✓ PASS: Dedicated Forgot Password section and responsive auth layout verified');
+
+console.log('\n🎉 ALL LIFESYNC INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉');

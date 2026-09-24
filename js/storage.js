@@ -405,6 +405,46 @@
         }
     }
 
+    function deleteTaskFromBackend(taskId) {
+        if (!taskId || typeof window === 'undefined' || !window.LifeSyncAPI || typeof fetch === 'undefined') return;
+        const token = window.LifeSyncAPI.getToken();
+        if (!token) return;
+
+        // If numeric ID or non-tsk_ ID, delete on backend
+        if (typeof taskId === 'number' || (typeof taskId === 'string' && !taskId.startsWith('tsk_'))) {
+            window.LifeSyncAPI.deleteTask(taskId).catch(e => console.warn('Background task delete sync:', e.message));
+        }
+    }
+
+    const pendingCancelledTxIds = new Set();
+
+    function deleteTransactionFromBackend(txId) {
+        if (!txId || typeof window === 'undefined' || !window.LifeSyncAPI || typeof fetch === 'undefined') return;
+        const token = window.LifeSyncAPI.getToken();
+        if (!token) return;
+
+        if (typeof txId === 'string' && txId.startsWith('tx_')) {
+            pendingCancelledTxIds.add(txId);
+            return;
+        }
+
+        if (typeof txId === 'number' || (typeof txId === 'string' && !isNaN(Number(txId)))) {
+            window.LifeSyncAPI.deleteTransaction(txId).catch(e => console.warn('Background tx delete sync:', e.message));
+        }
+    }
+
+    function deleteEventFromBackend(eventId) {
+        if (!eventId || typeof window === 'undefined' || !window.LifeSyncAPI || typeof fetch === 'undefined') return;
+        const token = window.LifeSyncAPI.getToken();
+        if (!token) return;
+
+        if (typeof eventId === 'number' || (typeof eventId === 'string' && !eventId.startsWith('evt_'))) {
+            if (window.LifeSyncAPI.deleteEvent) {
+                window.LifeSyncAPI.deleteEvent(eventId).catch(e => console.warn('Background event delete sync:', e.message));
+            }
+        }
+    }
+
     // ==========================================
     // PUBLIC LIFE SYNC STORAGE API
     // ==========================================
@@ -422,12 +462,27 @@
         },
         saveTasks(user, tasks) {
             const key = getScopedKey('tasks', user);
-            const saved = writeJson(key, tasks);
-            // Sync with backend in background
-            if (Array.isArray(tasks) && tasks.length > 0) {
-                syncTaskToBackend(tasks[0]);
+            return writeJson(key, tasks);
+        },
+        saveTask(user, task) {
+            if (!task) return;
+            const key = getScopedKey('tasks', user);
+            const tasks = readJson(key, []);
+            const idx = tasks.findIndex(t => String(t.id) === String(task.id));
+            if (idx >= 0) {
+                tasks[idx] = task;
+            } else {
+                tasks.unshift(task);
             }
-            return saved;
+            writeJson(key, tasks);
+            syncTaskToBackend(task);
+        },
+        deleteTask(user, taskId) {
+            const key = getScopedKey('tasks', user);
+            const tasks = readJson(key, []);
+            const updated = tasks.filter(t => String(t.id) !== String(taskId));
+            writeJson(key, updated);
+            deleteTaskFromBackend(taskId);
         },
 
         // --- CALENDAR EVENTS ---
@@ -440,6 +495,14 @@
                 return initial;
             }
             return readJson(key, []);
+        },
+        deleteEvent(user, eventId) {
+            const key = getScopedKey('events', user);
+            const events = this.getEvents(user);
+            const updated = events.filter(e => String(e.id) !== String(eventId));
+            writeJson(key, updated);
+            deleteEventFromBackend(eventId);
+            return updated;
         },
         saveEvents(user, events) {
             const key = getScopedKey('events', user);
@@ -470,6 +533,14 @@
                 bills: Array.isArray(data.bills) ? data.bills : defaults.bills
             };
         },
+        deleteTransaction(user, txId) {
+            const key = getScopedKey('budget', user);
+            const budget = this.getBudget(user);
+            budget.transactions = (budget.transactions || []).filter(t => String(t.id) !== String(txId));
+            writeJson(key, budget);
+            deleteTransactionFromBackend(txId);
+            return budget;
+        },
         saveBudget(user, budgetData) {
             const key = getScopedKey('budget', user);
             const saved = writeJson(key, budgetData);
@@ -487,7 +558,8 @@
                 // If a new transaction was just added
                 if (Array.isArray(budgetData.transactions) && budgetData.transactions.length > 0) {
                     const latestTx = budgetData.transactions[0];
-                    if (typeof latestTx.id === 'string' && latestTx.id.startsWith('tx_')) {
+                    const localTxId = latestTx.id;
+                    if (typeof localTxId === 'string' && localTxId.startsWith('tx_')) {
                         window.LifeSyncAPI.createTransaction({
                             title: latestTx.title,
                             description: latestTx.description,
@@ -495,8 +567,22 @@
                             category: latestTx.category,
                             amount: latestTx.amount,
                             date: latestTx.date
-                        }).then(s => { if (s && s.id) latestTx.id = s.id; })
-                          .catch(e => console.warn('Background tx sync:', e.message));
+                        }).then(s => {
+                            if (s && s.id) {
+                                if (pendingCancelledTxIds.has(localTxId)) {
+                                    pendingCancelledTxIds.delete(localTxId);
+                                    window.LifeSyncAPI.deleteTransaction(s.id).catch(err => console.warn('Delete cancelled tx:', err.message));
+                                } else {
+                                    latestTx.id = s.id;
+                                    const b = readJson(key, {});
+                                    if (Array.isArray(b.transactions)) {
+                                        const found = b.transactions.find(t => String(t.id) === String(localTxId));
+                                        if (found) found.id = s.id;
+                                        writeJson(key, b);
+                                    }
+                                }
+                            }
+                        }).catch(e => console.warn('Background tx sync:', e.message));
                     }
                 }
             }
@@ -615,18 +701,45 @@
 
                 // Fetch budget summary and transactions
                 const backendTx = await window.LifeSyncAPI.getTransactions();
-                if (Array.isArray(backendTx) && backendTx.length > 0) {
+                if (Array.isArray(backendTx)) {
                     const budget = LifeSyncStorage.getBudget(user);
-                    budget.transactions = backendTx.map(t => ({
-                        id: t.id,
-                        title: t.description || t.category,
-                        amount: parseFloat(t.amount) || 0,
-                        type: t.type,
-                        category: t.category,
-                        date: t.date,
-                        description: t.description || ''
-                    }));
-                    writeJson(getScopedKey('budget', user), budget);
+                    const syncKey = getScopedKey('budget_backend_synced', user);
+                    const hasSynced = localStorage.getItem(syncKey);
+
+                    if (!hasSynced && backendTx.length === 0 && Array.isArray(budget.transactions) && budget.transactions.length > 0) {
+                        // First time backend sync for fresh user: sync initial local seed data to backend
+                        for (const tx of budget.transactions) {
+                            try {
+                                const saved = await window.LifeSyncAPI.createTransaction({
+                                    title: tx.title,
+                                    description: tx.description,
+                                    type: tx.type,
+                                    category: tx.category,
+                                    amount: tx.amount,
+                                    date: tx.date
+                                });
+                                if (saved && saved.id) tx.id = saved.id;
+                            } catch (seedErr) {
+                                console.warn('Initial seed tx sync:', seedErr.message);
+                            }
+                        }
+                        localStorage.setItem(syncKey, '1');
+                        writeJson(getScopedKey('budget', user), budget);
+                    } else {
+                        // Backend is source of truth for transactions
+                        localStorage.setItem(syncKey, '1');
+                        budget.transactions = backendTx.map(t => ({
+                            id: t.id,
+                            title: t.description || t.category,
+                            amount: parseFloat(t.amount) || 0,
+                            type: t.type,
+                            category: t.category,
+                            date: t.date,
+                            description: t.description || ''
+                        }));
+                        writeJson(getScopedKey('budget', user), budget);
+                    }
+
                     if (window.BudgetModule && window.BudgetModule.init) {
                         window.BudgetModule.init(user);
                     }

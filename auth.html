@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LifeSync - Sign In & Sign Up</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.6">
     <!-- Google Fonts for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -207,6 +207,88 @@
                     </button>
                 </div>
             </form>
+            <!-- FORGOT PASSWORD SECTION (SEPARATE DEDICATED VIEW IN AUTH CARD) -->
+            <div id="forgotPasswordSection" class="forgot-password-card-view hidden">
+                <div class="forgot-header-wrap">
+                    <button type="button" id="btnBackToSignIn" class="btn-icon-back" title="Back to Sign In" aria-label="Back to Sign In">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        <span>Back to Sign In</span>
+                    </button>
+                </div>
+
+                <!-- Step 1: Request email -->
+                <div id="forgotStep1" class="forgot-step-wrap">
+                    <div class="forgot-hero-header">
+                        <div class="forgot-badge-icon" aria-hidden="true">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <h2 class="forgot-section-title">Forgot Password?</h2>
+                        <p class="forgot-desc-text">
+                            No worries! Enter your registered account email and we'll send you recovery instructions to reset your password.
+                        </p>
+                    </div>
+
+                    <form id="forgotPasswordForm" class="auth-form-content" autocomplete="off">
+                        <div class="input-field-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                </svg>
+                            </span>
+                            <input type="email" id="forgotEmailInput" placeholder="Registered Email (e.g. alex@university.edu)" required autocomplete="email">
+                        </div>
+
+                        <div id="forgotErrorMsg" class="auth-error-banner hidden"></div>
+
+                        <button type="submit" id="btnForgotSubmit" class="btn-auth-primary forgot-submit-btn">
+                            <span>Send Reset Instructions</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Step 2: Success Confirmation -->
+                <div id="forgotStep2" class="forgot-success-box hidden">
+                    <div class="forgot-success-icon-badge">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="forgot-success-title">Check Your Inbox</h3>
+                    <p id="forgotSuccessMsg" class="forgot-success-desc">
+                        If an account matches your email, password reset instructions have been sent. Please check your inbox and spam folder.
+                    </p>
+                    <div class="forgot-tip-card">
+                        <div class="forgot-tip-item">
+                            <span class="forgot-tip-dot"></span>
+                            <span>Instructions arrive within 1-2 minutes.</span>
+                        </div>
+                        <div class="forgot-tip-item">
+                            <span class="forgot-tip-dot"></span>
+                            <span>The security link expires after 60 minutes.</span>
+                        </div>
+                    </div>
+                    <button type="button" id="btnForgotDone" class="btn-auth-primary">Back to Sign In</button>
+                    <p class="forgot-resend-prompt">
+                        Didn't receive the email? <button type="button" id="btnForgotResend" class="btn-text-link">Click here to resend</button>
+                    </p>
+                </div>
+
+                <p class="auth-switch-prompt" style="margin-top: 20px;">
+                    Remember your password? <a href="#" id="backToSignInLink">Sign in instead.</a>
+                </p>
+            </div>
         </div>
 
         <!-- RIGHT PANEL: BRANDING & ARTWORK BANNER -->
@@ -401,10 +483,11 @@
             <div class="google-modal-footer" style="margin-top: 14px;">
                 <p>Issues secure client-side JWT token with 7-day expiration.</p>
             </div>
-        </div>
     </div>
 
     <!-- JavaScript Modules -->
+
+
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>

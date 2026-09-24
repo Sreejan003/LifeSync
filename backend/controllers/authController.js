@@ -1,3 +1,4 @@
+const emailService = require('../services/emailService');
 /**
  * LifeSync Auth Controller (backend/controllers/authController.js)
  * -------------------------------------------------------------
@@ -225,9 +226,96 @@ async function googleAuth(req, res, next) {
     }
 }
 
+
+/**
+ * POST /api/auth/forgot-password
+ */
+async function forgotPassword(req, res, next) {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ error: 'Email address is required.' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const result = await db.query('SELECT id, name, email FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+
+        // Security best practice: Always return 200 to prevent user enumeration
+        if (result.rows.length === 0) {
+            return res.status(200).json({
+                message: 'If an account matches that email, reset instructions have been dispatched.'
+            });
+        }
+
+        const user = result.rows[0];
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5000';
+
+        const resetToken = jwt.sign(
+            { userId: user.id, email: user.email, type: 'pwd_reset' },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        const resetUrl = `${clientUrl}/auth.html?token=${resetToken}&tab=reset`;
+
+        await emailService.sendPasswordResetEmail({
+            to: user.email,
+            name: user.name,
+            resetUrl
+        });
+
+        return res.status(200).json({
+            message: 'Password reset instructions have been dispatched successfully.',
+            email: user.email
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+/**
+ * POST /api/auth/reset-password
+ */
+async function resetPassword(req, res, next) {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ error: 'Token and new password are required.' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (jwtErr) {
+            return res.status(401).json({ error: 'Invalid or expired password reset link. Please request a new one.' });
+        }
+
+        if (decoded.type !== 'pwd_reset' || !decoded.userId) {
+            return res.status(401).json({ error: 'Invalid reset token payload.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, decoded.userId]);
+
+        return res.status(200).json({
+            message: 'Password has been updated successfully. You can now sign in with your new password.'
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     register,
     login,
     getMe,
-    googleAuth
+    googleAuth,
+    forgotPassword,
+    resetPassword
 };

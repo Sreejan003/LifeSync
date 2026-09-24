@@ -2139,21 +2139,359 @@ body {
     border-top: 1px solid #e5e7eb;
 }
 
-/* RESPONSIVE BREAKPOINTS */
-@media (max-width: 860px) {
+/* =========================================
+   FORGOT PASSWORD SECTION (IN-CARD VIEW)
+========================================= */
+
+.forgot-password-card-view {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.forgot-password-card-view.hidden {
+    display: none;
+}
+
+.forgot-header-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 12px;
+}
+
+.btn-icon-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(108, 92, 231, 0.06);
+    border: 1px solid rgba(108, 92, 231, 0.15);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-color, #6C5CE7);
+    padding: 7px 14px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-icon-back:hover {
+    background: rgba(108, 92, 231, 0.12);
+    border-color: rgba(108, 92, 231, 0.3);
+    color: #5846e6;
+    transform: translateX(-3px);
+}
+
+.forgot-hero-header {
+    margin-bottom: 24px;
+}
+
+.forgot-badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(162, 155, 254, 0.25));
+    border: 1px solid rgba(108, 92, 231, 0.25);
+    color: #6C5CE7;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.12);
+}
+
+.forgot-section-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+    line-height: 1.25;
+}
+
+.forgot-desc-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #6b7280;
+    margin: 0;
+}
+
+.forgot-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.forgot-submit-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.forgot-submit-btn:hover svg {
+    transform: translateX(3px);
+}
+
+/* Step 2: Success Confirmation State */
+.forgot-success-box {
+    text-align: center;
+    padding: 28px 22px;
+    border-radius: 18px;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1.5px solid rgba(16, 185, 129, 0.25);
+    margin-bottom: 12px;
+    animation: fadeIn 0.35s ease;
+}
+
+.forgot-success-icon-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.12);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    margin: 0 auto 16px auto;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.forgot-success-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.3px;
+}
+
+.forgot-success-desc {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin: 0 0 20px 0;
+}
+
+.forgot-tip-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    text-align: left;
+}
+
+.forgot-tip-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: #6b7280;
+}
+
+.forgot-tip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    flex-shrink: 0;
+}
+
+.forgot-resend-prompt {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 16px 0 0 0;
+}
+
+.btn-text-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--primary-color, #6C5CE7);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.btn-text-link:hover {
+    color: #5846e6;
+}
+
+/* Dark mode overrides for forgot section */
+[data-theme="dark"] .forgot-section-title,
+.dark-theme .forgot-section-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .forgot-desc-text,
+.dark-theme .forgot-desc-text {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .forgot-badge-icon,
+.dark-theme .forgot-badge-icon {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: #a29bfe;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+}
+
+[data-theme="dark"] .btn-icon-back,
+.dark-theme .btn-icon-back {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #a29bfe;
+}
+
+[data-theme="dark"] .btn-icon-back:hover,
+.dark-theme .btn-icon-back:hover {
+    background: rgba(162, 155, 254, 0.18);
+    border-color: rgba(162, 155, 254, 0.35);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .forgot-success-box,
+.dark-theme .forgot-success-box {
+    background: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .forgot-success-title,
+.dark-theme .forgot-success-title {
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .forgot-success-desc,
+.dark-theme .forgot-success-desc {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .forgot-tip-card,
+.dark-theme .forgot-tip-card {
+    background: rgba(18, 22, 44, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .forgot-tip-item,
+.dark-theme .forgot-tip-item {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .forgot-resend-prompt,
+.dark-theme .forgot-resend-prompt {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-text-link,
+.dark-theme .btn-text-link {
+    color: #a29bfe;
+}
+
+[data-theme="dark"] .btn-text-link:hover,
+.dark-theme .btn-text-link:hover {
+    color: #c4b5fd;
+}
+
+/* =========================================
+   RESPONSIVE BREAKPOINTS (AUTH PAGE)
+========================================= */
+
+@media (max-width: 900px) {
+    .auth-page-body {
+        padding: 24px 16px;
+    }
+
     .auth-card-split {
         flex-direction: column;
         max-width: 480px;
+        min-height: auto;
+        border-radius: 20px;
+        margin: auto;
     }
 
+    /* Hide large decorative right panel on tablets & mobile for a clean focused card */
     .auth-right-panel {
-        padding: 32px 24px;
-        border-left: none;
-        border-top: 1px solid #eaeaf4;
+        display: none !important;
     }
 
     .auth-left-panel {
-        padding: 36px 28px;
+        padding: 36px 30px;
+        width: 100%;
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-page-body {
+        padding: 16px 12px;
+    }
+
+    .auth-card-split {
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(108, 92, 231, 0.12);
+    }
+
+    .auth-left-panel {
+        padding: 26px 18px;
+    }
+
+    .auth-main-header {
+        margin-bottom: 20px;
+    }
+
+    .auth-welcome-title {
+        font-size: 26px;
+    }
+
+    .auth-tab-nav {
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    .auth-tab-btn {
+        height: 40px;
+        font-size: 13.5px;
+    }
+
+    .btn-auth-primary {
+        height: 44px;
+        font-size: 14.5px;
+    }
+
+    .forgot-section-title {
+        font-size: 19px;
+    }
+
+    .social-buttons-row .social-btn {
+        height: 42px;
+        font-size: 13.5px;
+    }
+}
+
+@media (max-width: 360px) {
+    .auth-page-body {
+        padding: 12px 8px;
+    }
+
+    .auth-left-panel {
+        padding: 20px 14px;
+    }
+
+    .auth-welcome-title {
+        font-size: 22px;
+    }
+
+    .form-sub-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
 }
 
@@ -3111,7 +3449,13 @@ body.dashboard-body {
 }
 
 .custom-checkbox-wrap input {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
 }
 
 .checkbox-box {
@@ -4843,6 +5187,25 @@ body.dashboard-body {
     color: #ffffff;
 }
 
+/* Link-style action button used in panel headers ("+ Log Transaction", "Configure →", "+ Add Funds") */
+.btn-link-action {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #633bf5;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-link-action:hover {
+    background: rgba(99, 59, 245, 0.1);
+    color: #4c2ec4;
+}
+
 /* --- Dedicated Financial Runway View --- */
 .runway-main-card {
     padding: 26px;
@@ -4877,15 +5240,28 @@ body.dashboard-body {
     color: #633bf5;
 }
 
-.runway-controls-grid {
+.runway-controls-grid,
+.grid-control-runaway,
+.grid-control-runway {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     background: rgba(248, 246, 255, 0.7);
     padding: 20px;
-    border-radius: 16px;
+    border-radius: 18px;
     margin-bottom: 24px;
-    border: 1px solid rgba(196, 181, 253, 0.2);
+    border: 1px solid rgba(196, 181, 253, 0.25);
+}
+
+.control-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(196, 181, 253, 0.25);
+    border-radius: 14px;
+    padding: 16px 18px;
+    transition: all 0.2s ease;
 }
 
 .control-box label {
@@ -4893,14 +5269,22 @@ body.dashboard-body {
     font-size: 13px;
     font-weight: 700;
     color: #1e293b;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .control-box small {
     display: block;
     font-size: 11.5px;
     color: #64748b;
-    margin-top: 4px;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.control-box input[type="range"] {
+    width: 100%;
+    accent-color: #633bf5;
+    cursor: pointer;
+    margin: 8px 0;
 }
 
 .input-with-symbol {
@@ -7403,17 +7787,27 @@ body.dashboard-body.dark-theme {
 }
 
 .dark-theme .bsub-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: #94a3b8;
+    backdrop-filter: blur(10px);
 }
 
 .dark-theme .bsub-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(139, 92, 246, 0.35);
     color: #f1f5f9;
 }
 
 .dark-theme .bsub-btn.active {
-    background: rgba(99, 59, 245, 0.25);
-    color: #c4b5fd;
+    background: #633bf5 !important;
+    color: #ffffff !important;
+    border-color: #633bf5 !important;
+    box-shadow: 0 4px 16px rgba(99, 59, 245, 0.4) !important;
+}
+
+.dark-theme .bsub-btn span {
+    color: inherit;
 }
 
 .dark-theme .budget-stat-box {
@@ -7528,6 +7922,53 @@ body.dashboard-body.dark-theme {
 
 .dark-theme .benchmark-card-head strong {
     color: #f1f5f9;
+}
+
+/* ── BUDGET PLANNER BUTTON DARK MODE FIXES ──────────────────────────────── */
+/* .btn-link-action — panel header link buttons */
+.dark-theme .btn-link-action {
+    color: #a78bfa;
+}
+
+.dark-theme .btn-link-action:hover {
+    background: rgba(167, 139, 250, 0.12);
+    color: #c4b5fd;
+}
+
+/* .btn-sm-secondary — e.g. "Lock Night Spending" button */
+.dark-theme .btn-sm-secondary {
+    background: rgba(99, 59, 245, 0.12);
+    color: #c4b5fd;
+    border-color: rgba(139, 92, 246, 0.25);
+}
+
+.dark-theme .btn-sm-secondary:hover {
+    background: rgba(99, 59, 245, 0.22);
+    color: #e9d5ff;
+}
+
+/* .btn-quick-chip — quick spend chips (+₹50, +₹100, etc.) */
+.dark-theme .btn-quick-chip {
+    background: rgba(99, 59, 245, 0.12);
+    border-color: rgba(139, 92, 246, 0.25);
+    color: #c4b5fd;
+}
+
+.dark-theme .btn-quick-chip:hover {
+    background: #7c3aed;
+    border-color: #7c3aed;
+    color: #ffffff;
+}
+
+/* .night-safe-stat-row — limit / available stat row inside night-safe card */
+.dark-theme .night-safe-stat-row {
+    background: rgba(13, 16, 32, 0.70);
+    color: #f1f5f9;
+}
+
+/* .night-safe-card — the whole night safe card box */
+.dark-theme .night-safe-card {
+    border-color: rgba(124, 58, 237, 0.20);
 }
 
 .dark-theme .bench-track,
@@ -8508,4 +8949,1238 @@ html.dark-theme .mw-page-wrapper {
     color: #6F7D96;
 }
 
-
+
+/* =========================================================
+   GLOBAL SEARCH DROPDOWN
+   ========================================================= */
+.topbar-search-wrap {
+    position: relative;
+}
+
+.global-search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+    z-index: 999;
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 6px 0;
+    display: none;
+    animation: searchDropIn 0.18s ease;
+}
+
+.global-search-dropdown.show {
+    display: block;
+}
+
+@keyframes searchDropIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.search-result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+    border-radius: 8px;
+    margin: 2px 6px;
+    border: 1px solid transparent;
+}
+
+.search-result-row:hover,
+.search-result-row.selected {
+    background: var(--hover-bg, #f1f5f9);
+    border-color: rgba(99, 59, 245, 0.2);
+}
+
+.search-result-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 26px;
+    text-align: center;
+}
+
+.search-result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.search-result-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary, #1e293b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-sub {
+    font-size: 11.5px;
+    color: var(--text-secondary, #64748b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-badge-category {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(99, 59, 245, 0.1);
+    color: #633bf5;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.search-empty {
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--text-secondary, #64748b);
+    text-align: center;
+    line-height: 1.5;
+}
+
+.dark-theme .global-search-dropdown {
+    background: #101c33;
+    border-color: #1e2f52;
+    box-shadow: 0 16px 45px rgba(0,0,0,0.55);
+}
+
+.dark-theme .search-result-row:hover,
+.dark-theme .search-result-row.selected {
+    background: rgba(99, 59, 245, 0.18);
+    border-color: rgba(139, 92, 246, 0.45);
+}
+
+.dark-theme .search-result-label {
+    color: #f1f5f9;
+}
+
+.dark-theme .search-result-sub {
+    color: #94a3b8;
+}
+
+.dark-theme .search-badge-category {
+    background: rgba(139, 92, 246, 0.22);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.dark-theme .search-empty {
+    color: #cbd5e1;
+}
+
+/* =========================================================
+   FORGOT PASSWORD MODAL ENHANCEMENTS
+   ========================================================= */
+.auth-error-box {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.dark-theme .auth-error-box {
+    background: rgba(220, 53, 69, 0.15);
+    color: #ff7b8a;
+}
+
+/* ==========================================================================
+   COMPREHENSIVE DARK MODE + RESPONSIVE FIX PATCH
+   Fixes: SVG visibility in dark/mobile, budget planner invisible divs,
+          mobile responsive stacking for budget planner panels.
+   ========================================================================== */
+
+/* ── 1. SVG ICONS — DARK MODE VISIBILITY ─────────────────────────────────── */
+/* Hamburger / mobile menu toggle — white on dark bg */
+.dark-theme .mobile-menu-toggle {
+    color: #f1f5f9;
+}
+.dark-theme .mobile-menu-toggle svg {
+    stroke: #f1f5f9;
+}
+.dark-theme .mobile-menu-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+}
+
+/* Top-navbar icon buttons (notification bell, theme toggle) */
+.dark-theme .btn-icon-header svg {
+    stroke: #cbd5e1;
+}
+.dark-theme .btn-icon-header:hover svg {
+    stroke: #ffffff;
+}
+
+/* Theme-toggle icon (sun / moon SVG) */
+.dark-theme #btnThemeToggle {
+    color: #cbd5e1;
+}
+.dark-theme #btnThemeToggle:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Search icon in topbar */
+.dark-theme .search-icon {
+    stroke: #64748b;
+}
+
+/* Sidebar brand logo SVG blocks — keep vivid, not re-themed */
+.dark-theme .brand-badge-icon svg {
+    opacity: 1;
+}
+
+/* Mobile bottom nav SVG icons */
+.dark-theme .mobile-nav-btn svg {
+    stroke: #94a3b8;
+}
+.dark-theme .mobile-nav-btn.active svg {
+    stroke: #a78bfa;
+}
+
+/* Sidebar nav icon SVG (already handled but force on mobile overlay) */
+.dark-theme .app-sidebar .nav-icon-svg {
+    stroke: #8a99ad;
+}
+.dark-theme .app-sidebar .nav-item-btn.active .nav-icon-svg {
+    stroke: #ffffff !important;
+}
+
+/* Sidebar logout icon */
+.dark-theme .sidebar-logout-btn svg {
+    stroke: #8a99ad;
+}
+
+/* ── 2. BUDGET PLANNER — DARK MODE INVISIBLE DIV FIXES ───────────────────── */
+
+/* transaction-row background */
+.dark-theme .transaction-row {
+    background: rgba(255, 255, 255, 0.035) !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* runway snapshot card */
+.dark-theme .runway-snapshot-card {
+    background: rgba(19, 24, 46, 0.90) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* runway bar labels */
+.dark-theme .runway-month-label {
+    color: #94a3b8;
+}
+.dark-theme .runway-amount-label {
+    color: #a78bfa;
+}
+.dark-theme .runway-foot-stats {
+    color: #94a3b8;
+}
+.dark-theme .runway-foot-stats strong {
+    color: #f1f5f9;
+}
+.dark-theme .runway-bar-track {
+    background: rgba(99, 59, 245, 0.12);
+}
+
+/* night-safe card (the inner quick-spend chips area) */
+.dark-theme .night-safe-card {
+    background: rgba(19, 24, 46, 0.90) !important;
+    border-color: rgba(124, 58, 237, 0.18) !important;
+}
+
+/* night-safe-text paragraph */
+.dark-theme .night-safe-text {
+    color: #94a3b8;
+}
+
+/* night-safe stat row (shows limit / available) */
+.dark-theme .night-safe-stat-row {
+    background: rgba(13, 16, 32, 0.75) !important;
+    color: #f1f5f9 !important;
+}
+.dark-theme .night-safe-stat-row strong {
+    color: #c4b5fd;
+}
+
+/* bill-card backgrounds */
+.dark-theme .bill-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+}
+.dark-theme .bill-card.bill-paid {
+    background: rgba(13, 26, 20, 0.60) !important;
+}
+
+/* badge colors in dark mode */
+.dark-theme .badge-paid {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+.dark-theme .badge-pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+/* budget-progress-section */
+.dark-theme .budget-progress-section {
+    background: rgba(19, 24, 46, 0.90) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark-theme .budget-labels-row {
+    color: #94a3b8;
+}
+.dark-theme .budget-labels-row span:last-child {
+    color: #c4b5fd;
+    font-weight: 700;
+}
+
+/* budget-warning-banner */
+.dark-theme .budget-warning-banner {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+/* budget section description */
+.dark-theme .section-desc {
+    color: #94a3b8;
+}
+
+/* box-label (uppercase category labels) */
+.dark-theme .box-label {
+    color: #7c8da6;
+}
+
+/* panel header (spacing div between title and action button) */
+.dark-theme .panel-header {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* runway-kpi-badge */
+.dark-theme .runway-kpi-badge {
+    background: rgba(99, 59, 245, 0.15);
+    border-color: rgba(139, 92, 246, 0.30);
+}
+.dark-theme .runway-kpi-badge .kpi-title {
+    color: #a78bfa;
+}
+.dark-theme .runway-kpi-badge strong {
+    color: #f1f5f9;
+}
+
+/* goal card */
+.dark-theme .goal-card {
+    background: rgba(19, 24, 46, 0.90) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark-theme .goal-amount-row strong {
+    color: #f1f5f9;
+}
+.dark-theme .goal-target-sub {
+    color: #94a3b8;
+}
+.dark-theme .goal-meta-row {
+    color: #94a3b8;
+}
+.dark-theme .goal-meta-row strong {
+    color: #c4b5fd;
+}
+
+/* budget-side-panels stacking  */
+.dark-theme .budget-tx-panel {
+    background: rgba(19, 24, 46, 0.90) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ── 3. MOBILE RESPONSIVE — BUDGET PLANNER PANELS ────────────────────────── */
+@media (max-width: 860px) {
+    /* Budget two-column layout → single column */
+    .budget-two-col-layout {
+        grid-template-columns: 1fr;
+    }
+    /* Side panels stack vertically */
+    .budget-side-panels {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    /* Runway controls grid goes 1-col */
+    .runway-controls-grid {
+        grid-template-columns: 1fr !important;
+    }
+    /* Runway results grid → 2 col on tablet */
+    .runway-results-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    /* Night spend chips wrap nicely */
+    .night-quick-spend-row {
+        flex-wrap: wrap;
+    }
+    .btn-quick-chip {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+    }
+    /* Panel headers allow wrapping on small screens */
+    .panel-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    /* Metrics grid → 2 cols on tablet */
+    .budget-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    /* Budget metrics → 1 col on phone */
+    .budget-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    /* Runway results → 1 col on phone */
+    .runway-results-grid {
+        grid-template-columns: 1fr;
+    }
+    /* Night spend chips each full-width */
+    .btn-quick-chip {
+        flex: 1 1 calc(50% - 4px);
+    }
+    /* stat boxes in budget full width */
+    .budget-stat-box {
+        padding: 12px;
+    }
+    .budget-stat-box strong {
+        font-size: 18px;
+    }
+    /* runway controls header stacks */
+    .runway-header-row {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    /* runway-kpi-badge full width on phone */
+    .runway-kpi-badge {
+        width: 100%;
+        text-align: left;
+    }
+    /* subnav tabs scroll horizontally on phone */
+    .budget-subnav-bar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+    /* card-box inner padding reduce */
+    .card-box {
+        padding: 14px;
+    }
+    /* bills-dedicated-grid single col */
+    .bills-dedicated-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ── 4. GENERAL DARK-MODE RESPONSIVE FIXES ───────────────────────────────── */
+
+/* Ensure sidebar is fully dark when it overlays on mobile */
+.dark-theme .app-sidebar {
+    background: rgba(9, 14, 30, 0.98);
+}
+
+/* Sidebar backdrop darker */
+.dark-theme .sidebar-backdrop {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+/* Mobile bottom nav icons — ensure emoji/text colour visible */
+.dark-theme .mobile-nav-btn {
+    color: #94a3b8;
+}
+.dark-theme .mobile-nav-btn.active {
+    color: #a78bfa;
+}
+
+/* Modal dialogs in dark mode */
+.dark-theme .modal-overlay {
+    background: rgba(0, 0, 0, 0.75);
+}
+.dark-theme .modal-dialog {
+    background: #0d1728;
+    border: 1px solid #1d2b45;
+    color: #f1f5f9;
+}
+.dark-theme .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+.dark-theme .modal-header h3 {
+    color: #f1f5f9;
+}
+.dark-theme .modal-close {
+    color: #94a3b8;
+    background: transparent;
+}
+.dark-theme .modal-close:hover {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+.dark-theme .modal-actions {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* btn-secondary in dark mode */
+.dark-theme .btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: #c4b5fd;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.dark-theme .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: #e9d5ff;
+}
+
+/* ==========================================================================
+   SPACING IMPROVEMENTS + BUDGET DARK MODE COMPLETE FIX
+   ========================================================================== */
+
+/* ── SPACING: Main content area — more room to breathe ─────────────────── */
+.app-main-content {
+    padding: 32px 36px 80px 36px;
+}
+
+/* ── SPACING: View header — more room below ─────────────────────────────── */
+.view-header {
+    margin-bottom: 32px;
+    gap: 24px;
+}
+
+/* ── SPACING: View header actions — gap between buttons ─────────────────── */
+.view-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+/* ── SPACING: Budget metrics grid — more gap ─────────────────────────────── */
+.budget-metrics-grid {
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+/* ── SPACING: Budget stat boxes — more internal padding ──────────────────── */
+.budget-stat-box {
+    padding: 20px 18px;
+}
+.budget-stat-box strong {
+    font-size: 24px;
+    margin-top: 6px;
+}
+
+/* ── SPACING: card-box — bigger padding ─────────────────────────────────── */
+.card-box {
+    padding: 22px;
+    margin-bottom: 24px;
+}
+
+/* ── SPACING: Budget subnav bar ─────────────────────────────────────────── */
+.budget-subnav-bar {
+    margin-bottom: 24px;
+    gap: 6px;
+}
+
+/* ── SPACING: Budget two-col layout — bigger gap ────────────────────────── */
+.budget-two-col-layout {
+    gap: 24px;
+}
+
+/* ── SPACING: Transaction rows — more breathing room ────────────────────── */
+.transaction-row {
+    padding: 14px 16px;
+    gap: 14px;
+}
+
+/* ── SPACING: tx-list gap ───────────────────────────────────────────────── */
+.tx-list {
+    gap: 10px;
+}
+
+/* ── SPACING: night quick spend row ────────────────────────────────────── */
+.night-quick-spend-row {
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* ── SPACING: btn-quick-chip — taller ──────────────────────────────────── */
+.btn-quick-chip {
+    padding: 10px 8px;
+    font-size: 12px;
+}
+
+/* ── SPACING: night-safe stat row ──────────────────────────────────────── */
+.night-safe-stat-row {
+    padding: 12px 18px;
+    margin-top: 10px;
+}
+
+/* ── SPACING: runway bars grid — more height ───────────────────────────── */
+.runway-bars-grid {
+    height: 130px;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+/* ── SPACING: runway foot stats ────────────────────────────────────────── */
+.runway-foot-stats {
+    margin-top: 12px;
+}
+
+/* ── SPACING: benchmark cards ─────────────────────────────────────────── */
+.benchmark-card {
+    padding: 18px 20px;
+}
+
+/* ── SPACING: bill-card ────────────────────────────────────────────────── */
+.bill-card {
+    padding: 16px 18px;
+}
+
+/* ── SPACING: bills-dedicated-grid — more gap ──────────────────────────── */
+.bills-dedicated-grid {
+    gap: 16px;
+}
+
+/* ── SPACING: panel-header — more bottom gap ───────────────────────────── */
+.panel-header {
+    margin-bottom: 16px;
+}
+
+/* ── SPACING: progress track ────────────────────────────────────────────── */
+.progress-track {
+    height: 9px;
+    border-radius: 9px;
+}
+
+/* ── SPACING: budget progress section ──────────────────────────────────── */
+.budget-progress-section {
+    padding: 18px 22px;
+    margin-bottom: 24px;
+}
+
+/* ── SPACING: budget labels row ──────────────────────────────────────────── */
+.budget-labels-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ── SPACING: view-header-actions mobile ────────────────────────────────── */
+@media (max-width: 860px) {
+    .app-main-content {
+        padding: 20px 18px 90px 18px;
+    }
+    .view-header {
+        margin-bottom: 22px;
+        gap: 16px;
+    }
+    .view-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .view-header-actions .btn-primary,
+    .view-header-actions .btn-secondary,
+    .view-header-actions .btn-review-budget {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+        font-size: 12px;
+        padding: 9px 12px;
+    }
+    .card-box {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .budget-subnav-bar {
+        margin-bottom: 18px;
+    }
+}
+
+@media (max-width: 520px) {
+    .app-main-content {
+        padding: 14px 12px 90px 12px;
+    }
+    .view-header {
+        margin-bottom: 16px;
+    }
+    .view-header-actions {
+        gap: 8px;
+    }
+    .view-header-actions .btn-primary,
+    .view-header-actions .btn-secondary,
+    .view-header-actions .btn-review-budget {
+        flex: 1 1 calc(50% - 4px);
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+    .budget-metrics-grid {
+        gap: 12px;
+    }
+    .budget-stat-box {
+        padding: 14px;
+    }
+    .transaction-row {
+        padding: 10px 12px;
+    }
+}
+
+/* ==========================================================================
+   BUDGET DARK MODE — COMPLETE REMAINING FIXES
+   All dynamically rendered budget HTML elements
+   ========================================================================== */
+
+/* ── Benchmark view ─────────────────────────────────────────────────────── */
+.dark-theme .benchmark-card {
+    background: rgba(20, 26, 48, 0.90) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+.dark-theme .benchmark-card-head strong {
+    color: #f1f5f9 !important;
+}
+.dark-theme .badge-diff {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 3px 10px;
+}
+.dark-theme .diff-below {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.1);
+}
+.dark-theme .diff-above {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+.dark-theme .bench-label {
+    color: #94a3b8;
+}
+.dark-theme .bench-amount {
+    color: #f1f5f9;
+}
+.dark-theme .bench-muted {
+    color: #64748b;
+}
+.dark-theme .bench-track {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Interactive bar chart (runway dedicated view) ──────────────────────── */
+.dark-theme .bar-val-bubble {
+    background: rgba(99, 59, 245, 0.18);
+    color: #c4b5fd;
+    border-radius: 8px;
+    padding: 2px 8px;
+}
+.dark-theme .bar-month-title {
+    color: #94a3b8;
+}
+.dark-theme .interactive-bar-col strong {
+    color: #94a3b8;
+}
+.dark-theme .interactive-bar-track {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Bill action buttons ─────────────────────────────────────────────────── */
+.dark-theme .btn-sm-action {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.dark-theme .btn-sm-action:hover {
+    background: rgba(16, 185, 129, 0.25);
+}
+
+.dark-theme .btn-icon-soft {
+    background: transparent;
+    color: #94a3b8;
+}
+.dark-theme .btn-icon-soft.btn-icon-danger {
+    color: #f87171;
+}
+.dark-theme .btn-icon-soft.btn-icon-danger:hover {
+    background: rgba(248, 113, 113, 0.12);
+}
+.dark-theme .btn-icon-xs {
+    color: #64748b;
+}
+.dark-theme .btn-icon-xs:hover {
+    color: #f87171;
+}
+
+/* ── Empty list notice ──────────────────────────────────────────────────── */
+.dark-theme .empty-list-notice {
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* ── budget-warning-banner variants ─────────────────────────────────────── */
+.dark-theme .budget-warning-banner.banner-danger {
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.30);
+    color: #fca5a5;
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.dark-theme .budget-warning-banner.banner-warning {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    color: #fbbf24;
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ── tx-amount color ─────────────────────────────────────────────────────── */
+.dark-theme .tx-amount {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* ── Runway dedicated sub-view ───────────────────────────────────────────── */
+.dark-theme .runway-main-card {
+    background: rgba(13, 23, 40, 0.90) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.dark-theme .runway-controls-grid {
+    gap: 16px;
+}
+.dark-theme .section-header h2,
+.dark-theme .runway-header-row h2 {
+    color: #f1f5f9;
+}
+
+/* ── Night safe dedicated sub-view ──────────────────────────────────────── */
+.dark-theme .night-dedicated-card {
+    background: rgba(13, 23, 40, 0.90) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.dark-theme .night-stat-item strong {
+    color: #f1f5f9;
+}
+.dark-theme .night-stat-item span {
+    color: #94a3b8;
+}
+
+/* ── Goal card progress bar ──────────────────────────────────────────────── */
+.dark-theme .progress-emerald {
+    background: linear-gradient(90deg, #059669, #34d399) !important;
+}
+
+/* ── Budget streak pill ──────────────────────────────────────────────────── */
+.dark-theme .budget-streak-pill {
+    background: rgba(99, 59, 245, 0.18);
+    border-color: rgba(139, 92, 246, 0.30);
+    color: #c4b5fd;
+}
+
+/* ── Notif dropdown dark ─────────────────────────────────────────────────── */
+.dark-theme .notif-dropdown {
+    background: #0d1728;
+    border-color: #1d2b45;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+}
+.dark-theme .notif-dropdown-header h3 {
+    color: #f1f5f9;
+}
+.dark-theme .notif-dropdown-header {
+    border-bottom-color: rgba(255,255,255,0.07);
+}
+.dark-theme .notif-badge-pill {
+    background: rgba(99,59,245,0.18);
+    color: #c4b5fd;
+}
+
+/* ── Sidebar brand title dark ────────────────────────────────────────────── */
+.dark-theme .brand-title-text {
+    color: #f1f5f9;
+}
+
+/* ── Sidebar divider ─────────────────────────────────────────────────────── */
+.dark-theme .sidebar-brand-block {
+    border-bottom-color: rgba(255,255,255,0.07);
+}
+
+
+
+/* ==========================================================================
+   BUDGET PLANNER COMPLETE DARK MODE OVERHAUL (ZERO BAD WHITES)
+   ========================================================================== */
+
+/* ── Subnav bar ── */
+.dark-theme .budget-subnav-bar {
+    background: rgba(13, 16, 32, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 6px;
+    gap: 8px;
+}
+
+/* ── Runway Snapshot (Overview Subtab) ── */
+.dark-theme .runway-snapshot-card {
+    background: #0d1728 !important;
+    border: 1px solid #1d2b45 !important;
+}
+.dark-theme .runway-bars-grid {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+.dark-theme .runway-bar-track {
+    background: rgba(255, 255, 255, 0.06);
+}
+.dark-theme .runway-month-label {
+    color: #94a3b8;
+}
+.dark-theme .runway-amount-label {
+    color: #c4b5fd;
+}
+.dark-theme .runway-foot-stats {
+    color: #94a3b8;
+}
+.dark-theme .runway-foot-stats strong {
+    color: #f8fafc;
+}
+
+/* ── Financial Runway Dedicated Subtab ── */
+.dark-theme .runway-main-card {
+    background: #0d1728 !important;
+    border: 1px solid #1d2b45 !important;
+}
+.dark-theme .runway-kpi-badge {
+    background: rgba(99, 59, 245, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+.dark-theme .runway-kpi-badge .kpi-title {
+    color: #a78bfa;
+}
+.dark-theme .runway-kpi-badge strong {
+    color: #c4b5fd;
+}
+.dark-theme .runway-chart-container {
+    background: #0d1728;
+    border: 1px solid #1d2b45;
+}
+.dark-theme .chart-header h4 {
+    color: #f8fafc;
+}
+.dark-theme .chart-subtitle {
+    color: #94a3b8;
+}
+.dark-theme .runway-metric-box {
+    background: #111c33;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.dark-theme .runway-metric-box strong {
+    color: #f8fafc;
+}
+.dark-theme .runway-metric-box.highlight-purple {
+    background: linear-gradient(135deg, rgba(99, 59, 245, 0.20), rgba(139, 92, 246, 0.08));
+    border-color: rgba(139, 92, 246, 0.35);
+}
+.dark-theme .runway-metric-box.highlight-green {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.20), rgba(5, 150, 105, 0.08));
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+/* ── Late-Night Safe Subtab ── */
+.dark-theme .night-dedicated-card {
+    background: #0d1728 !important;
+    border: 1px solid #1d2b45 !important;
+}
+.dark-theme .night-top-section {
+    background: linear-gradient(135deg, rgba(24, 30, 56, 0.95), rgba(15, 20, 38, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dark-theme .night-status-info h2 {
+    color: #f8fafc;
+}
+.dark-theme .night-status-info p {
+    color: #94a3b8;
+}
+.dark-theme .night-progress-wrap {
+    background: #0d1728;
+    border: 1px solid #1d2b45;
+}
+.dark-theme .night-actions-panel {
+    background: #0d1728;
+    border: 1px solid #1d2b45;
+}
+.dark-theme .night-actions-panel h4 {
+    color: #f8fafc;
+}
+.dark-theme .night-actions-panel p {
+    color: #94a3b8;
+}
+.dark-theme .night-stat-item {
+    background: #111c33;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dark-theme .night-stat-item strong {
+    color: #f8fafc;
+}
+.dark-theme .night-stat-item.highlight-item {
+    background: linear-gradient(135deg, rgba(99, 59, 245, 0.18), rgba(139, 92, 246, 0.08));
+    border-color: rgba(139, 92, 246, 0.35);
+}
+.dark-theme .btn-night-action {
+    background: #111c33;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
+}
+.dark-theme .btn-night-action span {
+    color: #cbd5e1;
+}
+.dark-theme .btn-night-action strong {
+    color: #c4b5fd;
+}
+.dark-theme .btn-night-action:hover {
+    background: #633bf5;
+    border-color: #633bf5;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(99, 59, 245, 0.35);
+}
+.dark-theme .btn-night-action:hover span,
+.dark-theme .btn-night-action:hover strong {
+    color: #ffffff;
+}
+
+/* ── Splitter & Goals Subtab ── */
+.dark-theme .splitter-result-box {
+    background: rgba(13, 23, 40, 0.85);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+.dark-theme .splitter-result-box span {
+    color: #94a3b8;
+}
+.dark-theme .splitter-result-box strong {
+    color: #c4b5fd;
+}
+.dark-theme .goal-amount-row strong {
+    color: #f8fafc;
+}
+.dark-theme .goal-target-sub {
+    color: #94a3b8;
+}
+.dark-theme .goal-meta-row {
+    color: #94a3b8;
+}
+.dark-theme .goal-meta-row strong {
+    color: #f8fafc;
+}
+
+/* ── Peer Benchmark Subtab ── */
+.dark-theme .benchmark-main-card {
+    background: #0d1728 !important;
+    border: 1px solid #1d2b45 !important;
+}
+.dark-theme .benchmark-card {
+    background: #111c33 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.dark-theme .benchmark-card-head strong {
+    color: #f8fafc !important;
+}
+.dark-theme .legend-item {
+    color: #94a3b8;
+}
+
+/* ── Standalone Link Button ── */
+.dark-theme .btn-standalone-link {
+    background: rgba(99, 59, 245, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+}
+.dark-theme .btn-standalone-link:hover {
+    background: #633bf5;
+    border-color: #633bf5;
+    color: #ffffff;
+}
+
+
+/* ── RUNWAY CONTROLS GRID & BOXES DARK MODE (GRID-CONTROL-RUNAWAY) ───────── */
+html.dark-theme div.grid-control-runaway,
+body.dark-theme div.grid-control-runaway,
+.dark-theme div.grid-control-runaway,
+div.grid-control-runaway.dark-theme,
+div.grid-control-runaway.dark,
+[data-theme="dark"] div.grid-control-runaway,
+html.dark-theme .grid-control-runaway,
+body.dark-theme .grid-control-runaway,
+.dark-theme .grid-control-runaway,
+html.dark-theme div.runway-controls-grid,
+body.dark-theme div.runway-controls-grid,
+.dark-theme div.runway-controls-grid,
+html.dark-theme .runway-controls-grid,
+body.dark-theme .runway-controls-grid,
+.dark-theme .runway-controls-grid,
+html.dark-theme .grid-control-runway,
+body.dark-theme .grid-control-runway,
+.dark-theme .grid-control-runway {
+    background: #0f172a !important;
+    background-color: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 18px !important;
+    padding: 20px !important;
+    gap: 20px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.dark-theme div.grid-control-runaway .control-box,
+body.dark-theme div.grid-control-runaway .control-box,
+.dark-theme div.grid-control-runaway .control-box,
+html.dark-theme .grid-control-runaway .control-box,
+body.dark-theme .grid-control-runaway .control-box,
+.dark-theme .grid-control-runaway .control-box,
+html.dark-theme .runway-controls-grid .control-box,
+body.dark-theme .runway-controls-grid .control-box,
+.dark-theme .runway-controls-grid .control-box,
+html.dark-theme .control-box,
+body.dark-theme .control-box,
+.dark-theme .control-box {
+    background: #1e293b !important;
+    background-color: #1e293b !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 14px !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+    transition: all 0.2s ease !important;
+}
+
+html.dark-theme div.grid-control-runaway .control-box:hover,
+body.dark-theme div.grid-control-runaway .control-box:hover,
+.dark-theme div.grid-control-runaway .control-box:hover,
+html.dark-theme .grid-control-runaway .control-box:hover,
+body.dark-theme .grid-control-runaway .control-box:hover,
+.dark-theme .grid-control-runaway .control-box:hover,
+html.dark-theme .runway-controls-grid .control-box:hover,
+body.dark-theme .runway-controls-grid .control-box:hover,
+.dark-theme .runway-controls-grid .control-box:hover,
+html.dark-theme .control-box:hover,
+body.dark-theme .control-box:hover,
+.dark-theme .control-box:hover,
+html.dark-theme .control-box:focus-within,
+body.dark-theme .control-box:focus-within,
+.dark-theme .control-box:focus-within {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.2) !important;
+}
+
+html.dark-theme .control-box label,
+body.dark-theme .control-box label,
+.dark-theme .control-box label {
+    color: #f1f5f9 !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+}
+
+html.dark-theme .control-box small,
+body.dark-theme .control-box small,
+.dark-theme .control-box small {
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    margin-top: 8px !important;
+    line-height: 1.45 !important;
+}
+
+html.dark-theme .control-box input[type="range"],
+body.dark-theme .control-box input[type="range"],
+.dark-theme .control-box input[type="range"] {
+    accent-color: #8b5cf6 !important;
+}
+
+html.dark-theme .control-box .input-with-symbol,
+body.dark-theme .control-box .input-with-symbol,
+.dark-theme .control-box .input-with-symbol,
+html.dark-theme .input-with-symbol,
+body.dark-theme .input-with-symbol,
+.dark-theme .input-with-symbol {
+    background: #0f172a !important;
+    background-color: #0f172a !important;
+    border: 1.5px solid #334155 !important;
+    border-radius: 12px !important;
+    padding: 2px 14px !important;
+    transition: all 0.2s ease !important;
+}
+
+html.dark-theme .control-box .input-with-symbol:focus-within,
+body.dark-theme .control-box .input-with-symbol:focus-within,
+.dark-theme .control-box .input-with-symbol:focus-within,
+html.dark-theme .input-with-symbol:focus-within,
+body.dark-theme .input-with-symbol:focus-within,
+.dark-theme .input-with-symbol:focus-within {
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+    background: #0f172a !important;
+}
+
+html.dark-theme .control-box .input-with-symbol span,
+body.dark-theme .control-box .input-with-symbol span,
+.dark-theme .control-box .input-with-symbol span,
+html.dark-theme .input-with-symbol span,
+body.dark-theme .input-with-symbol span,
+.dark-theme .input-with-symbol span {
+    color: #a78bfa !important;
+    font-weight: 800 !important;
+    font-size: 17px !important;
+}
+
+html.dark-theme .control-box .input-with-symbol input,
+body.dark-theme .control-box .input-with-symbol input,
+.dark-theme .control-box .input-with-symbol input,
+html.dark-theme .input-with-symbol input,
+body.dark-theme .input-with-symbol input,
+.dark-theme .input-with-symbol input {
+    color: #f8fafc !important;
+    background: transparent !important;
+    font-size: 15.5px !important;
+    font-weight: 700 !important;
+}
+
+html.dark-theme .slider-val-badge,
+body.dark-theme .slider-val-badge,
+.dark-theme .slider-val-badge {
+    background: rgba(124, 58, 237, 0.25) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.45) !important;
+    font-weight: 800 !important;
+    padding: 3px 10px !important;
+    border-radius: 10px !important;
+}

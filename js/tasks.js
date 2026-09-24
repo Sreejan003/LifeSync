@@ -63,7 +63,7 @@
         },
 
         updateTask(user, taskId, updates) {
-            const task = currentTasks.find(t => t.id === taskId);
+            const task = currentTasks.find(t => String(t.id) === String(taskId));
             if (!task) throw new Error('Task not found.');
 
             if (updates.title !== undefined) task.title = updates.title.trim();
@@ -81,12 +81,15 @@
             }
 
             window.LifeSyncStorage.saveTasks(user, currentTasks);
+            if (window.LifeSyncStorage && window.LifeSyncStorage.saveTask) {
+                window.LifeSyncStorage.saveTask(user, task);
+            }
             notifyChange();
             return task;
         },
 
         toggleComplete(user, taskId) {
-            const task = currentTasks.find(t => t.id === taskId);
+            const task = currentTasks.find(t => String(t.id) === String(taskId));
             if (!task) return null;
 
             if (task.status === 'Completed') {
@@ -98,13 +101,19 @@
             }
 
             window.LifeSyncStorage.saveTasks(user, currentTasks);
+            if (window.LifeSyncStorage && window.LifeSyncStorage.saveTask) {
+                window.LifeSyncStorage.saveTask(user, task);
+            }
             notifyChange();
             return task;
         },
 
         deleteTask(user, taskId) {
-            currentTasks = currentTasks.filter(t => t.id !== taskId);
+            currentTasks = currentTasks.filter(t => String(t.id) !== String(taskId));
             window.LifeSyncStorage.saveTasks(user, currentTasks);
+            if (window.LifeSyncStorage && window.LifeSyncStorage.deleteTask) {
+                window.LifeSyncStorage.deleteTask(user, taskId);
+            }
             notifyChange();
         },
 
@@ -121,9 +130,11 @@
             if (searchQuery.trim()) {
                 const q = searchQuery.toLowerCase().trim();
                 list = list.filter(t => 
-                    t.title.toLowerCase().includes(q) ||
-                    (t.description && t.description.toLowerCase().includes(q)) ||
-                    t.category.toLowerCase().includes(q)
+                    (t.title || '').toLowerCase().includes(q) ||
+                    (t.description || '').toLowerCase().includes(q) ||
+                    (t.category || '').toLowerCase().includes(q) ||
+                    (t.priority || '').toLowerCase().includes(q) ||
+                    (t.status || '').toLowerCase().includes(q)
                 );
             }
 

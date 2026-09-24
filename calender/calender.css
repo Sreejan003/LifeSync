@@ -685,3 +685,121 @@ select:focus {
         height: 60px;
     }
 }
+
+
+/* ================= AUTOMATIC PRIORITY & REMINDER LIST STYLES ================= */
+
+.calendar-task,
+.event {
+    display: block;
+    margin-top: 5px;
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: transform 0.15s ease;
+}
+
+.calendar-task:hover,
+.event:hover {
+    transform: scale(1.02);
+}
+
+.task-high {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border-left: 3px solid #ef4444;
+}
+
+.task-medium {
+    background: #fef3c7 !important;
+    color: #d97706 !important;
+    border-left: 3px solid #f59e0b;
+}
+
+.task-low {
+    background: #dcfce7 !important;
+    color: #16a34a !important;
+    border-left: 3px solid #22c55e;
+}
+
+.selected .task-high,
+.selected .task-medium,
+.selected .task-low {
+    border-left: 3px solid white;
+}
+
+.day-number {
+    font-weight: 700;
+    font-size: 13px;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.reminder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    margin-top: 12px;
+}
+
+.reminder {
+    background: #faf8ff;
+    border: 1px solid #eee7ff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: #4b5563;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.reminder:hover {
+    transform: translateY(-1px);
+    border-color: #d8c6ff;
+}
+
+.reminder-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 4px;
+}
+
+.reminder .high {
+    display: inline-block;
+    background: #fee2e2;
+    color: #dc2626;
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.reminder .medium {
+    display: inline-block;
+    background: #fef3c7;
+    color: #d97706;
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.reminder .low {
+    display: inline-block;
+    background: #dcfce7;
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
