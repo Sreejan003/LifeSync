@@ -200,6 +200,46 @@ async function initDatabase() {
         );
     `);
 
+    // 8. Wellness Sudoku Games Table
+    await query(`
+        CREATE TABLE IF NOT EXISTS wellness_sudoku_games (
+            id ${idType},
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            puzzle_id VARCHAR(100),
+            difficulty VARCHAR(20) DEFAULT 'medium',
+            is_completed BOOLEAN DEFAULT 0,
+            time_seconds INTEGER DEFAULT 0,
+            mistakes_count INTEGER DEFAULT 0,
+            hints_used INTEGER DEFAULT 0,
+            checks_count INTEGER DEFAULT 0,
+            started_at ${timestampType},
+            completed_at ${timestampType},
+            updated_at ${timestampType}
+        );
+    `);
+
+    // 9. Wellness Game Progress (Word Scramble, Riddles, Breathing Pacer)
+    await query(`
+        CREATE TABLE IF NOT EXISTS wellness_game_progress (
+            user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+            scramble_xp INTEGER DEFAULT 0,
+            scramble_streak INTEGER DEFAULT 0,
+            scramble_best_streak INTEGER DEFAULT 0,
+            scramble_words_completed INTEGER DEFAULT 0,
+            scramble_hints_used INTEGER DEFAULT 0,
+            scramble_last_played ${timestampType},
+            riddles_attempted INTEGER DEFAULT 0,
+            riddles_solved INTEGER DEFAULT 0,
+            riddles_xp INTEGER DEFAULT 0,
+            riddles_last_played ${timestampType},
+            breathing_cycles INTEGER DEFAULT 0,
+            breathing_sessions INTEGER DEFAULT 0,
+            breathing_last_session ${timestampType},
+            created_at ${timestampType},
+            updated_at ${timestampType}
+        );
+    `);
+
     console.log('✅ Database schema verified and initialized.');
 }
 

@@ -43,6 +43,7 @@ require(path.join(jsDir, 'calendar.js'));
 require(path.join(jsDir, 'smart-organizer.js'));
 require(path.join(jsDir, 'budget.js'));
 require(path.join(jsDir, 'wellness.js'));
+require(path.join(jsDir, 'soothing-games.js'));
 require(path.join(jsDir, 'analytics.js'));
 require(path.join(jsDir, 'notifications.js'));
 require(path.join(jsDir, 'profile.js'));
@@ -340,4 +341,137 @@ assert(styleCss.includes('@media (max-width: 900px)') && styleCss.includes('.aut
 assert(styleCss.includes('@media (max-width: 480px)'), 'style.css includes mobile breakpoint for 480px');
 console.log('✓ PASS: Dedicated Forgot Password section and responsive auth layout verified');
 
-console.log('\n🎉 ALL LIFESYNC INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉');
+// 17. Soothing Games & Mindful Break Verification
+assert(window.SoothingGamesModule && typeof window.SoothingGamesModule.init === 'function', 'SoothingGamesModule initialized with public API');
+assert(typeof window.SoothingGamesModule.initSudokuGame === 'function', 'SoothingGamesModule exposes initSudokuGame');
+assert(typeof window.SoothingGamesModule.loadNextScramble === 'function', 'SoothingGamesModule exposes loadNextScramble');
+assert(typeof window.SoothingGamesModule.loadFreshRiddle === 'function', 'SoothingGamesModule exposes loadFreshRiddle');
+assert(typeof window.SoothingGamesModule.startBreathingPacer === 'function', 'SoothingGamesModule exposes startBreathingPacer');
+assert(typeof window.SoothingGamesModule.switchGameTab === 'function', 'SoothingGamesModule exposes switchGameTab');
+
+assert(indexHtml.includes('id="wellnessGamesSection"'), 'index.html contains #wellnessGamesSection');
+assert(indexHtml.includes('id="sudokuGridContainer"'), 'index.html contains #sudokuGridContainer');
+assert(indexHtml.includes('id="scrambleAnswerSlots"'), 'index.html contains #scrambleAnswerSlots');
+assert(indexHtml.includes('id="breathingCircleOrb"'), 'index.html contains #breathingCircleOrb');
+assert(indexHtml.includes('js/soothing-games.js'), 'index.html imports soothing-games.js');
+
+assert(styleCss.includes('.wellness-games-card'), 'style.css contains .wellness-games-card');
+assert(styleCss.includes('.sudoku-grid') && styleCss.includes('.sudoku-cell'), 'style.css contains Zen Sudoku styles');
+assert(styleCss.includes('.breathing-orb') && styleCss.includes('.letter-tile'), 'style.css contains 4-7-8 Breathing and Scramble styles');
+assert(styleCss.includes('.dark-theme .wellness-games-card'), 'style.css contains dark-theme styling for soothing games');
+
+const mentalWellnessHtml = fs.readFileSync(path.join(__dirname, 'MentalWellness', 'MentalWellness.html'), 'utf8');
+const mentalWellnessCss = fs.readFileSync(path.join(__dirname, 'MentalWellness', 'MentalWellness.css'), 'utf8');
+assert(mentalWellnessHtml.includes('id="wellnessGamesSection"'), 'MentalWellness.html contains #wellnessGamesSection');
+assert(mentalWellnessHtml.includes('soothing-games.js'), 'MentalWellness.html includes soothing-games.js');
+assert(mentalWellnessCss.includes('.wellness-games-card'), 'MentalWellness.css contains .wellness-games-card');
+
+console.log('✓ PASS: Soothing Games (Zen Sudoku, Word Scramble, Mindful Riddle, 4-7-8 Breathing) verified across modules, HTML, and CSS');
+
+// 18. Backend Soothing Games & Mindful Break API Verification
+(async () => {
+    const db = require('./backend/config/db');
+    const gamesController = require('./backend/controllers/wellnessGamesController');
+    const authMiddleware = require('./backend/middleware/authMiddleware');
+    const apiJs = fs.readFileSync(path.join(__dirname, 'js', 'api.js'), 'utf8');
+
+    // 18a. Verify LifeSyncAPI client methods in js/api.js
+    assert(apiJs.includes('getWellnessGamesSummary()'), 'js/api.js exposes getWellnessGamesSummary()');
+    assert(apiJs.includes('getSudokuProgress()'), 'js/api.js exposes getSudokuProgress()');
+    assert(apiJs.includes('saveSudokuProgress('), 'js/api.js exposes saveSudokuProgress()');
+    assert(apiJs.includes('completeSudoku('), 'js/api.js exposes completeSudoku()');
+    assert(apiJs.includes('getWordScrambleProgress()'), 'js/api.js exposes getWordScrambleProgress()');
+    assert(apiJs.includes('saveWordScrambleProgress('), 'js/api.js exposes saveWordScrambleProgress()');
+    assert(apiJs.includes('getRiddleProgress()'), 'js/api.js exposes getRiddleProgress()');
+    assert(apiJs.includes('saveRiddleProgress('), 'js/api.js exposes saveRiddleProgress()');
+    assert(apiJs.includes('getBreathingProgress()'), 'js/api.js exposes getBreathingProgress()');
+    assert(apiJs.includes('saveBreathingProgress('), 'js/api.js exposes saveBreathingProgress()');
+
+    await db.initDatabase();
+
+    function mockRes() {
+        const res = {
+            statusCode: 200,
+            body: null,
+            status(code) { this.statusCode = code; return this; },
+            json(data) { this.body = data; return this; }
+        };
+        return res;
+    }
+
+    // 18b. Verify unauthenticated request rejection (401)
+    const unauthRes = mockRes();
+    let nextCalled = false;
+    authMiddleware({ headers: {} }, unauthRes, () => { nextCalled = true; });
+    assert(unauthRes.statusCode === 401 && !nextCalled, 'Unauthenticated user cannot save or access wellness progress (401)');
+
+    // 18c. Test users for tenant isolation: User A (1001) and User B (1002)
+    await db.query("INSERT OR IGNORE INTO users (id, name, email, password) VALUES (1001, 'Student Alice', 'alice@lifesync.edu', 'hash1')");
+    await db.query("INSERT OR IGNORE INTO users (id, name, email, password) VALUES (1002, 'Student Bob', 'bob@lifesync.edu', 'hash2')");
+    await db.query("DELETE FROM wellness_sudoku_games WHERE user_id IN (1001, 1002)");
+    await db.query("DELETE FROM wellness_game_progress WHERE user_id IN (1001, 1002)");
+
+    // 18d. Sudoku Progress & Completion
+    const saveSudokuRes = mockRes();
+    await gamesController.saveSudokuProgress({
+        user: { id: 1001 },
+        body: { puzzleId: 'puzzle_test_01', difficulty: 'hard', timeSeconds: 90, mistakesCount: 1 }
+    }, saveSudokuRes, (e) => { throw e; });
+    assert(saveSudokuRes.statusCode === 200 && saveSudokuRes.body.game.difficulty === 'hard', 'Sudoku in-progress state saved correctly for authenticated User A');
+
+    const completeSudokuRes = mockRes();
+    await gamesController.completeSudoku({
+        user: { id: 1001 },
+        body: { puzzleId: 'puzzle_test_01', difficulty: 'hard', timeSeconds: 180, mistakesCount: 1, hintsUsed: 1, checksCount: 2 }
+    }, completeSudokuRes, (e) => { throw e; });
+    assert(completeSudokuRes.statusCode === 200 && completeSudokuRes.body.game.is_completed == 1, 'Sudoku completion persisted with time, hints, and checks');
+
+    // 18e. Multi-tenant isolation: User B must not see User A's Sudoku progress
+    const userBSudokuRes = mockRes();
+    await gamesController.getSudokuProgress({ user: { id: 1002 } }, userBSudokuRes, (e) => { throw e; });
+    assert(userBSudokuRes.body.completedCount === 0, 'Multi-tenant isolation verified: User A Sudoku is isolated from User B');
+
+    // 18f. Word Scramble Streak & XP
+    const scrambleRes = mockRes();
+    await gamesController.saveWordScrambleProgress({
+        user: { id: 1001 },
+        body: { streak: 5, xpEarned: 50, wordCompleted: true, word: 'SERENITY' }
+    }, scrambleRes, (e) => { throw e; });
+    assert(scrambleRes.statusCode === 200 && scrambleRes.body.streak === 5 && scrambleRes.body.xp === 50, 'Word Scramble streak and XP persist correctly for authenticated user');
+
+    const userBScrambleRes = mockRes();
+    await gamesController.getWordScrambleProgress({ user: { id: 1002 } }, userBScrambleRes, (e) => { throw e; });
+    assert(userBScrambleRes.body.streak === 0 && userBScrambleRes.body.xp === 0, 'User B has isolated Word Scramble stats');
+
+    // 18g. Mindful Riddle
+    const riddleRes = mockRes();
+    await gamesController.saveRiddleProgress({
+        user: { id: 1001 },
+        body: { attempted: true, solved: true, xpEarned: 20 }
+    }, riddleRes, (e) => { throw e; });
+    assert(riddleRes.statusCode === 200 && riddleRes.body.riddlesSolved === 1, 'Riddle attempted & solved progress persists');
+
+    // 18h. 4-7-8 Breathing Pacer
+    const breathingRes = mockRes();
+    await gamesController.saveBreathingProgress({
+        user: { id: 1001 },
+        body: { cyclesCompleted: 4, sessionCompleted: true }
+    }, breathingRes, (e) => { throw e; });
+    assert(breathingRes.statusCode === 200 && breathingRes.body.totalCycles === 4 && breathingRes.body.totalSessions === 1, 'Breathing session and cycles persist correctly');
+
+    // 18i. Wellness Games Summary
+    const summaryARes = mockRes();
+    await gamesController.getWellnessGamesSummary({ user: { id: 1001 } }, summaryARes, (e) => { throw e; });
+    assert(summaryARes.statusCode === 200 && summaryARes.body.sudokuCompleted === 1 && summaryARes.body.wordScrambleStreak === 5 && summaryARes.body.totalMindfulBreaks === 4, 'Wellness Games Summary returns accurate aggregated student stats');
+
+    const summaryBRes = mockRes();
+    await gamesController.getWellnessGamesSummary({ user: { id: 1002 } }, summaryBRes, (e) => { throw e; });
+    assert(summaryBRes.statusCode === 200 && summaryBRes.body.sudokuCompleted === 0 && summaryBRes.body.wordScrambleStreak === 0, 'User B summary returns clean isolated zero metrics');
+
+    console.log('✓ PASS: All Wellness Games Backend APIs verified with strict authentication & multi-tenant isolation');
+
+    console.log('\n🎉 ALL LIFESYNC INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉');
+})().catch(err => {
+    console.error('❌ FAIL in async verification:', err);
+    process.exit(1);
+});

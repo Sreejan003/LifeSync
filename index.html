@@ -1210,6 +1210,129 @@
                     <div id="wellnessEntriesHistory" class="wellness-history-list"></div>
                 </div>
 
+                <!-- Mindful Break & Soothing Games Section -->
+                <div class="card-box wellness-games-card" id="wellnessGamesSection" style="margin-top:20px;">
+                    <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <span class="box-label">MINDFUL BREAK & RECHARGE</span>
+                            <h3>🧘 Soothing Games & Mindful Refresh</h3>
+                            <p class="subtitle" style="font-size: 13px; margin-top: 4px; color: var(--text-secondary);">
+                                Take a calming breather between study sessions. Free, untimed, and restorative.
+                            </p>
+                        </div>
+                        <div class="soothing-game-tabs">
+                            <button type="button" class="game-tab-btn active" data-game="sudoku">🧩 Zen Sudoku</button>
+                            <button type="button" class="game-tab-btn" data-game="scramble">🔤 Word Scramble</button>
+                            <button type="button" class="game-tab-btn" data-game="riddle">🤔 Mindful Riddle</button>
+                            <button type="button" class="game-tab-btn" data-game="breathing">🌬️ 4-7-8 Breathing</button>
+                        </div>
+                    </div>
+
+                    <!-- Pane 1: Zen Sudoku -->
+                    <div id="gamePane-sudoku" class="game-content-pane active">
+                        <div class="sudoku-header-bar">
+                            <div class="sudoku-mode-indicators">
+                                <span id="sudokuStatusMessage" class="sudoku-status-badge">Zen Mode (Medium)</span>
+                                <span class="sudoku-timer-wrap">⏱️ <span id="sudokuTimerDisplay">00:00</span></span>
+                            </div>
+                            <div class="sudoku-top-actions">
+                                <label for="sudokuDifficultySelect" class="sr-only">Difficulty</label>
+                                <select id="sudokuDifficultySelect" class="sudoku-diff-select">
+                                    <option value="easy">Easy (Gentle)</option>
+                                    <option value="medium" selected>Medium (Mindful)</option>
+                                    <option value="hard">Hard (Deep Focus)</option>
+                                </select>
+                                <button type="button" id="btnNewSudokuGame" class="btn-sm-game btn-game-primary">✨ New Board</button>
+                            </div>
+                        </div>
+
+                        <!-- 9x9 Sudoku Grid -->
+                        <div class="sudoku-layout-wrapper">
+                            <div id="sudokuGridContainer" class="sudoku-grid"></div>
+
+                            <!-- Sudoku Controls & Number Pad -->
+                            <div class="sudoku-sidebar-controls">
+                                <div class="sudoku-numpad-grid">
+                                    <button type="button" class="num-pad-btn" data-number="1">1</button>
+                                    <button type="button" class="num-pad-btn" data-number="2">2</button>
+                                    <button type="button" class="num-pad-btn" data-number="3">3</button>
+                                    <button type="button" class="num-pad-btn" data-number="4">4</button>
+                                    <button type="button" class="num-pad-btn" data-number="5">5</button>
+                                    <button type="button" class="num-pad-btn" data-number="6">6</button>
+                                    <button type="button" class="num-pad-btn" data-number="7">7</button>
+                                    <button type="button" class="num-pad-btn" data-number="8">8</button>
+                                    <button type="button" class="num-pad-btn" data-number="9">9</button>
+                                </div>
+                                <div class="sudoku-action-buttons">
+                                    <button type="button" id="btnSudokuErase" class="btn-sm-game" title="Erase cell (Backspace)">⌫ Erase</button>
+                                    <button type="button" id="btnSudokuUndo" class="btn-sm-game" title="Undo last entry">↩ Undo</button>
+                                    <button type="button" id="btnSudokuHint" class="btn-sm-game" title="Reveal selected cell">💡 Hint</button>
+                                    <button type="button" id="btnSudokuCheck" class="btn-sm-game" title="Highlight any conflicting cells">✓ Check</button>
+                                </div>
+                                <small class="sudoku-keyboard-hint">💡 Tip: Use keyboard keys 1–9, Backspace to erase, and Arrow keys to navigate!</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pane 2: Mindful Word Scramble -->
+                    <div id="gamePane-scramble" class="game-content-pane hidden">
+                        <div class="scramble-wrapper">
+                            <div class="scramble-header">
+                                <span class="box-label">WORD UNSCRAMBLE</span>
+                                <span id="scrambleStreakVal" class="scramble-streak-pill">Streak: 0 🔥</span>
+                            </div>
+                            <p id="scrambleClueText" class="scramble-clue-desc">Inhale peace, exhale tension and study fatigue.</p>
+                            
+                            <!-- Answer Slots -->
+                            <div id="scrambleAnswerSlots" class="scramble-slots-row"></div>
+                            
+                            <!-- Available Tiles -->
+                            <div id="scrambleAvailableTiles" class="scramble-tiles-row"></div>
+                            
+                            <div id="scrambleFeedbackMsg" class="scramble-feedback"></div>
+
+                            <div class="scramble-actions-bar">
+                                <button type="button" id="btnScrambleHint" class="btn-sm-game">💡 Give Hint</button>
+                                <button type="button" id="btnScrambleClear" class="btn-sm-game">↺ Clear</button>
+                                <button type="button" id="btnScrambleNext" class="btn-sm-game btn-game-primary">Next Word →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pane 3: Mindful Riddle & Zen Quote -->
+                    <div id="gamePane-riddle" class="game-content-pane hidden">
+                        <div class="riddle-card-wrapper">
+                            <div class="riddle-icon">🤔</div>
+                            <h4 class="riddle-title">Daily Mindful Brain Teaser</h4>
+                            <p id="riddleQuestionText" class="riddle-question">"I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"</p>
+                            <div id="riddleAnswerText" class="riddle-answer-box hidden"></div>
+                            <div class="riddle-actions">
+                                <button type="button" id="btnRevealRiddleAnswer" class="btn-sm-game btn-game-primary">👁️ Reveal Answer</button>
+                                <button type="button" id="btnNextRiddle" class="btn-sm-game">✨ Fresh Riddle</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pane 4: 4-7-8 Breathing Pacer -->
+                    <div id="gamePane-breathing" class="game-content-pane hidden">
+                        <div class="breathing-card-wrapper">
+                            <div class="breathing-visual-container">
+                                <div id="breathingCircleOrb" class="breathing-orb idle">
+                                    <div class="orb-inner-pulse"></div>
+                                    <span id="breathingInstructionText" class="breathing-text">Press Start to begin 4-7-8 relaxation.</span>
+                                </div>
+                            </div>
+                            <div class="breathing-meta">
+                                <p id="breathingCounterText" class="breathing-counter">4s Inhale • 7s Hold • 8s Exhale</p>
+                                <span id="breathingCyclesCompletedVal" class="breathing-badge">Cycles Completed: 0 🧘</span>
+                            </div>
+                            <div class="breathing-controls">
+                                <button type="button" id="btnToggleBreathing" class="btn-primary" style="padding:10px 24px;">▶️ Begin Breathing Exercise</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Non-Clinical Notice -->
                 <div class="wellness-disclaimer-card">
                     <span>💡</span>
@@ -1743,6 +1866,7 @@
     <script src="js/smart-organizer.js"></script>
     <script src="js/budget.js"></script>
     <script src="js/wellness.js"></script>
+    <script src="js/soothing-games.js"></script>
     <script src="js/analytics.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/profile.js"></script>

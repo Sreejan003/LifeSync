@@ -10184,3 +10184,797 @@ body.dark-theme .slider-val-badge,
     padding: 3px 10px !important;
     border-radius: 10px !important;
 }
+
+/* ==========================================================================
+   MINDFUL BREAK & SOOTHING GAMES (ZEN SUDOKU, SCRAMBLE, RIDDLES, 4-7-8 BREATHING)
+   ========================================================================== */
+
+.wellness-games-card {
+    background: var(--bg-glass-card);
+    border-radius: 18px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 35px rgba(89, 64, 160, 0.08);
+    backdrop-filter: blur(12px);
+    margin-top: 24px;
+    transition: all 0.3s ease;
+}
+
+.soothing-game-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.game-tab-btn {
+    background: #f1edff;
+    color: #5930d5;
+    border: 1px solid rgba(112, 72, 232, 0.18);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.game-tab-btn:hover {
+    background: #e4dcff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(112, 72, 232, 0.15);
+}
+
+.game-tab-btn.active {
+    background: linear-gradient(135deg, #7048e8, #9a52f4);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(112, 72, 232, 0.35);
+}
+
+.game-content-pane {
+    margin-top: 20px;
+    animation: fadeInGame 0.3s ease forwards;
+}
+
+.game-content-pane.hidden {
+    display: none !important;
+}
+
+@keyframes fadeInGame {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Zen Sudoku Styles --- */
+.sudoku-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(112, 72, 232, 0.1);
+}
+
+.sudoku-mode-indicators {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sudoku-status-badge {
+    background: rgba(112, 72, 232, 0.12);
+    color: #6535e8;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border: 1px solid rgba(112, 72, 232, 0.2);
+}
+
+.sudoku-timer-wrap {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sudoku-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sudoku-diff-select {
+    padding: 7px 12px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(112, 72, 232, 0.25);
+    background: #ffffff;
+    color: #17152a;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.sudoku-diff-select:focus {
+    border-color: #7048e8;
+    box-shadow: 0 0 0 3px rgba(112, 72, 232, 0.15);
+}
+
+.btn-sm-game {
+    background: #f1edff;
+    color: #5930d5;
+    border: 1px solid rgba(112, 72, 232, 0.2);
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-sm-game:hover {
+    background: #e4dcff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(112, 72, 232, 0.15);
+}
+
+.btn-sm-game.btn-game-primary {
+    background: linear-gradient(135deg, #7048e8, #9a52f4);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 3px 10px rgba(112, 72, 232, 0.25);
+}
+
+.btn-sm-game.btn-game-primary:hover {
+    background: linear-gradient(135deg, #5930d5, #8b42e8);
+    box-shadow: 0 4px 14px rgba(112, 72, 232, 0.35);
+}
+
+.sudoku-layout-wrapper {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.sudoku-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    width: min(390px, 92vw);
+    aspect-ratio: 1 / 1;
+    border: 2.5px solid #5930d5;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(89, 64, 160, 0.12);
+    user-select: none;
+}
+
+.sudoku-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 0.5px solid rgba(112, 72, 232, 0.15);
+    color: #17152a;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sudoku-cell.border-top-thick {
+    border-top: 2.5px solid #5930d5 !important;
+}
+
+.sudoku-cell.border-left-thick {
+    border-left: 2.5px solid #5930d5 !important;
+}
+
+.sudoku-cell.cell-initial {
+    font-weight: 800;
+    color: #3b208c;
+    background: #fbf9ff;
+}
+
+.sudoku-cell.cell-user-filled {
+    color: #7048e8;
+    font-weight: 700;
+}
+
+.sudoku-cell.cell-selected {
+    background: #d8c8ff !important;
+    color: #2b0b75 !important;
+    outline: 2.5px solid #7048e8;
+    outline-offset: -2px;
+    z-index: 2;
+}
+
+.sudoku-cell.cell-related {
+    background: #f3efff;
+}
+
+.sudoku-cell.cell-same-number {
+    background: #e2d7ff !important;
+    font-weight: 800;
+}
+
+.sudoku-cell.cell-error {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    animation: shakeSudokuCell 0.3s ease;
+}
+
+@keyframes shakeSudokuCell {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+.sudoku-sidebar-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: min(280px, 92vw);
+}
+
+.sudoku-numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.num-pad-btn {
+    aspect-ratio: 1.3 / 1;
+    background: #f8f6ff;
+    border: 1.5px solid rgba(112, 72, 232, 0.2);
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #5930d5;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.num-pad-btn:hover {
+    background: #7048e8;
+    color: #ffffff;
+    border-color: #7048e8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(112, 72, 232, 0.25);
+}
+
+.num-pad-btn:active {
+    transform: translateY(0);
+}
+
+.sudoku-action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.sudoku-keyboard-hint {
+    color: var(--text-muted);
+    font-size: 11.5px;
+    line-height: 1.4;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* --- Mindful Word Scramble --- */
+.scramble-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    gap: 18px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.scramble-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+.scramble-streak-pill {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 5px 14px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.scramble-clue-desc {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--text-secondary);
+    max-width: 500px;
+    line-height: 1.5;
+}
+
+.scramble-slots-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    min-height: 52px;
+}
+
+.answer-slot {
+    width: 44px;
+    height: 48px;
+    border-radius: 10px;
+    border: 2px dashed rgba(112, 72, 232, 0.35);
+    background: #f8f6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #5930d5;
+    cursor: default;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.answer-slot.filled {
+    border: 2px solid #7048e8;
+    background: #ede8ff;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(112, 72, 232, 0.15);
+}
+
+.answer-slot.filled:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.scramble-tiles-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.letter-tile {
+    width: 44px;
+    height: 48px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7048e8, #9a52f4);
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(112, 72, 232, 0.25);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.letter-tile:hover:not(.used) {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 14px rgba(112, 72, 232, 0.35);
+}
+
+.letter-tile.used {
+    background: #e5e0f5;
+    color: transparent;
+    border: 1px dashed rgba(112, 72, 232, 0.2);
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.scramble-feedback {
+    font-size: 14.5px;
+    font-weight: 700;
+    min-height: 24px;
+}
+
+.scramble-feedback.success {
+    color: #10b981;
+}
+
+.scramble-feedback.error {
+    color: #ef4444;
+}
+
+.scramble-actions-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* --- Mindful Riddle --- */
+.riddle-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 18px;
+    gap: 16px;
+    max-width: 580px;
+    margin: 0 auto;
+}
+
+.riddle-icon {
+    font-size: 42px;
+    animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.riddle-title {
+    font-size: 18px;
+    font-weight: 750;
+    color: var(--text-main);
+}
+
+.riddle-question {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    font-style: italic;
+    background: #f8f6ff;
+    padding: 18px 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(112, 72, 232, 0.15);
+    width: 100%;
+}
+
+.riddle-answer-box {
+    background: linear-gradient(135deg, rgba(112, 72, 232, 0.1), rgba(154, 82, 244, 0.15));
+    border: 1.5px solid #7048e8;
+    color: #5930d5;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    width: 100%;
+    animation: fadeInGame 0.3s ease;
+}
+
+.riddle-answer-box.hidden {
+    display: none !important;
+}
+
+.riddle-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+/* --- 4-7-8 Breathing Pacer --- */
+.breathing-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 16px;
+    gap: 18px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.breathing-visual-container {
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 14px 0;
+}
+
+.breathing-orb {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #9a52f4, #6735e8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    color: #ffffff;
+    box-shadow: 0 0 35px rgba(112, 72, 232, 0.45);
+    transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 4s ease, background 4s ease;
+    user-select: none;
+}
+
+.breathing-orb.idle {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(112, 72, 232, 0.3);
+}
+
+.breathing-orb.inhale {
+    transform: scale(1.35);
+    box-shadow: 0 0 60px rgba(16, 185, 129, 0.6);
+    background: radial-gradient(circle at 35% 35%, #34d399, #059669);
+    transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 4s ease, background 4s ease;
+}
+
+.breathing-orb.hold {
+    transform: scale(1.35);
+    box-shadow: 0 0 70px rgba(59, 130, 246, 0.7);
+    background: radial-gradient(circle at 35% 35%, #60a5fa, #2563eb);
+    transition: box-shadow 1s ease, background 1s ease;
+}
+
+.breathing-orb.exhale {
+    transform: scale(0.85);
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+    background: radial-gradient(circle at 35% 35%, #c084fc, #7e22ce);
+    transition: transform 8s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 8s ease, background 8s ease;
+}
+
+.breathing-text {
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.breathing-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.breathing-counter {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.breathing-badge {
+    background: rgba(112, 72, 232, 0.12);
+    color: #6535e8;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.breathing-controls {
+    margin-top: 8px;
+}
+
+/* ==========================================================================
+   DARK THEME: SOOTHING GAMES & MINDFUL BREAK
+   ========================================================================== */
+
+html.dark-theme .wellness-games-card,
+body.dark-theme .wellness-games-card,
+.dark-theme .wellness-games-card {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark-theme .game-tab-btn,
+body.dark-theme .game-tab-btn,
+.dark-theme .game-tab-btn {
+    background: #1e293b !important;
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+html.dark-theme .game-tab-btn:hover,
+body.dark-theme .game-tab-btn:hover,
+.dark-theme .game-tab-btn:hover {
+    background: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.dark-theme .game-tab-btn.active,
+body.dark-theme .game-tab-btn.active,
+.dark-theme .game-tab-btn.active {
+    background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
+}
+
+html.dark-theme .sudoku-header-bar,
+body.dark-theme .sudoku-header-bar,
+.dark-theme .sudoku-header-bar {
+    border-bottom-color: #1e293b !important;
+}
+
+html.dark-theme .sudoku-status-badge,
+body.dark-theme .sudoku-status-badge,
+.dark-theme .sudoku-status-badge {
+    background: rgba(124, 58, 237, 0.2) !important;
+    color: #c4b5fd !important;
+    border-color: rgba(124, 58, 237, 0.35) !important;
+}
+
+html.dark-theme .sudoku-diff-select,
+body.dark-theme .sudoku-diff-select,
+.dark-theme .sudoku-diff-select {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+}
+
+html.dark-theme .btn-sm-game,
+body.dark-theme .btn-sm-game,
+.dark-theme .btn-sm-game {
+    background: #1e293b !important;
+    color: #c4b5fd !important;
+    border-color: #334155 !important;
+}
+
+html.dark-theme .btn-sm-game:hover,
+body.dark-theme .btn-sm-game:hover,
+.dark-theme .btn-sm-game:hover {
+    background: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.dark-theme .btn-sm-game.btn-game-primary,
+body.dark-theme .btn-sm-game.btn-game-primary,
+.dark-theme .btn-sm-game.btn-game-primary {
+    background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+html.dark-theme .sudoku-grid,
+body.dark-theme .sudoku-grid,
+.dark-theme .sudoku-grid {
+    background: #0b1120 !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark-theme .sudoku-cell,
+body.dark-theme .sudoku-cell,
+.dark-theme .sudoku-cell {
+    border-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark-theme .sudoku-cell.border-top-thick,
+body.dark-theme .sudoku-cell.border-top-thick,
+.dark-theme .sudoku-cell.border-top-thick {
+    border-top: 2.5px solid #8b5cf6 !important;
+}
+
+html.dark-theme .sudoku-cell.border-left-thick,
+body.dark-theme .sudoku-cell.border-left-thick,
+.dark-theme .sudoku-cell.border-left-thick {
+    border-left: 2.5px solid #8b5cf6 !important;
+}
+
+html.dark-theme .sudoku-cell.cell-initial,
+body.dark-theme .sudoku-cell.cell-initial,
+.dark-theme .sudoku-cell.cell-initial {
+    color: #c4b5fd !important;
+    background: #131d33 !important;
+}
+
+html.dark-theme .sudoku-cell.cell-user-filled,
+body.dark-theme .sudoku-cell.cell-user-filled,
+.dark-theme .sudoku-cell.cell-user-filled {
+    color: #38bdf8 !important;
+}
+
+html.dark-theme .sudoku-cell.cell-selected,
+body.dark-theme .sudoku-cell.cell-selected,
+.dark-theme .sudoku-cell.cell-selected {
+    background: #4338ca !important;
+    color: #ffffff !important;
+    outline: 2.5px solid #a855f7 !important;
+}
+
+html.dark-theme .sudoku-cell.cell-related,
+body.dark-theme .sudoku-cell.cell-related,
+.dark-theme .sudoku-cell.cell-related {
+    background: #1e1b4b !important;
+}
+
+html.dark-theme .sudoku-cell.cell-same-number,
+body.dark-theme .sudoku-cell.cell-same-number,
+.dark-theme .sudoku-cell.cell-same-number {
+    background: #312e81 !important;
+    color: #ffffff !important;
+}
+
+html.dark-theme .num-pad-btn,
+body.dark-theme .num-pad-btn,
+.dark-theme .num-pad-btn {
+    background: #1e293b !important;
+    color: #c4b5fd !important;
+    border-color: #334155 !important;
+}
+
+html.dark-theme .num-pad-btn:hover,
+body.dark-theme .num-pad-btn:hover,
+.dark-theme .num-pad-btn:hover {
+    background: #7c3aed !important;
+    color: #ffffff !important;
+    border-color: #7c3aed !important;
+}
+
+html.dark-theme .answer-slot,
+body.dark-theme .answer-slot,
+.dark-theme .answer-slot {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #c4b5fd !important;
+}
+
+html.dark-theme .answer-slot.filled,
+body.dark-theme .answer-slot.filled,
+.dark-theme .answer-slot.filled {
+    background: #2e1065 !important;
+    border-color: #a855f7 !important;
+    color: #f8fafc !important;
+}
+
+html.dark-theme .letter-tile.used,
+body.dark-theme .letter-tile.used,
+.dark-theme .letter-tile.used {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: transparent !important;
+}
+
+html.dark-theme .riddle-question,
+body.dark-theme .riddle-question,
+.dark-theme .riddle-question {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark-theme .riddle-answer-box,
+body.dark-theme .riddle-answer-box,
+.dark-theme .riddle-answer-box {
+    background: rgba(124, 58, 237, 0.2) !important;
+    border-color: #8b5cf6 !important;
+    color: #c4b5fd !important;
+}
+
+html.dark-theme .breathing-badge,
+body.dark-theme .breathing-badge,
+.dark-theme .breathing-badge {
+    background: rgba(124, 58, 237, 0.2) !important;
+    color: #c4b5fd !important;
+}
+

@@ -269,6 +269,62 @@
             });
         },
 
+        // --- Mindful Games & Break Endpoints ---
+        getWellnessGamesSummary() {
+            return request('/wellness/games/summary');
+        },
+
+        getSudokuProgress() {
+            return request('/wellness/sudoku');
+        },
+
+        saveSudokuProgress(data) {
+            return request('/wellness/sudoku/progress', {
+                method: 'POST',
+                body: data
+            });
+        },
+
+        completeSudoku(data) {
+            return request('/wellness/sudoku/complete', {
+                method: 'POST',
+                body: data
+            });
+        },
+
+        getWordScrambleProgress() {
+            return request('/wellness/word-scramble/progress');
+        },
+
+        saveWordScrambleProgress(data) {
+            return request('/wellness/word-scramble/progress', {
+                method: 'POST',
+                body: data
+            });
+        },
+
+        getRiddleProgress() {
+            return request('/wellness/riddle/progress');
+        },
+
+        saveRiddleProgress(data) {
+            return request('/wellness/riddle/progress', {
+                method: 'POST',
+                body: data
+            });
+        },
+
+        getBreathingProgress() {
+            return request('/wellness/breathing/progress');
+        },
+
+        saveBreathingProgress(data) {
+            return request('/wellness/breathing/progress', {
+                method: 'POST',
+                body: data
+            });
+        },
+
         // --- Dashboard Aggregated Summary ---
         getDashboard() {
             return request('/dashboard');
