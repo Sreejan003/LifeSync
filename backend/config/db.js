@@ -32,13 +32,25 @@ if (databaseUrl) {
     });
 
     console.log('📦 Using PostgreSQL database connection.');
+} else if (isProduction) {
+    // In production without DATABASE_URL, fail loudly at startup
+    console.error('❌ FATAL: DATABASE_URL environment variable is not set.');
+    console.error('   Set DATABASE_URL to a PostgreSQL connection string in your Vercel/Render environment variables.');
+    process.exit(1);
 } else {
-    // SQLite connection
-    const sqlite3 = require('sqlite3').verbose();
-    dbDriver = 'sqlite';
-    const dbPath = path.join(__dirname, '..', 'lifesync.db');
-    sqliteDb = new sqlite3.Database(dbPath);
-    console.log(`📦 Using local SQLite database at: ${dbPath}`);
+    // Local / Offline: try SQLite, fail gracefully if not compiled
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        dbDriver = 'sqlite';
+        const dbPath = path.join(__dirname, '..', 'lifesync.db');
+        sqliteDb = new sqlite3.Database(dbPath);
+        console.log(`📦 Using local SQLite database at: ${dbPath}`);
+    } catch (e) {
+        console.error('❌ sqlite3 is not available and DATABASE_URL is not set.');
+        console.error('   For local dev: run `npm install` inside the backend folder.');
+        console.error('   For production: set DATABASE_URL in your environment variables.');
+        process.exit(1);
+    }
 }
 
 /**
@@ -161,10 +173,10 @@ async function initDatabase() {
     await query(`
         CREATE TABLE IF NOT EXISTS budget_settings (
             user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-            monthly_budget ${numericType} DEFAULT 15000,
-            runway_sum ${numericType} DEFAULT 20000,
+            monthly_budget ${numericType} DEFAULT 0,
+            runway_sum ${numericType} DEFAULT 0,
             runway_buffer_pct INTEGER DEFAULT 15,
-            night_safe_limit ${numericType} DEFAULT 500,
+            night_safe_limit ${numericType} DEFAULT 0,
             night_safe_spent ${numericType} DEFAULT 0,
             night_safe_locked BOOLEAN DEFAULT 0
         );
@@ -243,8 +255,49 @@ async function initDatabase() {
     console.log('✅ Database schema verified and initialized.');
 }
 
+/**
+ * Execute a series of operations atomically within a database transaction.
+ * @param {Function} callback - async (tx) => Promise<any>
+ * @returns {Promise<any>}
+ */
+async function transaction(callback) {
+    if (dbDriver === 'pg') {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const txWrapper = {
+                query: (text, params = []) => client.query(text, params).then(res => ({
+                    rows: res.rows || [],
+                    rowCount: res.rowCount || 0
+                }))
+            };
+            const result = await callback(txWrapper);
+            await client.query('COMMIT');
+            return result;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    }
+
+    // SQLite transaction
+    await query('BEGIN TRANSACTION');
+    try {
+        const txWrapper = { query };
+        const result = await callback(txWrapper);
+        await query('COMMIT');
+        return result;
+    } catch (err) {
+        await query('ROLLBACK');
+        throw err;
+    }
+}
+
 module.exports = {
     query,
+    transaction,
     initDatabase,
     getDriver: () => dbDriver
 };

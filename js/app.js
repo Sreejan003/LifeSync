@@ -822,9 +822,9 @@
         }
 
         // 6. Late-Night Safe (Overview + Dedicated View)
-        const night = budgetState.nightSafe || { limit: 500, spent: 120, locked: false };
+        const night = budgetState.nightSafe || { limit: 500, spent: 0, locked: false };
         const nightRemaining = Math.max(0, night.limit - night.spent);
-        const nightSpentPct = Math.min(100, Math.round((night.spent / night.limit) * 100));
+        const nightSpentPct = night.limit > 0 ? Math.min(100, Math.round((night.spent / night.limit) * 100)) : 0;
 
         // Overview night widget
         const nightSafeLimit = document.getElementById('budgetNightSafeLimit');
@@ -867,10 +867,10 @@
         calculateBillSplit();
 
         // Shared Goal
-        const goal = budgetState.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 };
+        const goal = budgetState.sharedGoal || { title: '', current: 0, target: 0, etaWeeks: 0 };
         const goalCurrent = Number(goal.current) || 0;
-        const goalTarget = Number(goal.target) || 8000;
-        const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
+        const goalTarget = Number(goal.target) || 0;
+        const goalPct = goalTarget > 0 ? Math.min(100, Math.round((goalCurrent / goalTarget) * 100)) : 0;
         const goalRemaining = Math.max(0, goalTarget - goalCurrent);
 
         const goalTitleDisplay = document.getElementById('goalTitleDisplay');
@@ -881,12 +881,12 @@
         const goalEtaDisplay = document.getElementById('goalEtaDisplay');
         const goalRemainingDisplay = document.getElementById('goalRemainingDisplay');
 
-        if (goalTitleDisplay) goalTitleDisplay.textContent = goal.title;
+        if (goalTitleDisplay) goalTitleDisplay.textContent = goal.title || '';
         if (goalCurrentDisplay) goalCurrentDisplay.textContent = '₹' + goalCurrent.toLocaleString('en-IN');
         if (goalTargetDisplay) goalTargetDisplay.textContent = '₹' + goalTarget.toLocaleString('en-IN');
         if (goalProgressBar) goalProgressBar.style.width = `${goalPct}%`;
         if (goalPctDisplay) goalPctDisplay.textContent = `${goalPct}%`;
-        if (goalEtaDisplay) goalEtaDisplay.textContent = `${goal.etaWeeks || 4} weeks`;
+        if (goalEtaDisplay) goalEtaDisplay.textContent = goal.etaWeeks ? `${goal.etaWeeks} weeks` : '--';
         if (goalRemainingDisplay) goalRemainingDisplay.textContent = '₹' + goalRemaining.toLocaleString('en-IN');
 
         // Dedicated Bills Grid

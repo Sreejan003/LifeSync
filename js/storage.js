@@ -54,285 +54,47 @@
     }
 
     function getDefaultTasks() {
-        return [
-            {
-                id: 'tsk_1',
-                title: 'DBMS Assignment',
-                description: 'Implement SQL queries, normalization, and relational schema for student portal.',
-                dueDate: getTodayString(1),
-                priority: 'High',
-                category: 'Assignment',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            {
-                id: 'tsk_2',
-                title: 'Maths Problem Set',
-                description: 'Complete discrete mathematics exercise 4 on graph theory and recurrence relations.',
-                dueDate: getTodayString(2),
-                priority: 'Medium',
-                category: 'Study',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            {
-                id: 'tsk_3',
-                title: 'CN Lab Report',
-                description: 'Submit packet tracer simulation report and Wireshark capture analysis.',
-                dueDate: getTodayString(3),
-                priority: 'Medium',
-                category: 'Project',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            {
-                id: 'tsk_4',
-                title: 'Read Chapter 5',
-                description: 'Read Operating Systems textbook chapter on CPU scheduling algorithms.',
-                dueDate: getTodayString(5),
-                priority: 'Low',
-                category: 'Study',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            {
-                id: 'tsk_5',
-                title: 'Prepare Presentation Slides for Capstone',
-                description: 'Draft system architecture diagram and feature timeline.',
-                dueDate: getTodayString(6),
-                priority: 'Medium',
-                category: 'Project',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            {
-                id: 'tsk_6',
-                title: 'Review Machine Learning Basics',
-                description: 'Linear regression math review and python notebook practice.',
-                dueDate: getTodayString(7),
-                priority: 'Low',
-                category: 'Study',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            {
-                id: 'tsk_7',
-                title: 'Register for Inter-College Hackathon',
-                description: 'Confirm team members and submit initial proposal.',
-                dueDate: getTodayString(8),
-                priority: 'Low',
-                category: 'Personal',
-                status: 'Pending',
-                createdAt: new Date().toISOString(),
-                completedAt: null
-            },
-            // Completed tasks (12 completed for achievement tracking)
-            ...Array.from({ length: 12 }).map((_, i) => ({
-                id: `tsk_done_${i + 1}`,
-                title: `Completed Coursework Milestone ${i + 1}`,
-                description: 'Successfully verified and completed ahead of time.',
-                dueDate: getTodayString(-i - 1),
-                priority: i % 3 === 0 ? 'High' : i % 2 === 0 ? 'Medium' : 'Low',
-                category: 'Assignment',
-                status: 'Completed',
-                createdAt: new Date(Date.now() - (i + 2) * 86400000).toISOString(),
-                completedAt: new Date(Date.now() - (i + 1) * 86400000).toISOString()
-            }))
-        ];
+        return [];
     }
 
     function getDefaultEvents() {
-        return [
-            {
-                id: 'evt_1',
-                title: 'DBMS Lecture',
-                date: getTodayString(0),
-                time: '09:00 AM',
-                category: 'Study',
-                priority: 'High',
-                location: 'Room 2.04',
-                description: 'Entity Relationship modeling and B+ Tree indexing.',
-                hasReminder: true
-            },
-            {
-                id: 'evt_2',
-                title: 'Computer Networks',
-                date: getTodayString(0),
-                time: '11:00 AM',
-                category: 'Study',
-                priority: 'Medium',
-                location: 'Room 1.05',
-                description: 'TCP/IP protocol stack and window flow control.',
-                hasReminder: true
-            },
-            {
-                id: 'evt_3',
-                title: 'Library Session',
-                date: getTodayString(0),
-                time: '01:00 PM',
-                category: 'Study',
-                priority: 'Medium',
-                location: 'Central Library',
-                description: 'Quiet study sprint for midterms.',
-                hasReminder: false
-            },
-            {
-                id: 'evt_4',
-                title: 'Study Group',
-                date: getTodayString(0),
-                time: '04:00 PM',
-                category: 'Study',
-                priority: 'Low',
-                location: 'Online',
-                description: 'Group problem solving on Google Meet.',
-                hasReminder: false
-            },
-            {
-                id: 'evt_5',
-                title: 'Software Engineering Midterm Exam',
-                date: getTodayString(2),
-                time: '10:00 AM',
-                category: 'Exam',
-                priority: 'High',
-                location: 'Hall A',
-                description: 'Agile development, design patterns and testing methodologies.',
-                hasReminder: true
-            }
-        ];
+        return [];
     }
 
     function getDefaultBudget() {
         return {
-            monthlyBudget: 15000,
+            monthlyBudget: 0,
             runway: {
-                sum: 20000,
+                sum: 0,
                 bufferPct: 15
             },
             nightSafe: {
-                limit: 500,
-                spent: 120,
+                limit: 0,
+                spent: 0,
                 locked: false,
                 lastResetDate: getTodayString(0)
             },
             sharedGoal: {
-                title: 'Textbooks & Tech Fund',
-                current: 4500,
-                target: 8000,
-                etaWeeks: 4
+                title: '',
+                current: 0,
+                target: 0,
+                etaWeeks: 0
             },
-            transactions: [
-                {
-                    id: 'tx_1',
-                    title: 'Academic Scholarship Credit',
-                    amount: 8000,
-                    type: 'income',
-                    category: 'Scholarship',
-                    date: getTodayString(-5),
-                    description: 'Semester merit scholarship credit'
-                },
-                {
-                    id: 'tx_2',
-                    title: 'Semester Textbooks & Stationery',
-                    amount: 2000,
-                    type: 'expense',
-                    category: 'Education',
-                    date: getTodayString(-3),
-                    description: 'Textbooks and scientific calculator'
-                },
-                {
-                    id: 'tx_3',
-                    title: 'Campus Dining & Meal Plan',
-                    amount: 1550,
-                    type: 'expense',
-                    category: 'Food',
-                    date: getTodayString(-2),
-                    description: 'Cafeteria food charges'
-                },
-                {
-                    id: 'tx_4',
-                    title: 'Metro Commute Pass',
-                    amount: 1000,
-                    type: 'expense',
-                    category: 'Travel',
-                    date: getTodayString(-1),
-                    description: 'Monthly student metro pass'
-                }
-            ],
-            bills: [
-                { id: 'b1', title: 'Dorm Wi-Fi Fiber', amount: 900, split: 3, date: getTodayString(4), paid: false },
-                { id: 'b2', title: 'Shared Electricity', amount: 1500, split: 3, date: getTodayString(8), paid: false },
-                { id: 'b3', title: 'Streaming Study Music', amount: 199, split: 1, date: getTodayString(12), paid: true }
-            ]
+            transactions: [],
+            bills: []
         };
     }
 
     function getDefaultWellness() {
         return {
-            streak: 5,
-            entries: [
-                {
-                    date: getTodayString(-4),
-                    mood: 'happy',
-                    emoji: '🙂',
-                    name: 'Good',
-                    score: 4,
-                    stress: 2,
-                    energy: 4,
-                    description: 'Got enough sleep and finished problem set early.'
-                },
-                {
-                    date: getTodayString(-3),
-                    mood: 'excited',
-                    emoji: '😃',
-                    name: 'Great',
-                    score: 5,
-                    stress: 1,
-                    energy: 5,
-                    description: 'Aced the lab quiz and went for an evening walk.'
-                },
-                {
-                    date: getTodayString(-2),
-                    mood: 'neutral',
-                    emoji: '😐',
-                    name: 'Okay',
-                    score: 3,
-                    stress: 3,
-                    energy: 3,
-                    description: 'Long lecture day, felt a bit tired in the afternoon.'
-                },
-                {
-                    date: getTodayString(-1),
-                    mood: 'happy',
-                    emoji: '🙂',
-                    name: 'Good',
-                    score: 4,
-                    stress: 2,
-                    energy: 4,
-                    description: 'Balanced day studying with classmates.'
-                },
-                {
-                    date: getTodayString(0),
-                    mood: 'excited',
-                    emoji: '😃',
-                    name: 'Great',
-                    score: 5,
-                    stress: 1,
-                    energy: 5,
-                    description: 'Excited about starting the new semester dashboard!'
-                }
-            ]
+            streak: 0,
+            entries: []
         };
     }
 
     function getDefaultProfile(user) {
         return {
-            name: user ? (user.username || user.name || 'Student') : 'Student',
+            name: user ? (user.username || user.name || '') : '',
             email: user ? (user.email || '') : '',
             university: '',
             major: '',
@@ -662,40 +424,104 @@
             try {
                 // Fetch tasks from backend
                 const backendTasks = await window.LifeSyncAPI.getTasks();
-                if (Array.isArray(backendTasks) && backendTasks.length > 0) {
-                    const mapped = backendTasks.map(t => ({
-                        id: t.id,
-                        title: t.title,
-                        description: t.description || '',
-                        dueDate: t.deadline || '',
-                        priority: t.priority,
-                        category: t.category,
-                        status: t.status,
-                        createdAt: t.created_at,
-                        completedAt: t.completed_at
-                    }));
-                    writeJson(getScopedKey('tasks', user), mapped);
-                    if (window.TasksModule && window.TasksModule.init) {
-                        window.TasksModule.init(user);
+                if (Array.isArray(backendTasks)) {
+                    const localTasks = LifeSyncStorage.getTasks(user);
+                    const taskSyncKey = getScopedKey('tasks_backend_synced', user);
+                    const hasSyncedTasks = localStorage.getItem(taskSyncKey);
+
+                    if (!hasSyncedTasks && backendTasks.length === 0 && Array.isArray(localTasks) && localTasks.length > 0) {
+                        for (const t of localTasks) {
+                            try {
+                                const created = await window.LifeSyncAPI.createTask({
+                                    title: t.title,
+                                    category: t.category,
+                                    deadline: t.dueDate,
+                                    priority: t.priority,
+                                    status: t.status,
+                                    description: t.description
+                                });
+                                if (created && created.id) t.id = created.id;
+                            } catch (e) {
+                                console.warn('Seed task sync notice:', e.message);
+                            }
+                        }
+                        localStorage.setItem(taskSyncKey, '1');
+                        writeJson(getScopedKey('tasks', user), localTasks);
+                    } else if (backendTasks.length > 0) {
+                        const mappedBackend = backendTasks.map(t => ({
+                            id: t.id,
+                            title: t.title,
+                            description: t.description || '',
+                            dueDate: t.deadline || '',
+                            priority: t.priority,
+                            category: t.category,
+                            status: t.status,
+                            createdAt: t.created_at,
+                            completedAt: t.completed_at
+                        }));
+
+                        const localUnsynced = localTasks.filter(lt =>
+                            typeof lt.id === 'string' && lt.id.startsWith('tsk_') &&
+                            !mappedBackend.some(bt => bt.title.trim().toLowerCase() === lt.title.trim().toLowerCase())
+                        );
+
+                        const mergedTasks = [...mappedBackend, ...localUnsynced];
+                        writeJson(getScopedKey('tasks', user), mergedTasks);
+                        localStorage.setItem(taskSyncKey, '1');
+                        if (window.TasksModule && window.TasksModule.init) {
+                            window.TasksModule.init(user);
+                        }
                     }
                 }
 
                 // Fetch events from backend
                 const backendEvents = await window.LifeSyncAPI.getEvents();
-                if (Array.isArray(backendEvents) && backendEvents.length > 0) {
-                    const mapped = backendEvents.map(e => ({
-                        id: e.id,
-                        title: e.title,
-                        date: e.date,
-                        time: e.time,
-                        category: e.event_type,
-                        priority: 'Medium',
-                        description: e.description || '',
-                        hasReminder: Boolean(e.reminder)
-                    }));
-                    writeJson(getScopedKey('events', user), mapped);
-                    if (window.CalendarModule && window.CalendarModule.init) {
-                        window.CalendarModule.init(user);
+                if (Array.isArray(backendEvents)) {
+                    const localEvents = LifeSyncStorage.getEvents(user);
+                    const eventSyncKey = getScopedKey('events_backend_synced', user);
+                    const hasSyncedEvents = localStorage.getItem(eventSyncKey);
+
+                    if (!hasSyncedEvents && backendEvents.length === 0 && Array.isArray(localEvents) && localEvents.length > 0) {
+                        for (const ev of localEvents) {
+                            try {
+                                const created = await window.LifeSyncAPI.createEvent({
+                                    title: ev.title,
+                                    date: ev.date,
+                                    time: ev.time,
+                                    category: ev.category,
+                                    description: ev.description,
+                                    reminder: ev.hasReminder
+                                });
+                                if (created && created.id) ev.id = created.id;
+                            } catch (e) {
+                                console.warn('Seed event sync notice:', e.message);
+                            }
+                        }
+                        localStorage.setItem(eventSyncKey, '1');
+                        writeJson(getScopedKey('events', user), localEvents);
+                    } else if (backendEvents.length > 0) {
+                        const mappedEvents = backendEvents.map(e => ({
+                            id: e.id,
+                            title: e.title,
+                            date: e.date,
+                            time: e.time,
+                            category: e.event_type,
+                            priority: 'Medium',
+                            description: e.description || '',
+                            hasReminder: Boolean(e.reminder)
+                        }));
+
+                        const localUnsyncedEvents = localEvents.filter(le =>
+                            typeof le.id === 'string' && le.id.startsWith('evt_') &&
+                            !mappedEvents.some(be => be.title.trim().toLowerCase() === le.title.trim().toLowerCase() && be.date === le.date)
+                        );
+
+                        const mergedEvents = [...mappedEvents, ...localUnsyncedEvents];
+                        writeJson(getScopedKey('events', user), mergedEvents);
+                        localStorage.setItem(eventSyncKey, '1');
+                        if (window.CalendarModule && window.CalendarModule.init) {
+                            window.CalendarModule.init(user);
+                        }
                     }
                 }
 
