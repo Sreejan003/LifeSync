@@ -2,7 +2,7 @@
  * LifeSync REST API Server (backend/server.js)
  * -------------------------------------------------------------
  * Main entrypoint for LifeSync backend application.
- * Serves REST endpoints under /api/* and hosts frontend static assets.
+ * Serves REST endpoints under /api/*
  */
 
 require('dotenv').config();
@@ -63,10 +63,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend static files from repository root
-const frontendPath = path.join(__dirname, '..');
-app.use(express.static(frontendPath));
-
 // API Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
@@ -77,15 +73,12 @@ app.use('/api/wellness', wellnessRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/profile', profileRoutes);
 
-// Fallback middleware to serve index.html for frontend client routes
-app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api/')) {
-        return res.sendFile(path.join(frontendPath, 'index.html'));
-    }
+// 404 handler for undefined routes
+app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: `API route ${req.method} ${req.path} not found.` });
     }
-    next();
+    res.status(404).json({ error: 'Not found' });
 });
 
 // Global Error Handler
@@ -119,3 +112,4 @@ if (require.main === module) {
 }
 
 module.exports = { app, startServer };
+
