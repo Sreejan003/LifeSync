@@ -24,9 +24,8 @@
                 const hostname = window.location.hostname || 'localhost';
                 const port = window.location.port;
 
-                // When frontend is served from a static dev server (e.g., VS Code Live Server on 5500/5501,
-                // Vite on 5173, etc.), the static server does not host the backend Express /api routes.
-                // Direct API calls to the LifeSync backend server running on port 5000.
+                // When frontend is served from a static dev server (e.g. Live Server on 5500, Vite on 5173),
+                // direct local API calls to backend dev server on port 5000.
                 const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
                 if (isLocal && port && port !== '5000') {
                     return `http://${hostname}:5000/api`;
@@ -37,7 +36,7 @@
                 }
             }
         }
-        return 'http://localhost:5000/api';
+        return '/api';
     }
 
     function getToken() {

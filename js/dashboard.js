@@ -40,9 +40,13 @@
             if (currentHour >= 12 && currentHour < 17) greetingWord = 'Good Afternoon';
             else if (currentHour >= 17) greetingWord = 'Good Evening';
 
-            const displayName = (user && user.username) ? user.username : 'Student';
+            const displayName = (user && (user.username || user.name)) ? (user.username || user.name) : '';
             if (greetingEl) {
-                greetingEl.innerHTML = `${greetingWord}, <span id="dashGreetingName">${escapeHtml(displayName)}</span>! 👋`;
+                if (displayName) {
+                    greetingEl.innerHTML = `${greetingWord}, <span id="dashGreetingName">${escapeHtml(displayName)}</span>! 👋`;
+                } else {
+                    greetingEl.innerHTML = `${greetingWord}! 👋`;
+                }
             } else if (greetingNameEl) {
                 greetingNameEl.textContent = displayName;
             }
@@ -283,9 +287,24 @@
 
             // 8. Study Streak
             const streakSubtitle = document.getElementById('dashStreakSubtitle');
+            const streakBubblesContainer = document.getElementById('dashStreakBubbles');
             const studyStreak = wellnessSummary.streak !== undefined ? wellnessSummary.streak : 0;
             if (streakSubtitle) {
                 streakSubtitle.textContent = studyStreak > 0 ? `You're on a ${studyStreak}-day streak!` : `Log a mood check-in to start your streak!`;
+            }
+            if (streakBubblesContainer) {
+                const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                const todayDayIndex = (now.getDay() + 6) % 7; // Monday = 0
+                streakBubblesContainer.innerHTML = days.map((day, idx) => {
+                    const isCompleted = studyStreak > 0 && idx <= todayDayIndex && (todayDayIndex - idx) < studyStreak;
+                    const isToday = idx === todayDayIndex;
+                    return `
+                        <div class="streak-day-bubble ${isCompleted ? 'active' : ''} ${isToday ? 'today' : ''}">
+                            <span class="day-letter">${day}</span>
+                            <span class="day-label">${day}</span>
+                        </div>
+                    `;
+                }).join('');
             }
         }
     };

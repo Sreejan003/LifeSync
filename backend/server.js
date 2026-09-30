@@ -28,14 +28,31 @@ const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5000';
 
 // CORS configuration
+const allowedOrigins = [
+    CLIENT_URL,
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()) : [])
+].filter(Boolean);
+
 const corsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl, postman) or matching origin
-        if (!origin || origin === CLIENT_URL || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            callback(null, true);
-        } else {
-            callback(null, true); // Permissive for college project demo & deployed frontends
+        // Allow requests with no origin (such as mobile apps, curl, postman, server-to-server)
+        if (!origin) {
+            return callback(null, true);
         }
+
+        // In non-production environments, allow local development addresses
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+            return callback(null, true);
+        }
+
+        // Match against explicitly configured client URLs
+        const isAllowed = allowedOrigins.some(allowed => origin.toLowerCase() === allowed.toLowerCase());
+        if (isAllowed) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`CORS policy: Access denied for origin ${origin}`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

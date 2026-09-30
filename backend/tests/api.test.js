@@ -290,6 +290,40 @@ async function runTests() {
         assert(dashRes.body.latestMood === 'great', 'Dashboard reflects latest mood');
         assert(dashRes.body.completedTasks >= 1, 'Dashboard reflects completed task count');
 
+        // 8. Testing Security Hardening & Validations
+        console.log('\n8. Testing Security Hardening & Validations:');
+
+        // 8a. Google OAuth rejects unverified request without token
+        const unverifiedGoogleRes = await request('/api/auth/google', {
+            method: 'POST',
+            body: { email: 'unverified@example.com', name: 'Attacker' }
+        });
+        assert(unverifiedGoogleRes.status === 401, 'POST /api/auth/google without token rejected with 401');
+
+        // 8b. Forgot password does not leak email in response
+        const forgotRes = await request('/api/auth/forgot-password', {
+            method: 'POST',
+            body: { email: uniqueEmail }
+        });
+        assert(forgotRes.status === 200, 'POST /api/auth/forgot-password returns 200');
+        assert(forgotRes.body.email === undefined, 'Password reset response does not leak user email');
+
+        // 8c. Model validation: Task rejects invalid status
+        const invalidStatusRes = await request('/api/tasks', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${userToken}` },
+            body: { title: 'Invalid Status Task', status: 'HackedStatus' }
+        });
+        assert(invalidStatusRes.status === 400, 'Task creation rejects invalid status with 400');
+
+        // 8d. Model validation: Task rejects invalid priority
+        const invalidPriorityRes = await request('/api/tasks', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${userToken}` },
+            body: { title: 'Invalid Priority Task', priority: 'UltraHigh' }
+        });
+        assert(invalidPriorityRes.status === 400, 'Task creation rejects invalid priority with 400');
+
         console.log('\n🎉 ALL BACKEND API INTEGRATION TESTS PASSED SUCCESSFULLY! 🎉\n');
     } finally {
         if (serverInstance) {

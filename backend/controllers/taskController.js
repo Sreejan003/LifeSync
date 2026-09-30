@@ -110,11 +110,26 @@ async function createTask(req, res, next) {
             return res.status(400).json({ error: 'Task title is required.' });
         }
 
-        const validPriorities = ['low', 'medium', 'high', 'Low', 'Medium', 'High'];
-        const taskPriority = priority ? (priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()) : 'Medium';
+        const allowedPriorities = ['Low', 'Medium', 'High', 'Urgent'];
+        const allowedStatuses = ['Pending', 'Completed', 'In Progress'];
 
-        const validStatuses = ['pending', 'completed', 'Pending', 'Completed'];
-        const taskStatus = status ? (status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()) : 'Pending';
+        let taskPriority = 'Medium';
+        if (priority) {
+            const formatted = priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
+            if (!allowedPriorities.includes(formatted)) {
+                return res.status(400).json({ error: `Invalid priority. Must be one of: ${allowedPriorities.join(', ')}` });
+            }
+            taskPriority = formatted;
+        }
+
+        let taskStatus = 'Pending';
+        if (status) {
+            const formatted = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            if (!allowedStatuses.includes(formatted)) {
+                return res.status(400).json({ error: `Invalid status. Must be one of: ${allowedStatuses.join(', ')}` });
+            }
+            taskStatus = formatted;
+        }
 
         const taskDeadline = deadline || dueDate || null;
         const completedAt = taskStatus === 'Completed' ? new Date().toISOString() : null;
@@ -165,15 +180,26 @@ async function updateTask(req, res, next) {
             ? (deadline || dueDate)
             : current.deadline;
 
+        const allowedPriorities = ['Low', 'Medium', 'High', 'Urgent'];
+        const allowedStatuses = ['Pending', 'Completed', 'In Progress'];
+
         let updatedPriority = current.priority;
         if (priority !== undefined) {
-            updatedPriority = priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
+            const formatted = priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
+            if (!allowedPriorities.includes(formatted)) {
+                return res.status(400).json({ error: `Invalid priority. Must be one of: ${allowedPriorities.join(', ')}` });
+            }
+            updatedPriority = formatted;
         }
 
         let updatedStatus = current.status;
         let updatedCompletedAt = current.completed_at;
         if (status !== undefined) {
-            updatedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            const formatted = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            if (!allowedStatuses.includes(formatted)) {
+                return res.status(400).json({ error: `Invalid status. Must be one of: ${allowedStatuses.join(', ')}` });
+            }
+            updatedStatus = formatted;
             if (updatedStatus === 'Completed' && !current.completed_at) {
                 updatedCompletedAt = new Date().toISOString();
             } else if (updatedStatus !== 'Completed') {

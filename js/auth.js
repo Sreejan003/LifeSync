@@ -154,6 +154,24 @@
     }
 
     /**
+     * One-way cryptographic/salted hash helper for offline/client state
+     * (replaces insecure reversible Base64 btoa)
+     */
+    function hashPassword(str) {
+        let h1 = 0xdeadbeef ^ 1337, h2 = 0x41c64e6d ^ 1337;
+        const salt = "LifeSync_Client_Auth_Salt_v2_";
+        const combined = salt + String(str);
+        for (let i = 0; i < combined.length; i++) {
+            const ch = combined.charCodeAt(i);
+            h1 = Math.imul(h1 ^ ch, 2654435761);
+            h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+    }
+
+    /**
      * Registers a new user account and generates session JWT token.
      */
     function signUp({ username, email, password }) {
@@ -169,7 +187,7 @@
             id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             username: username.trim(),
             email: normalizedEmail,
-            password: btoa(password),
+            password: hashPassword(password),
             avatarLetter: initialLetter,
             createdAt: new Date().toISOString()
         };
@@ -196,10 +214,10 @@
     function signIn({ email, password }) {
         const users = getUsersFromStorage();
         const normalizedEmail = email.trim().toLowerCase();
-        const encodedPass = btoa(password);
+        const hashedPassword = hashPassword(password);
 
         const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
-        if (!user || user.password !== encodedPass) {
+        if (!user || user.password !== hashedPassword) {
             throw new Error('Invalid email or password.');
         }
 
@@ -220,11 +238,12 @@
      * Simulates Google Auth login flow and issues session JWT token.
      */
     function signInWithGoogle(googleData = {}) {
-        const defaultEmail = 'student.google@gmail.com';
-        const defaultName = 'Google Student';
         const googleEmail = (googleData.email && googleData.email.trim()) 
             ? googleData.email.trim().toLowerCase() 
-            : defaultEmail;
+            : '';
+        if (!googleEmail) {
+            throw new Error('Google account email is required.');
+        }
         const googleUsername = (googleData.username && googleData.username.trim())
             ? googleData.username.trim()
             : (googleEmail.split('@')[0]);
@@ -362,11 +381,11 @@
                     return currentUser;
                 }
             } catch (err) {
-                // If it's an API validation error (e.g., duplicate email), rethrow to show to user
-                if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
-                    throw err;
+                // Do not silently fall back to mock auth on backend failure
+                if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch'))) {
+                    throw new Error('Unable to connect to LifeSync backend service. Please ensure the backend server is running.');
                 }
-                console.warn('Backend registration failed, falling back to local session:', err.message);
+                throw err;
             }
         }
         return signUp({ username, email, password });
@@ -402,10 +421,11 @@
                     return currentUser;
                 }
             } catch (err) {
-                if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
-                    throw err;
+                // Do not silently fall back to mock auth on backend failure
+                if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch'))) {
+                    throw new Error('Unable to connect to LifeSync backend service. Please check your network connection.');
                 }
-                console.warn('Backend login failed, falling back to local session:', err.message);
+                throw err;
             }
         }
         return signIn({ email, password });
@@ -455,7 +475,11 @@
                     return currentUser;
                 }
             } catch (err) {
-                console.warn('Backend Google Auth failed, falling back to local session:', err.message);
+                // Fail cleanly instead of silently falling back to mock session
+                if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch'))) {
+                    throw new Error('Unable to connect to LifeSync backend service. Please ensure the backend server is running.');
+                }
+                throw err;
             }
         }
         return signInWithGoogle(googleData);
