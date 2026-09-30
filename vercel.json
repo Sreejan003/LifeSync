@@ -1,29 +1,19 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "index.html",
-          "auth.html",
-          "style.css",
-          "js/**",
-          "images/**",
-          "MentalWellness/**",
-          "todolist/**",
-          "calender/**",
-          "budgetplanner/**",
-          "docs/**"
-        ]
-      }
+  "functions": {
+    "backend/server.js": {
+      "memory": 256,
+      "maxDuration": 30
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/backend/server.js"
+      "source": "/api/:path*",
+      "destination": "/backend/server.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
