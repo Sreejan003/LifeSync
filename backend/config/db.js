@@ -111,6 +111,8 @@ async function initDatabase() {
     const idType = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const timestampType = isPg ? 'TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP' : 'DATETIME DEFAULT CURRENT_TIMESTAMP';
     const numericType = isPg ? 'NUMERIC(10, 2)' : 'REAL';
+    const boolDefault = isPg ? 'false' : '0';
+    const boolTrue = isPg ? 'true' : '1';
 
     // 1. Users Table
     await query(`
@@ -150,7 +152,7 @@ async function initDatabase() {
             date DATE NOT NULL,
             time VARCHAR(10) DEFAULT '09:00',
             event_type VARCHAR(50) DEFAULT 'Study',
-            reminder BOOLEAN DEFAULT 0,
+            reminder BOOLEAN DEFAULT ${boolDefault},
             created_at ${timestampType}
         );
     `);
@@ -178,7 +180,7 @@ async function initDatabase() {
             runway_buffer_pct INTEGER DEFAULT 15,
             night_safe_limit ${numericType} DEFAULT 0,
             night_safe_spent ${numericType} DEFAULT 0,
-            night_safe_locked BOOLEAN DEFAULT 0
+            night_safe_locked BOOLEAN DEFAULT ${boolDefault}
         );
     `);
 
@@ -208,7 +210,7 @@ async function initDatabase() {
             student_id VARCHAR(100) DEFAULT '',
             currency VARCHAR(10) DEFAULT '₹',
             xp INTEGER DEFAULT 120,
-            notifications_enabled BOOLEAN DEFAULT 1
+            notifications_enabled BOOLEAN DEFAULT ${boolTrue}
         );
     `);
 
@@ -219,7 +221,7 @@ async function initDatabase() {
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             puzzle_id VARCHAR(100),
             difficulty VARCHAR(20) DEFAULT 'medium',
-            is_completed BOOLEAN DEFAULT 0,
+            is_completed BOOLEAN DEFAULT ${boolDefault},
             time_seconds INTEGER DEFAULT 0,
             mistakes_count INTEGER DEFAULT 0,
             hints_used INTEGER DEFAULT 0,
@@ -301,3 +303,4 @@ module.exports = {
     initDatabase,
     getDriver: () => dbDriver
 };
+
