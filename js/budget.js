@@ -343,12 +343,14 @@
         // --- TWO-WAY SYNC WITH STANDALONE BUDGETBUDDY ---
         syncWithBudgetBuddy() {
             try {
+                const activeUser = window.AuthSystem && typeof window.AuthSystem.getCurrentUser === 'function' ? window.AuthSystem.getCurrentUser() : null;
+                const activeName = (activeUser && (activeUser.username || activeUser.name)) || 'Student';
                 const buddyData = {
                     profile: {
-                        name: 'Ananya',
-                        streak: 12,
+                        name: activeName,
+                        streak: currentBudget.streak || 0,
                         lastReviewDate: null,
-                        xp: 450
+                        xp: (activeUser && activeUser.xp) || 0
                     },
                     runway: currentBudget.runway || { sum: 18000, bufferPct: 15 },
                     nightSafe: currentBudget.nightSafe || { limit: 350, spent: 112, locked: false },

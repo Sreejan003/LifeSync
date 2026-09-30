@@ -2541,6 +2541,51 @@ body {
     margin-bottom: 20px;
 }
 
+
+/* Official Google OAuth Button */
+.btn-google-official {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 18px;
+    background: #ffffff;
+    color: #1f2937;
+    border: 1.5px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 650;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    margin-bottom: 14px;
+}
+
+.btn-google-official:hover {
+    background: #f8fafc;
+    border-color: #4285F4;
+    box-shadow: 0 4px 14px rgba(66, 133, 244, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-google-official:active {
+    transform: translateY(0);
+}
+
+.dark-theme .btn-google-official {
+    background: #1e293b;
+    color: #f1f5f9;
+    border-color: #334155;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .btn-google-official:hover {
+    background: #253346;
+    border-color: #60a5fa;
+    box-shadow: 0 4px 14px rgba(96, 165, 250, 0.25);
+}
+
 .google-account-item {
     display: flex;
     align-items: center;
@@ -2601,6 +2646,131 @@ body {
     line-height: 1.4;
     text-align: center;
 }
+
+/* =========================================
+   GOOGLE SSO MODAL DARK THEME STYLES
+========================================= */
+
+.dark-theme .google-chooser-card {
+    background: rgba(18, 22, 44, 0.96) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 24px 65px rgba(0, 0, 0, 0.75), 0 0 35px rgba(99, 59, 245, 0.18) !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-theme .google-chooser-card .modal-close-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #94a3b8 !important;
+}
+
+.dark-theme .google-chooser-card .modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    color: #ffffff !important;
+    transform: rotate(90deg);
+}
+
+.dark-theme .google-modal-header h3 {
+    color: #ffffff !important;
+}
+
+.dark-theme .google-modal-header p {
+    color: #94a3b8 !important;
+}
+
+.dark-theme .google-modal-header p strong {
+    color: #c4b5fd !important;
+}
+
+.dark-theme .btn-google-official {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+.dark-theme .btn-google-official:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark-theme .google-account-item {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-theme .google-account-item:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.22) !important;
+}
+
+.dark-theme .google-acc-info strong {
+    color: #f8fafc !important;
+}
+
+.dark-theme .google-acc-info span {
+    color: #94a3b8 !important;
+}
+
+.dark-theme .google-avatar {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.dark-theme .google-chooser-card .social-auth-divider {
+    color: #94a3b8 !important;
+}
+
+.dark-theme .google-chooser-card .social-auth-divider::before,
+.dark-theme .google-chooser-card .social-auth-divider::after {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark-theme .google-chooser-card .social-auth-divider span {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+.dark-theme .google-chooser-card .input-field-wrapper {
+    background: #0d1124 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark-theme .google-chooser-card .input-field-wrapper:focus-within {
+    border-color: #8b5cf6 !important;
+    background: #141830 !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+}
+
+.dark-theme .google-chooser-card .input-field-wrapper input {
+    color: #f8fafc !important;
+    background: transparent !important;
+}
+
+.dark-theme .google-chooser-card .input-field-wrapper input::placeholder {
+    color: #64748b !important;
+}
+
+.dark-theme .google-chooser-card .input-field-wrapper .field-icon {
+    color: #64748b !important;
+}
+
+.dark-theme .google-chooser-card .btn-auth-primary {
+    background: linear-gradient(135deg, #633bf5 0%, #8b5cf6 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(99, 59, 245, 0.4) !important;
+}
+
+.dark-theme .google-chooser-card .btn-auth-primary:hover {
+    box-shadow: 0 6px 20px rgba(99, 59, 245, 0.55) !important;
+    transform: translateY(-1px);
+}
+
+.dark-theme .google-modal-footer p {
+    color: #64748b !important;
+}
+
 
 /* ==========================================================================
    UNIFIED LIFESYNC STUDENT DASHBOARD & NAVIGATION SYSTEM
@@ -3413,6 +3583,61 @@ body.dashboard-body {
 .timeline-event-location {
     font-size: 12px;
     color: #64748b;
+}
+
+.timeline-actions-col {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 8px;
+    opacity: 0.8;
+    transition: opacity 0.15s ease;
+}
+
+.timeline-row-item:hover .timeline-actions-col {
+    opacity: 1;
+}
+
+.btn-schedule-mini {
+    background: transparent;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-size: 11.5px;
+    cursor: pointer;
+    color: var(--text-secondary, #64748b);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-schedule-mini:hover {
+    background: rgba(99, 59, 245, 0.08);
+    border-color: #633bf5;
+    transform: scale(1.05);
+}
+
+.btn-schedule-mini.btn-schedule-delete:hover {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: #ef4444;
+}
+
+.dark-theme .btn-schedule-mini {
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #94a3b8;
+}
+
+.dark-theme .btn-schedule-mini:hover {
+    background: rgba(129, 140, 248, 0.18);
+    border-color: #818cf8;
+    color: #f1f5f9;
+}
+
+.dark-theme .btn-schedule-mini.btn-schedule-delete:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: #ef4444;
+    color: #fca5a5;
 }
 
 /* Priority Tasks Container */
@@ -10978,3 +11203,119 @@ body.dark-theme .breathing-badge,
     color: #c4b5fd !important;
 }
 
+
+/* =========================================
+   FIRST-TIME GOOGLE ONBOARDING PROFILE MODAL
+========================================= */
+
+.profile-setup-card {
+    width: min(460px, 94%);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.profile-onboarding-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(99, 59, 245, 0.15), rgba(139, 92, 246, 0.25));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(99, 59, 245, 0.18);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.profile-setup-user-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(245, 243, 255, 0.8);
+    border: 1px solid #e9d5ff;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.setup-user-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.setup-user-text strong {
+    font-size: 14px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.setup-user-text span {
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-inputs-split-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 480px) {
+    .form-inputs-split-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.btn-skip-setup {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    margin-top: 4px;
+    transition: color 0.2s ease;
+}
+
+.btn-skip-setup:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* Dark Mode Overrides for Profile Setup Modal */
+.dark-theme .profile-setup-user-badge {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-theme .setup-user-text strong {
+    color: #f8fafc !important;
+}
+
+.dark-theme .setup-user-text span {
+    color: #94a3b8 !important;
+}
+
+.dark-theme .profile-onboarding-icon {
+    background: linear-gradient(135deg, rgba(99, 59, 245, 0.3), rgba(139, 92, 246, 0.4)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    box-shadow: 0 8px 24px rgba(99, 59, 245, 0.3) !important;
+}
+
+.dark-theme .btn-skip-setup {
+    color: #94a3b8 !important;
+}
+
+.dark-theme .btn-skip-setup:hover {
+    color: #c4b5fd !important;
+}

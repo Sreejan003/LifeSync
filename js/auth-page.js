@@ -292,10 +292,298 @@
             });
         }
 
-        // Google Auth Simulation & Account Picker Modal
+        // Google OAuth 2.0 / GIS & Account Picker Modal
+        let GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '';
         const googleAuthModal = document.querySelector("#googleAuthModal");
         const closeGoogleModal = document.querySelector("#closeGoogleModal");
         const googleTriggers = document.querySelectorAll(".btn-trigger-google, #googleAuthBtn");
+        const btnOfficialGoogle = document.querySelector("#btnOfficialGoogle");
+
+        // Profile Setup Modal Elements
+        const googleProfileModal = document.querySelector("#googleProfileModal");
+        const googleProfileSetupForm = document.querySelector("#googleProfileSetupForm");
+        const btnSkipProfileSetup = document.querySelector("#btnSkipProfileSetup");
+        const setupErrorMsg = document.querySelector("#setupErrorMsg");
+
+        let googleTokenClient = null;
+        let pendingGoogleUser = null;
+        let isGoogleInitialized = false;
+        let googleInitPromise = null;
+
+        function openProfileSetupModal(user) {
+            pendingGoogleUser = user;
+            if (googleAuthModal) {
+                googleAuthModal.classList.add("hidden");
+                googleAuthModal.classList.remove("show");
+            }
+
+            const avatarLetter = document.querySelector("#setupAvatarLetter");
+            const displayName = document.querySelector("#setupUserDisplayName");
+            const userEmail = document.querySelector("#setupUserEmail");
+            const fullNameInput = document.querySelector("#setupFullName");
+            const uniInput = document.querySelector("#setupUniversity");
+            const majorInput = document.querySelector("#setupMajor");
+            const yearInput = document.querySelector("#setupYearSemester");
+            const studentIdInput = document.querySelector("#setupStudentId");
+
+            if (setupErrorMsg) setupErrorMsg.classList.add("hidden");
+
+            const name = user.username || user.name || 'Google Student';
+            const initial = name.charAt(0).toUpperCase() || 'G';
+
+            if (avatarLetter) avatarLetter.textContent = initial;
+            if (displayName) displayName.textContent = name;
+            if (userEmail) userEmail.textContent = user.email || '';
+            if (fullNameInput) fullNameInput.value = name;
+            if (uniInput) uniInput.value = '';
+            if (majorInput) majorInput.value = '';
+            if (yearInput) yearInput.value = '1st Year / 1st Semester';
+            if (studentIdInput) studentIdInput.value = '';
+
+            if (googleProfileModal) {
+                googleProfileModal.classList.remove("hidden");
+                googleProfileModal.classList.add("show");
+            }
+        }
+
+        function hideProfileSetupModal() {
+            if (googleProfileModal) {
+                googleProfileModal.classList.add("hidden");
+                googleProfileModal.classList.remove("show");
+            }
+        }
+
+        async function handleGoogleLoginSuccess(user) {
+            hideGoogleModal();
+            if (user && (user.isNewUser || user.needsProfileSetup)) {
+                openProfileSetupModal(user);
+            } else {
+                redirectToApp(`Signed in with Google as ${user.username || user.name}`);
+            }
+        }
+
+        // Wire Profile Setup Form submission
+        if (googleProfileSetupForm) {
+            googleProfileSetupForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!pendingGoogleUser) {
+                    redirectToApp("Welcome to LifeSync!");
+                    return;
+                }
+
+                const fullName = document.querySelector("#setupFullName").value.trim() || pendingGoogleUser.username || pendingGoogleUser.name || 'Student';
+                const university = document.querySelector("#setupUniversity").value.trim() || '';
+                const major = document.querySelector("#setupMajor").value.trim() || '';
+                const yearSemester = document.querySelector("#setupYearSemester").value.trim() || '';
+                const studentId = document.querySelector("#setupStudentId").value.trim() || '';
+
+                try {
+                    // 1. Update in local storage
+                    if (window.LifeSyncStorage && typeof window.LifeSyncStorage.saveProfile === 'function') {
+                        window.LifeSyncStorage.saveProfile(pendingGoogleUser, {
+                            name: fullName,
+                            email: pendingGoogleUser.email,
+                            university,
+                            major,
+                            yearSemester,
+                            studentId
+                        });
+                    }
+
+                    // 2. Update via backend API
+                    if (window.LifeSyncAPI && typeof window.LifeSyncAPI.updateProfile === 'function') {
+                        await window.LifeSyncAPI.updateProfile({
+                            name: fullName,
+                            university,
+                            major,
+                            yearSemester,
+                            studentId
+                        });
+                    }
+
+                    // 3. Sync username if changed
+                    if (fullName && window.AuthSystem && typeof window.AuthSystem.updateUsername === 'function') {
+                        try {
+                            window.AuthSystem.updateUsername(fullName);
+                        } catch (err) {}
+                    }
+
+                    // 4. Mark profile completed
+                    if (window.AuthSystem && typeof window.AuthSystem.markProfileCompleted === 'function') {
+                        window.AuthSystem.markProfileCompleted();
+                    }
+
+                    hideProfileSetupModal();
+                    redirectToApp(`Profile saved! Welcome to LifeSync, ${fullName}!`);
+                } catch (err) {
+                    if (setupErrorMsg) {
+                        setupErrorMsg.textContent = err.message || "Failed to save profile. Please try again.";
+                        setupErrorMsg.classList.remove("hidden");
+                    }
+                }
+            });
+        }
+
+        if (btnSkipProfileSetup) {
+            btnSkipProfileSetup.addEventListener("click", () => {
+                if (window.AuthSystem && typeof window.AuthSystem.markProfileCompleted === 'function') {
+                    window.AuthSystem.markProfileCompleted();
+                }
+                hideProfileSetupModal();
+                const name = pendingGoogleUser ? (pendingGoogleUser.username || pendingGoogleUser.name) : 'Student';
+                redirectToApp(`Welcome to LifeSync, ${name}!`);
+            });
+        }
+
+        // Asynchronously resolve or fetch Google Client ID from backend / meta
+        async function getOrFetchGoogleClientId() {
+            if (GOOGLE_CLIENT_ID && typeof GOOGLE_CLIENT_ID === 'string' && GOOGLE_CLIENT_ID.trim()) {
+                return GOOGLE_CLIENT_ID.trim();
+            }
+
+            // 1. Check meta tag
+            const meta = document.querySelector('meta[name="google-signin-client_id"]');
+            if (meta && meta.content && !meta.content.startsWith('your_')) {
+                GOOGLE_CLIENT_ID = meta.content.trim();
+                return GOOGLE_CLIENT_ID;
+            }
+
+            // 2. Fetch dynamically from backend endpoint
+            if (window.LifeSyncAPI && typeof window.LifeSyncAPI.getGoogleClientId === 'function') {
+                try {
+                    const res = await window.LifeSyncAPI.getGoogleClientId();
+                    if (res && res.clientId && res.clientId.trim()) {
+                        GOOGLE_CLIENT_ID = res.clientId.trim();
+                        return GOOGLE_CLIENT_ID;
+                    }
+                } catch (e) {}
+            }
+
+            // 3. Check window global or cached Client ID
+            if (window.GOOGLE_CLIENT_ID && typeof window.GOOGLE_CLIENT_ID === 'string') {
+                GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID.trim();
+                return GOOGLE_CLIENT_ID;
+            }
+
+            try {
+                const cached = localStorage.getItem('lifesync_google_client_id');
+                if (cached && cached.trim()) {
+                    GOOGLE_CLIENT_ID = cached.trim();
+                    return GOOGLE_CLIENT_ID;
+                }
+            } catch (e) {}
+
+            return '';
+        }
+
+        // Initialize Google Identity Services safely (strictly once, when Client ID is available)
+        async function initGoogleIdentity(explicitClientId) {
+            if (isGoogleInitialized) return true;
+            if (googleInitPromise) return googleInitPromise;
+
+            googleInitPromise = (async () => {
+                if (typeof window === 'undefined' || !window.google || !window.google.accounts) return false;
+
+                const activeClientId = explicitClientId || (await getOrFetchGoogleClientId());
+                if (!activeClientId || typeof activeClientId !== 'string' || !activeClientId.trim()) {
+                    // DO NOT invoke GIS initialize without a non-empty client_id
+                    return false;
+                }
+
+                GOOGLE_CLIENT_ID = activeClientId.trim();
+                try {
+                    localStorage.setItem('lifesync_google_client_id', GOOGLE_CLIENT_ID);
+                } catch (e) {}
+
+                try {
+                    // 1. GIS Credential Initializer (One-Tap & ID Token verification)
+                    if (window.google.accounts.id && !isGoogleInitialized) {
+                        window.google.accounts.id.initialize({
+                            client_id: GOOGLE_CLIENT_ID,
+                            callback: async (response) => {
+                                if (response && response.credential) {
+                                    try {
+                                        const user = await (AuthSystem.signInWithGoogleAsync 
+                                            ? AuthSystem.signInWithGoogleAsync({ credential: response.credential })
+                                            : AuthSystem.signInWithGoogle());
+                                        await handleGoogleLoginSuccess(user);
+                                    } catch (err) {
+                                        showAuthError(err.message || 'Google Sign-In failed.');
+                                    }
+                                }
+                            },
+                            auto_select: false,
+                            cancel_on_tap_outside: true
+                        });
+                    }
+
+                    // 2. OAuth2 Token Client for interactive popups
+                    if (window.google.accounts.oauth2 && typeof window.google.accounts.oauth2.initTokenClient === 'function' && !googleTokenClient) {
+                        googleTokenClient = window.google.accounts.oauth2.initTokenClient({
+                            client_id: GOOGLE_CLIENT_ID,
+                            scope: 'email profile openid',
+                            callback: async (tokenResponse) => {
+                                if (tokenResponse && tokenResponse.access_token) {
+                                    try {
+                                        const user = await (AuthSystem.signInWithGoogleAsync 
+                                            ? AuthSystem.signInWithGoogleAsync({ accessToken: tokenResponse.access_token })
+                                            : AuthSystem.signInWithGoogle());
+                                        await handleGoogleLoginSuccess(user);
+                                    } catch (err) {
+                                        showAuthError(err.message || 'Google Sign-In failed.');
+                                    }
+                                } else if (tokenResponse && tokenResponse.error) {
+                                    console.warn('Google OAuth response notice:', tokenResponse.error);
+                                }
+                            }
+                        });
+                    }
+
+                    isGoogleInitialized = true;
+                    return true;
+                } catch (initErr) {
+                    console.warn('Google Identity initialization notice:', initErr.message);
+                    return false;
+                }
+            })().finally(() => {
+                if (!isGoogleInitialized) {
+                    googleInitPromise = null;
+                }
+            });
+
+            return googleInitPromise;
+        }
+
+        // Attempt initialization when both Google script and Client ID are resolved
+        if (typeof window !== 'undefined') {
+            const tryInit = async () => {
+                if (isGoogleInitialized) return true;
+                if (window.google && window.google.accounts) {
+                    const clientId = await getOrFetchGoogleClientId();
+                    if (clientId) {
+                        return await initGoogleIdentity(clientId);
+                    }
+                }
+                return false;
+            };
+
+            // Immediate initial kickoff
+            tryInit();
+
+            // Polling fallback until GIS script is loaded (max 15 attempts, 300ms interval)
+            let attempts = 0;
+            const timer = setInterval(async () => {
+                attempts++;
+                if (isGoogleInitialized || attempts > 15) {
+                    clearInterval(timer);
+                    return;
+                }
+                const success = await tryInit();
+                if (success || isGoogleInitialized) {
+                    clearInterval(timer);
+                }
+            }, 300);
+        }
 
         const openGoogleModal = (e) => {
             if (e) e.preventDefault();
@@ -312,9 +600,54 @@
             }
         };
 
+        // Trigger Google OAuth popup if available, otherwise open fallback chooser modal
+        const handleGoogleTriggerClick = async (e) => {
+            if (e) e.preventDefault();
+
+            if (!isGoogleInitialized) {
+                const clientId = await getOrFetchGoogleClientId();
+                if (clientId) {
+                    await initGoogleIdentity(clientId);
+                }
+            }
+
+            if (googleTokenClient && typeof googleTokenClient.requestAccessToken === 'function') {
+                try {
+                    googleTokenClient.requestAccessToken({ prompt: 'select_account' });
+                    return;
+                } catch (err) {
+                    console.warn('Google popup request notice, opening modal fallback:', err.message);
+                }
+            }
+            openGoogleModal(e);
+        };
+
         googleTriggers.forEach(btn => {
-            btn.addEventListener("click", openGoogleModal);
+            btn.addEventListener("click", handleGoogleTriggerClick);
         });
+
+        if (btnOfficialGoogle) {
+            btnOfficialGoogle.addEventListener("click", async (e) => {
+                e.preventDefault();
+
+                if (!isGoogleInitialized) {
+                    const clientId = await getOrFetchGoogleClientId();
+                    if (clientId) {
+                        await initGoogleIdentity(clientId);
+                    }
+                }
+
+                if (googleTokenClient && typeof googleTokenClient.requestAccessToken === 'function') {
+                    try {
+                        googleTokenClient.requestAccessToken({ prompt: 'select_account' });
+                        return;
+                    } catch (err) {
+                        console.warn('Official Google OAuth button popup warning:', err);
+                    }
+                }
+                showAuthError("Connecting to Google Identity Services... Please ensure backend server is running on port 5000.");
+            });
+        }
 
         if (closeGoogleModal) {
             closeGoogleModal.addEventListener("click", hideGoogleModal);
@@ -340,8 +673,7 @@
 
                 try {
                     const user = await (AuthSystem.signInWithGoogleAsync ? AuthSystem.signInWithGoogleAsync({ username: name, email: email }) : AuthSystem.signInWithGoogle({ username: name, email: email }));
-                    hideGoogleModal();
-                    redirectToApp(`Signed in with Google as ${user.username}`);
+                    await handleGoogleLoginSuccess(user);
                 } catch (err) {
                     showAuthError(err.message || "Google Sign-In failed. Please try again.");
                 }
@@ -363,8 +695,7 @@
 
                 try {
                     const user = await (AuthSystem.signInWithGoogleAsync ? AuthSystem.signInWithGoogleAsync({ username: name, email: email }) : AuthSystem.signInWithGoogle({ username: name, email: email }));
-                    hideGoogleModal();
-                    redirectToApp(`Signed in with Google as ${user.username}`);
+                    await handleGoogleLoginSuccess(user);
                 } catch (err) {
                     showAuthError(err.message || "Google Sign-In failed. Please try again.");
                 }

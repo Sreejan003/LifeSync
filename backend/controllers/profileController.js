@@ -36,10 +36,10 @@ async function updateProfile(req, res, next) {
         const current = currentRes.rows[0] || {};
 
         const updatedName = name !== undefined ? name.trim() : (current.name || req.user.name);
-        const updatedUni = university !== undefined ? university.trim() : (current.university || 'National Institute of Technology');
-        const updatedMajor = major !== undefined ? major.trim() : (current.major || 'Computer Science & Engineering');
-        const updatedYrSem = yearSemester !== undefined ? yearSemester.trim() : (current.year_semester || '3rd Year / 5th Semester');
-        const updatedStuId = studentId !== undefined ? studentId.trim() : (current.student_id || 'STU-2026-8841');
+        const updatedUni = university !== undefined ? university.trim() : (current.university || '');
+        const updatedMajor = major !== undefined ? major.trim() : (current.major || '');
+        const updatedYrSem = yearSemester !== undefined ? yearSemester.trim() : (current.year_semester || '');
+        const updatedStuId = studentId !== undefined ? studentId.trim() : (current.student_id || '');
         const updatedCurr = currency !== undefined ? currency : (current.currency || '₹');
         const updatedXp = xp !== undefined ? parseInt(xp, 10) : (current.xp || 120);
         const updatedNotif = notificationsEnabled !== undefined ? (Boolean(notificationsEnabled) ? 1 : 0) : (current.notifications_enabled || 1);

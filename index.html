@@ -241,7 +241,7 @@
 
                 <!-- Greeting Section -->
                 <div class="dash-greeting-section">
-                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Alex Morgan</span>! 👋
+                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Student</span>! 👋
                     </h1>
                     <p class="dash-greeting-subtitle">Stay organized. Stay focused. You've got this!</p>
                 </div>
@@ -261,7 +261,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Tasks Pending</span>
-                            <div class="metric-value" id="dashStatPendingTasks">7</div>
+                            <div class="metric-value" id="dashStatPendingTasks">0</div>
                             <span class="metric-subtext sub-purple">Keep going!</span>
                         </div>
                     </div>
@@ -277,7 +277,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Tasks Completed</span>
-                            <div class="metric-value" id="dashStatCompletedTasks">12</div>
+                            <div class="metric-value" id="dashStatCompletedTasks">0</div>
                             <span class="metric-subtext sub-green">Great progress!</span>
                         </div>
                     </div>
@@ -295,7 +295,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Upcoming Events</span>
-                            <div class="metric-value" id="dashStatUpcomingEvents">3</div>
+                            <div class="metric-value" id="dashStatUpcomingEvents">0</div>
                             <span class="metric-subtext sub-amber">Stay prepared</span>
                         </div>
                     </div>
@@ -312,8 +312,8 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Today's Focus</span>
-                            <div class="metric-focus-title" id="dashStatFocusTask">DBMS Assignment</div>
-                            <span class="metric-subtext sub-rose" id="dashStatFocusDue">Due Tomorrow</span>
+                            <div class="metric-focus-title" id="dashStatFocusTask">No urgent task</div>
+                            <span class="metric-subtext sub-rose" id="dashStatFocusDue">All caught up</span>
                         </div>
                     </div>
                 </div>
@@ -335,7 +335,7 @@
                                 <h3>Today's Schedule</h3>
                             </div>
                             <button type="button" class="panel-header-link link-purple"
-                                onclick="window.LifeSyncApp.switchTab('calendar')">View Calendar</button>
+                                onclick="window.LifeSyncApp.switchTab('calendar')">Calendar →</button>
                         </div>
                         <div id="dashTodayScheduleTimeline" class="schedule-timeline-container">
                             <!-- Injected by DashboardModule -->
@@ -371,7 +371,7 @@
                             </div>
                             <div class="dash-budget-header-actions">
                                 <span id="dashBudgetStreakBadge" class="badge-streak-sm"
-                                    title="Budget Review Streak">1.2k</span>
+                                    title="Budget Review Streak">0d</span>
                                 <button type="button" class="panel-header-link link-green"
                                     onclick="window.LifeSyncApp.switchTab('budget')">Open Hub</button>
                             </div>
@@ -381,7 +381,7 @@
                             <div class="dash-budget-top-row">
                                 <div>
                                     <div class="budget-total-balance-label">Available Balance</div>
-                                    <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹10,450</div>
+                                    <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹0</div>
                                 </div>
                                 <div class="dash-budget-quick-actions">
                                     <button type="button" class="btn-xs-primary"
@@ -393,15 +393,15 @@
                             <div class="budget-in-out-row">
                                 <div class="budget-in-col">
                                     <span class="in-out-label">Income</span>
-                                    <span class="in-out-val" id="dashBudgetIncomeVal">₹ 8,000</span>
+                                    <span class="in-out-val" id="dashBudgetIncomeVal">₹ 0</span>
                                 </div>
                                 <div class="budget-out-col">
                                     <span class="in-out-label">Spent This Month</span>
-                                    <span class="in-out-val" id="dashBudgetExpenseVal">₹ 4,550</span>
+                                    <span class="in-out-val" id="dashBudgetExpenseVal">₹ 0</span>
                                 </div>
                             </div>
                             <div class="budget-meter-track" title="Monthly spending progress">
-                                <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 57%;"></div>
+                                <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 0%;"></div>
                             </div>
 
                             <!-- Integrated Feature 1: Late-Night Safe Quick Bar -->
@@ -410,8 +410,7 @@
                                     <div class="mini-box-title">
                                         <span id="dashNightSafeIcon" style="color: #f43f5e;">🌙</span>
                                         <span>Late - Night Safety</span>
-                                        <strong id="dashNightSafeStatus" class="night-safe-status-pill unlocked">₹350
-                                            Late</strong>
+                                        <strong id="dashNightSafeStatus" class="night-safe-status-pill unlocked">Active</strong>
                                     </div>
                                     <button type="button" id="dashBtnToggleNightSafe" class="btn-xs-toggle locked-mode"
                                         onclick="window.LifeSyncApp.quickNightSafeToggle()">🔒 Lock</button>
@@ -431,10 +430,10 @@
                                 <div class="mini-box-header">
                                     <div class="mini-box-title">
                                         <span class="mini-icon-circle">📅</span>
-                                        <span id="dashNextBillLabel">Due 2025-... (₹200)</span>
-                                        <strong id="dashNextBillTitle">Dorm Wi-Fi Fiber (₹200)</strong>
+                                        <span id="dashNextBillLabel">Roommate Bills:</span>
+                                        <strong id="dashNextBillTitle">All Bills Settled ✓</strong>
                                     </div>
-                                    <button type="button" id="dashBtnPayNextBill" class="btn-xs-action">Paid</button>
+                                    <button type="button" id="dashBtnPayNextBill" class="btn-xs-action" style="display: none;">Paid</button>
                                 </div>
                             </div>
 
@@ -443,8 +442,8 @@
                                 <div class="mini-box-header">
                                     <div class="mini-box-title">
                                         <span class="mini-icon-circle">🍴</span>
-                                        <span id="dashGoalTitle">Textbooks & Stationery Fund</span>
-                                        <strong id="dashGoalPct">56% (₹4.5k)</strong>
+                                        <span id="dashGoalTitle">Savings Goal</span>
+                                        <strong id="dashGoalPct">0%</strong>
                                     </div>
                                     <button type="button" class="btn-xs-link"
                                         onclick="window.LifeSyncApp.openGoalContributionModal()">Add</button>
@@ -1424,23 +1423,23 @@
                                 <div class="form-group">
                                     <label for="profileUniInput">University / Institute</label>
                                     <input type="text" id="profileUniInput"
-                                        placeholder="National Institute of Technology">
+                                        placeholder="University or College">
                                 </div>
                                 <div class="form-group">
                                     <label for="profileMajorInput">Major / Degree</label>
                                     <input type="text" id="profileMajorInput"
-                                        placeholder="Computer Science & Engineering">
+                                        placeholder="Degree or Field of Study">
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="profileYearInput">Year & Semester</label>
-                                    <input type="text" id="profileYearInput" placeholder="3rd Year / 5th Semester">
+                                    <input type="text" id="profileYearInput" placeholder="Current Year / Semester">
                                 </div>
                                 <div class="form-group">
                                     <label for="profileStudentIdInput">Student ID / Roll No</label>
-                                    <input type="text" id="profileStudentIdInput" placeholder="STU-2026-8841">
+                                    <input type="text" id="profileStudentIdInput" placeholder="Student ID / Roll No">
                                 </div>
                             </div>
 
@@ -1608,6 +1607,7 @@
                     title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="eventFormModal">
+                <input type="hidden" id="eventEditId">
                 <div class="form-group">
                     <label for="eventTitleInput">Event Title / Subject *</label>
                     <input type="text" id="eventTitleInput" placeholder="e.g. Midterm Examination / Chemistry Lab"
@@ -1651,7 +1651,7 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary"
                         onclick="window.LifeSyncApp.closeModal('eventModalOverlay')">Cancel</button>
-                    <button type="submit" class="btn-primary">Add to Schedule</button>
+                    <button type="submit" id="eventSubmitBtn" class="btn-primary">Add to Schedule</button>
                 </div>
             </form>
         </div>

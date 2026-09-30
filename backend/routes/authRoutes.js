@@ -7,6 +7,11 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/me', authMiddleware, authController.getMe);
 router.post('/google', authController.googleAuth);
+router.get('/google/client-id', (req, res) => {
+    res.json({
+        clientId: process.env.GOOGLE_CLIENT_ID || ''
+    });
+});
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 

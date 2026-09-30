@@ -339,7 +339,38 @@ assert(styleCss.includes('.forgot-header-wrap'), 'style.css includes .forgot-hea
 assert(styleCss.includes('.btn-icon-back'), 'style.css includes .btn-icon-back');
 assert(styleCss.includes('@media (max-width: 900px)') && styleCss.includes('.auth-right-panel'), 'style.css includes responsive breakpoint for tablet/mobile');
 assert(styleCss.includes('@media (max-width: 480px)'), 'style.css includes mobile breakpoint for 480px');
-console.log('✓ PASS: Dedicated Forgot Password section and responsive auth layout verified');
+// 17. Today's Schedule Customization & Total Hardcoded Value Elimination
+assert(!indexHtml.includes('>Alex Morgan<'), 'Hardcoded Alex Morgan removed from index.html');
+assert(!indexHtml.includes('>DBMS Assignment<'), 'Hardcoded DBMS Assignment removed from index.html');
+assert(!indexHtml.includes('id="btnDashAddTodayEvent"'), 'btnDashAddTodayEvent button removed from Today Schedule header');
+assert(indexHtml.includes('id="eventEditId"'), 'eventModalOverlay includes eventEditId hidden input');
+assert(indexHtml.includes('id="eventSubmitBtn"'), 'eventModalOverlay includes eventSubmitBtn');
+assert(appJs.includes('openEditEventModal'), 'app.js implements openEditEventModal');
+assert(!dashboardJs.includes("time: '09:00 AM', title: 'DBMS Lecture'"), 'dashboard.js removed hardcoded fallback demo schedule');
+assert(dashboardJs.includes('openEditEventModal'), 'dashboard.js timeline allows editing today events');
+assert(dashboardJs.includes('deleteEvent'), 'dashboard.js timeline allows deleting today events');
+assert(!authHtml.includes('alex@university.edu'), 'auth.html removed hardcoded alex@university.edu placeholder');
+assert(!authHtml.includes('demo / developer accounts:'), 'auth.html removed demo accounts text');
+
+// Test CalendarModule updateEvent functionality
+const testEvt = window.CalendarModule.addEvent(testUser, {
+    title: 'Original Lecture',
+    date: '2026-10-01',
+    time: '10:00 AM',
+    category: 'Study',
+    priority: 'Medium',
+    description: 'Old room'
+});
+const updatedEvt = window.CalendarModule.updateEvent(testUser, testEvt.id, {
+    title: 'Updated Workshop',
+    time: '02:00 PM',
+    description: 'New Hall 3'
+});
+assert(updatedEvt.title === 'Updated Workshop', 'CalendarModule successfully updated event title');
+assert(updatedEvt.time === '02:00 PM', 'CalendarModule successfully updated event time');
+assert(updatedEvt.description === 'New Hall 3', 'CalendarModule successfully updated event description');
+window.CalendarModule.deleteEvent(testUser, testEvt.id);
+console.log('✓ PASS: Today Schedule customization and hardcoded value elimination fully verified');
 
 // 17. Soothing Games & Mindful Break Verification
 assert(window.SoothingGamesModule && typeof window.SoothingGamesModule.init === 'function', 'SoothingGamesModule initialized with public API');

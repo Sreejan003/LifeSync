@@ -143,11 +143,21 @@
             return request('/auth/me');
         },
 
-        googleAuth(name, email) {
+        googleAuth(nameOrData, email, credential) {
+            let payload = {};
+            if (typeof nameOrData === 'object' && nameOrData !== null) {
+                payload = nameOrData;
+            } else {
+                payload = { name: nameOrData, email, credential };
+            }
             return request('/auth/google', {
                 method: 'POST',
-                body: { name, email }
+                body: payload
             });
+        },
+
+        getGoogleClientId() {
+            return request('/auth/google/client-id');
         },
 
         // --- Tasks Endpoints ---

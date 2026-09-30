@@ -233,19 +233,24 @@
         const initialLetter = googleUsername.charAt(0).toUpperCase() || 'G';
 
         let user = users.find(u => u.email.toLowerCase() === googleEmail);
+        let isNewUser = false;
 
         if (!user) {
+            isNewUser = true;
             user = {
                 id: 'usr_google_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                 username: googleUsername,
                 email: googleEmail,
                 isGoogleUser: true,
+                isNewUser: true,
+                needsProfileSetup: true,
                 avatarLetter: initialLetter,
                 createdAt: new Date().toISOString()
             };
             users.push(user);
             saveUsersToStorage(users);
         } else {
+            isNewUser = Boolean(user.needsProfileSetup);
             user.username = googleUsername;
             user.avatarLetter = initialLetter;
             saveUsersToStorage(users);
@@ -256,11 +261,17 @@
             username: user.username,
             email: user.email,
             avatarLetter: initialLetter,
-            isGoogleUser: true
+            isGoogleUser: true,
+            isNewUser: isNewUser,
+            needsProfileSetup: isNewUser
         });
 
         setTokenInStorage(token);
         const currentUser = getCurrentUser();
+        if (currentUser) {
+            currentUser.isNewUser = isNewUser;
+            currentUser.needsProfileSetup = isNewUser;
+        }
         notifyAuthStateChanged(currentUser);
         return currentUser;
     }
@@ -403,29 +414,43 @@
     async function signInWithGoogleAsync(googleData = {}) {
         if (typeof window !== 'undefined' && window.LifeSyncAPI && typeof fetch !== 'undefined') {
             try {
-                const res = await window.LifeSyncAPI.googleAuth(googleData.username, googleData.email);
+                const res = await window.LifeSyncAPI.googleAuth({
+                    name: googleData.username || googleData.name,
+                    email: googleData.email,
+                    credential: googleData.credential,
+                    idToken: googleData.idToken,
+                    accessToken: googleData.accessToken
+                });
                 if (res && res.token) {
                     setTokenInStorage(res.token);
+                    const isNew = Boolean(res.isNewUser || (res.user && res.user.isNewUser));
 
                     const userObj = {
                         id: res.user.id,
                         username: res.user.name,
                         email: res.user.email,
                         avatarLetter: res.user.avatarLetter || 'G',
+                        picture: res.user.picture || null,
                         isGoogleUser: true,
+                        isNewUser: isNew,
+                        needsProfileSetup: isNew,
                         createdAt: new Date().toISOString()
                     };
 
                     const users = getUsersFromStorage();
                     const existingIdx = users.findIndex(u => u.id === userObj.id || u.email === userObj.email);
                     if (existingIdx !== -1) {
-                        users[existingIdx] = userObj;
+                        users[existingIdx] = { ...users[existingIdx], ...userObj };
                     } else {
                         users.push(userObj);
                     }
                     saveUsersToStorage(users);
 
                     const currentUser = getCurrentUser();
+                    if (currentUser) {
+                        currentUser.isNewUser = isNew;
+                        currentUser.needsProfileSetup = isNew;
+                    }
                     notifyAuthStateChanged(currentUser);
                     return currentUser;
                 }
@@ -436,8 +461,24 @@
         return signInWithGoogle(googleData);
     }
 
+    function markProfileCompleted() {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            currentUser.isNewUser = false;
+            currentUser.needsProfileSetup = false;
+            const users = getUsersFromStorage();
+            const u = users.find(x => x.id === currentUser.id);
+            if (u) {
+                u.needsProfileSetup = false;
+                u.isNewUser = false;
+                saveUsersToStorage(users);
+            }
+        }
+    }
+
     // Expose Auth module globally
     window.AuthSystem = {
+        markProfileCompleted,
         getCurrentUser,
         signUp,
         signUpAsync,

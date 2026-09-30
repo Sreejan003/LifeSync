@@ -183,22 +183,78 @@ async function getMe(req, res, next) {
  */
 async function googleAuth(req, res, next) {
     try {
-        const { email, name } = req.body;
-        const googleEmail = (email && email.trim()) ? email.trim().toLowerCase() : 'student.google@gmail.com';
-        const googleName = (name && name.trim()) ? name.trim() : 'Google Student';
-        const avatarLetter = googleName.charAt(0).toUpperCase() || 'G';
+        const { email, name, credential, idToken, accessToken } = req.body;
+        const googleToken = credential || idToken;
 
-        let result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [googleEmail]);
+        let googleEmail = email;
+        let googleName = name;
+        let googlePicture = null;
+
+        // 1. If Google ID Token / GIS credential is provided, verify with Google
+        if (googleToken) {
+            try {
+                const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(googleToken)}`);
+                if (googleRes.ok) {
+                    const tokenInfo = await googleRes.json();
+                    const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+                    if (tokenInfo.aud && expectedClientId && tokenInfo.aud !== expectedClientId) {
+                        return res.status(401).json({ error: 'Google OAuth token audience mismatch.' });
+                    }
+                    googleEmail = tokenInfo.email;
+                    googleName = tokenInfo.name || tokenInfo.email.split('@')[0];
+                    googlePicture = tokenInfo.picture || null;
+                } else {
+                    return res.status(401).json({ error: 'Invalid Google OAuth ID token.' });
+                }
+            } catch (err) {
+                console.warn('Google tokeninfo fetch warning:', err.message);
+                if (!googleEmail) {
+                    return res.status(401).json({ error: 'Failed to verify Google token with Google servers.' });
+                }
+            }
+        } else if (accessToken) {
+            // 2. If Google Access Token is provided, fetch Google userinfo
+            try {
+                const userinfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                if (userinfoRes.ok) {
+                    const profile = await userinfoRes.json();
+                    googleEmail = profile.email;
+                    googleName = profile.name || profile.email.split('@')[0];
+                    googlePicture = profile.picture || null;
+                } else {
+                    return res.status(401).json({ error: 'Invalid Google access token.' });
+                }
+            } catch (err) {
+                console.warn('Google userinfo fetch warning:', err.message);
+                if (!googleEmail) {
+                    return res.status(401).json({ error: 'Failed to verify Google access token.' });
+                }
+            }
+        }
+
+        // Fallback default for simulated development mode
+        const finalEmail = (googleEmail && googleEmail.trim()) ? googleEmail.trim().toLowerCase() : '';
+        if (!finalEmail) {
+            return res.status(400).json({ error: 'Valid Google email is required.' });
+        }
+        const finalName = (googleName && googleName.trim()) ? googleName.trim() : finalEmail.split('@')[0];
+        const avatarLetter = finalName.charAt(0).toUpperCase() || 'G';
+
+        let result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [finalEmail]);
         let user;
+        let isNewUser = false;
 
         if (result.rows.length === 0) {
+            isNewUser = true;
             // Create user with randomized high-entropy password
             const tempPass = await bcrypt.hash('GoogleOAuth_' + Math.random().toString(36), 10);
             const insertResult = await db.query(
                 `INSERT INTO users (name, email, password, avatar_letter)
                  VALUES ($1, $2, $3, $4)
                  RETURNING id, name, email, avatar_letter, created_at`,
-                [googleName, googleEmail, tempPass, avatarLetter]
+                [finalName, finalEmail, tempPass, avatarLetter]
             );
             user = insertResult.rows[0];
             try {
@@ -207,17 +263,30 @@ async function googleAuth(req, res, next) {
             } catch (e) {}
         } else {
             user = result.rows[0];
+            // Update name and avatar letter if provided and changed
+            if (finalName && user.name !== finalName) {
+                try {
+                    await db.query('UPDATE users SET name = $1, avatar_letter = $2 WHERE id = $3', [finalName, avatarLetter, user.id]);
+                    user.name = finalName;
+                    user.avatar_letter = avatarLetter;
+                } catch (e) {}
+            }
         }
 
         const token = generateToken(user);
         return res.status(200).json({
             message: 'Google login successful.',
+            isNewUser: isNewUser,
+            needsProfileSetup: isNewUser,
             user: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 avatarLetter: user.avatar_letter || avatarLetter,
-                isGoogleUser: true
+                picture: googlePicture,
+                isGoogleUser: true,
+                isNewUser: isNewUser,
+                needsProfileSetup: isNewUser
             },
             token
         });
@@ -225,7 +294,6 @@ async function googleAuth(req, res, next) {
         next(err);
     }
 }
-
 
 /**
  * POST /api/auth/forgot-password
