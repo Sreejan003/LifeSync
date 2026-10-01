@@ -42,7 +42,9 @@ async function updateProfile(req, res, next) {
         const updatedStuId = studentId !== undefined ? studentId.trim() : (current.student_id || '');
         const updatedCurr = currency !== undefined ? currency : (current.currency || '₹');
         const updatedXp = xp !== undefined ? parseInt(xp, 10) : (current.xp || 120);
-        const updatedNotif = notificationsEnabled !== undefined ? (Boolean(notificationsEnabled) ? 1 : 0) : (current.notifications_enabled || 1);
+        const updatedNotif = notificationsEnabled !== undefined 
+            ? Boolean(notificationsEnabled) 
+            : (current.notifications_enabled !== undefined ? Boolean(current.notifications_enabled) : true);
 
         // Also update name in users table if name is updated
         if (name && name.trim()) {

@@ -301,7 +301,7 @@ async function updateBudgetSettings(req, res, next) {
         const rBuf = runwayBufferPct !== undefined ? parseInt(runwayBufferPct, 10) : (current.runway_buffer_pct || 15);
         const nLimit = nightSafeLimit !== undefined ? parseFloat(nightSafeLimit) : (current.night_safe_limit || 500);
         const nSpent = nightSafeSpent !== undefined ? parseFloat(nightSafeSpent) : (current.night_safe_spent || 0);
-        const nLocked = nightSafeLocked !== undefined ? (nightSafeLocked ? 1 : 0) : (current.night_safe_locked || 0);
+        const nLocked = nightSafeLocked !== undefined ? Boolean(nightSafeLocked) : Boolean(current.night_safe_locked);
 
         await db.query(
             `INSERT INTO budget_settings (user_id, monthly_budget, runway_sum, runway_buffer_pct, night_safe_limit, night_safe_spent, night_safe_locked)
