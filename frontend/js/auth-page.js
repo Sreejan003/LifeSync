@@ -437,7 +437,7 @@
 
         // Asynchronously resolve or fetch Google Client ID from backend / meta
         async function getOrFetchGoogleClientId() {
-            if (GOOGLE_CLIENT_ID && typeof GOOGLE_CLIENT_ID === 'string' && GOOGLE_CLIENT_ID.trim()) {
+            if (GOOGLE_CLIENT_ID && typeof GOOGLE_CLIENT_ID === 'string' && GOOGLE_CLIENT_ID.trim() && !GOOGLE_CLIENT_ID.startsWith('your_')) {
                 return GOOGLE_CLIENT_ID.trim();
             }
 
@@ -452,7 +452,7 @@
             if (window.LifeSyncAPI && typeof window.LifeSyncAPI.getGoogleClientId === 'function') {
                 try {
                     const res = await window.LifeSyncAPI.getGoogleClientId();
-                    if (res && res.clientId && res.clientId.trim()) {
+                    if (res && res.clientId && res.clientId.trim() && !res.clientId.startsWith('your_')) {
                         GOOGLE_CLIENT_ID = res.clientId.trim();
                         return GOOGLE_CLIENT_ID;
                     }
@@ -460,14 +460,14 @@
             }
 
             // 3. Check window global or cached Client ID
-            if (window.GOOGLE_CLIENT_ID && typeof window.GOOGLE_CLIENT_ID === 'string') {
+            if (window.GOOGLE_CLIENT_ID && typeof window.GOOGLE_CLIENT_ID === 'string' && !window.GOOGLE_CLIENT_ID.startsWith('your_')) {
                 GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID.trim();
                 return GOOGLE_CLIENT_ID;
             }
 
             try {
                 const cached = localStorage.getItem('lifesync_google_client_id');
-                if (cached && cached.trim()) {
+                if (cached && cached.trim() && !cached.startsWith('your_')) {
                     GOOGLE_CLIENT_ID = cached.trim();
                     return GOOGLE_CLIENT_ID;
                 }
@@ -645,7 +645,13 @@
                         console.warn('Official Google OAuth button popup warning:', err);
                     }
                 }
-                showAuthError("Connecting to Google Identity Services... Please ensure backend server is running on port 5000.");
+                
+                // Focus the Google Email field in modal as immediate working option
+                const emailInput = document.querySelector("#googleEmailInput");
+                if (emailInput) {
+                    emailInput.focus();
+                }
+                showAuthError("Google One-Tap is awaiting configuration of GOOGLE_CLIENT_ID on your backend. You can enter your email directly below to continue!");
             });
         }
 
