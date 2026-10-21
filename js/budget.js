@@ -30,6 +30,19 @@
         init(user) {
             currentBudget = window.LifeSyncStorage.getBudget(user);
 
+            // Daily reset for Late-Night Safe spending curfew
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (currentBudget.nightSafe) {
+                if (!currentBudget.nightSafe.lastResetDate) {
+                    currentBudget.nightSafe.lastResetDate = todayStr;
+                } else if (currentBudget.nightSafe.lastResetDate !== todayStr) {
+                    currentBudget.nightSafe.spent = 0;
+                    currentBudget.nightSafe.locked = false;
+                    currentBudget.nightSafe.lastResetDate = todayStr;
+                    window.LifeSyncStorage.saveBudget(user, currentBudget);
+                }
+            }
+
             // One-time migration: Import any existing standalone BudgetBuddy data into unified LifeSync storage
             try {
                 const standaloneRaw = localStorage.getItem('budget_buddy_app_data');
@@ -309,8 +322,8 @@
             if (!profile) {
                 profile = window.LifeSyncStorage.getProfile(user);
             }
-            if (!profile.budgetStreak) profile.budgetStreak = 12;
-            if (!profile.xp) profile.xp = 450;
+            if (profile.budgetStreak === undefined || profile.budgetStreak === null) profile.budgetStreak = 0;
+            if (profile.xp === undefined || profile.xp === null) profile.xp = 0;
 
             if (profile.lastBudgetReviewDate === todayStr) {
                 return { reviewed: false, streak: profile.budgetStreak, xp: profile.xp, message: 'Already reviewed today! Keep it up 🔥' };

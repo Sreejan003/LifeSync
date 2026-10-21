@@ -17,6 +17,21 @@
         );
     }
 
+    function getLocalTodayDateString() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function getLocalCurrentTimeString() {
+        const d = new Date();
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        return `${h}:${min}`;
+    }
+
     // ==========================================
     // 1. AUTH GUARD & SESSION CHECK
     // ==========================================
@@ -57,6 +72,7 @@
         window.BudgetModule.init(currentUser);
         window.WellnessModule.init(currentUser);
         window.ProfileModule.init(currentUser);
+        if (window.PomodoroModule) window.PomodoroModule.init(currentUser);
 
         // Listen for task changes to ensure immediate re-rendering of all dependent views
         window.TasksModule.onChange(() => {
@@ -65,11 +81,27 @@
             if (window.DashboardModule && currentUser) {
                 window.DashboardModule.render(currentUser);
             }
+            if (window.PomodoroModule) {
+                window.PomodoroModule.renderUI();
+            }
             if (currentTab === 'calendar') {
                 renderCalendarView();
             }
             updateNotifications();
         });
+
+        // Listen for budget changes to ensure immediate re-rendering of budget and dashboard views
+        if (window.BudgetModule && window.BudgetModule.onChange) {
+            window.BudgetModule.onChange(() => {
+                if (currentTab === 'budget') {
+                    renderBudgetView();
+                }
+                if (window.DashboardModule && currentUser) {
+                    window.DashboardModule.render(currentUser);
+                }
+                updateNotifications();
+            });
+        }
 
         // Asynchronously sync latest data from REST backend
         if (window.LifeSyncStorage && window.LifeSyncStorage.syncFromBackend) {
@@ -77,6 +109,9 @@
                 renderHeader();
                 renderCurrentView();
                 updateNotifications();
+                if (window.NotificationsModule && window.NotificationsModule.syncWithServer) {
+                    window.NotificationsModule.syncWithServer();
+                }
             }).catch(e => console.warn('Backend sync notice:', e.message));
         }
 
@@ -94,6 +129,34 @@
             switchTab(hash);
         } else {
             switchTab('dashboard');
+        }
+
+        // Register Service Worker for Desktop Web Notifications
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(() => {
+                // Registered
+            }).catch((err) => {
+                console.warn('Service worker registration note:', err.message);
+            });
+
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'LIFESYNC_NOTIFICATION_CLICK') {
+                    if (event.data.targetTab) {
+                        switchTab(event.data.targetTab);
+                    }
+                }
+            });
+        }
+
+        // Ensure date inputs have min set to local today immediately
+        const initialToday = getLocalTodayDateString();
+        const initialDueDate = document.getElementById('taskDueDateInput');
+        if (initialDueDate) {
+            initialDueDate.min = initialToday;
+        }
+        const initialEventDate = document.getElementById('eventDateInput');
+        if (initialEventDate) {
+            initialEventDate.min = initialToday;
         }
 
         setupGlobalListeners();
@@ -145,6 +208,9 @@
 
         if (currentTab === 'dashboard') {
             window.DashboardModule.render(currentUser);
+            if (window.PomodoroModule) {
+                window.PomodoroModule.renderUI();
+            }
         } else if (currentTab === 'tasks') {
             renderTasksView();
         } else if (currentTab === 'smart') {
@@ -281,12 +347,19 @@
                 `).join('');
             }
         }
+
+        if (window.NotificationsModule && window.NotificationsModule.updateAlertsUI) {
+            window.NotificationsModule.updateAlertsUI();
+        }
     }
 
     function toggleNotificationDropdown() {
         const dropdown = document.getElementById('notifDropdown');
         if (dropdown) {
             dropdown.classList.toggle('show');
+            if (dropdown.classList.contains('show') && window.NotificationsModule && window.NotificationsModule.updateAlertsUI) {
+                window.NotificationsModule.updateAlertsUI();
+            }
         }
     }
 
@@ -558,12 +631,13 @@
 
         if (dayItemsList) {
             const dayItems = window.CalendarModule.getItemsForDate(selectedDateStr);
+            const isPast = selectedDateStr < todayStr;
             if (dayItems.length === 0) {
                 dayItemsList.innerHTML = `
                     <div class="empty-day-events">
-                        <span>☕</span>
-                        <p>No commitments scheduled for this day.</p>
-                        <button class="btn-sm-primary" onclick="window.LifeSyncApp.openAddEventModal('${selectedDateStr}')">+ Add Event / Exam</button>
+                        <span>${isPast ? '📜' : '☕'}</span>
+                        <p>${isPast ? 'Past date — no past commitments.' : 'No commitments scheduled for this day.'}</p>
+                        ${isPast ? '<small style="color:var(--text-muted); display:block; margin-top:4px;">Scheduling commitments on past dates is disabled.</small>' : `<button class="btn-sm-primary" onclick="window.LifeSyncApp.openAddEventModal('${selectedDateStr}')">+ Add Event / Exam</button>`}
                     </div>
                 `;
             } else {
@@ -627,7 +701,7 @@
 
         // 1. Streak & Gamification Header
         const streakCountEl = document.getElementById('budgetStreakCount');
-        if (streakCountEl) streakCountEl.textContent = profile.budgetStreak || 12;
+        if (streakCountEl) streakCountEl.textContent = (profile.budgetStreak !== undefined && profile.budgetStreak !== null) ? profile.budgetStreak : 0;
 
         const btnReview = document.getElementById('btnReviewBudget');
         const todayStr = new Date().toISOString().split('T')[0];
@@ -1298,14 +1372,14 @@
                     label: 'Add New Task',
                     sub: 'Action · Create a new assignment or study task with priority',
                     keywords: 'add task create task new task assignment homework todo',
-                    action: () => { openModal('taskModalOverlay'); hideSearchDropdown(); }
+                    action: () => { window.LifeSyncApp.openAddTaskModal(); hideSearchDropdown(); }
                 },
                 {
                     icon: '🗓️',
                     label: 'Schedule New Event / Exam',
                     sub: 'Action · Add a lecture, exam, study session, or deadline to calendar',
                     keywords: 'add event schedule event new exam lecture meeting deadline appointment',
-                    action: () => { openModal('eventModalOverlay'); hideSearchDropdown(); }
+                    action: () => { window.LifeSyncApp.openAddEventModal(); hideSearchDropdown(); }
                 },
                 {
                     icon: '💳',
@@ -1755,19 +1829,39 @@
                 const editId = document.getElementById('taskEditId').value;
                 const title = document.getElementById('taskTitleInput').value;
                 const desc = document.getElementById('taskDescInput').value;
-                const dueDate = document.getElementById('taskDueDateInput').value;
+                const dueDateInput = document.getElementById('taskDueDateInput');
+                const dueTimeInput = document.getElementById('taskDueTimeInput');
+                const dueDate = dueDateInput ? dueDateInput.value : '';
+                const dueTime = dueTimeInput ? dueTimeInput.value : '';
                 const priority = document.getElementById('taskPriorityInput').value;
                 const category = document.getElementById('taskCategoryInput').value;
+
+                // Validate against scheduling in the past
+                if (dueDate && window.TasksModule && window.TasksModule.validateTaskDeadline) {
+                    const isEditing = Boolean(editId);
+                    const currentTask = isEditing ? window.TasksModule.getTasks().find(t => String(t.id) === String(editId)) : null;
+                    const currentDatePart = currentTask && currentTask.dueDate ? String(currentTask.dueDate).split('T')[0] : '';
+                    const isDateChanged = !isEditing || (dueDate !== currentDatePart) || (dueTime && dueTime !== currentTask.dueTime);
+
+                    if (isDateChanged) {
+                        const validation = window.TasksModule.validateTaskDeadline(dueDate, dueTime);
+                        if (!validation.valid) {
+                            showToast(validation.error, 'error');
+                            if (dueDateInput) dueDateInput.focus();
+                            return;
+                        }
+                    }
+                }
 
                 try {
                     if (editId) {
                         window.TasksModule.updateTask(currentUser, editId, {
-                            title, description: desc, dueDate, priority, category
+                            title, description: desc, dueDate, dueTime, priority, category
                         });
                         showToast('Task updated! ✓', 'success');
                     } else {
                         window.TasksModule.addTask(currentUser, {
-                            title, description: desc, dueDate, priority, category
+                            title, description: desc, dueDate, dueTime, priority, category
                         });
                         showToast('New task added! ✦', 'success');
                     }
@@ -1783,6 +1877,41 @@
             });
         }
 
+        // Real-time live prevention of selecting past dates/times in Task Modal
+        const liveDueDateInput = document.getElementById('taskDueDateInput');
+        const liveDueTimeInput = document.getElementById('taskDueTimeInput');
+
+        function enforceLiveFutureSchedule() {
+            if (!liveDueDateInput) return;
+            const todayStr = getLocalTodayDateString();
+            liveDueDateInput.min = todayStr;
+
+            if (liveDueDateInput.value && liveDueDateInput.value < todayStr) {
+                showToast('You cannot schedule a task in the past. Please select a future date and time.', 'error');
+                liveDueDateInput.value = todayStr;
+                if (liveDueTimeInput) liveDueTimeInput.value = '';
+                return;
+            }
+
+            if (liveDueDateInput.value === todayStr && liveDueTimeInput && liveDueTimeInput.value) {
+                const currentTimeStr = getLocalCurrentTimeString();
+                if (liveDueTimeInput.value < currentTimeStr) {
+                    showToast('You cannot schedule a task in the past. Please select a future date and time.', 'error');
+                    liveDueTimeInput.value = '';
+                }
+            }
+        }
+
+        if (liveDueDateInput) {
+            liveDueDateInput.min = getLocalTodayDateString();
+            liveDueDateInput.addEventListener('change', enforceLiveFutureSchedule);
+            liveDueDateInput.addEventListener('input', enforceLiveFutureSchedule);
+        }
+        if (liveDueTimeInput) {
+            liveDueTimeInput.addEventListener('change', enforceLiveFutureSchedule);
+            liveDueTimeInput.addEventListener('input', enforceLiveFutureSchedule);
+        }
+
         // Calendar Event Form Modal
         const eventForm = document.getElementById('eventFormModal');
         if (eventForm) {
@@ -1794,6 +1923,11 @@
                 const category = document.getElementById('eventCategoryInput').value;
                 const priority = document.getElementById('eventPriorityInput').value;
                 const desc = document.getElementById('eventDescInput').value;
+                const todayStr = getLocalTodayDateString();
+                if (date && date < todayStr) {
+                    showToast('You cannot schedule an event in the past. Please select a future date and time.', 'error');
+                    return;
+                }
 
                 try {
                     window.CalendarModule.addEvent(currentUser, {
@@ -1827,7 +1961,7 @@
                     });
                     showToast('Transaction recorded! 💰', 'success');
                     closeModal('txModalOverlay');
-                    renderBudgetView();
+                    renderCurrentView();
                     updateNotifications();
                 } catch (err) {
                     showToast(err.message, 'error');
@@ -1849,7 +1983,7 @@
                     window.BudgetModule.addBill(currentUser, { title, amount, split, date });
                     showToast('New shared bill added! 🧾', 'success');
                     closeModal('billModalOverlay');
-                    renderBudgetView();
+                    renderCurrentView();
                 } catch (err) {
                     showToast(err.message, 'error');
                 }
@@ -1867,7 +2001,7 @@
                     window.BudgetModule.addGoalContribution(currentUser, amount, note);
                     showToast(`Added ₹${amount.toLocaleString('en-IN')} to savings goal! 🎉 (+80 XP)`, 'success');
                     closeModal('goalModalOverlay');
-                    renderBudgetView();
+                    renderCurrentView();
                 } catch (err) {
                     showToast(err.message, 'error');
                 }
@@ -1882,7 +2016,7 @@
                 const sum = Number(runwaySumInput.value) || 0;
                 const buffer = Number(runwayBufferRange ? runwayBufferRange.value : 15) || 0;
                 window.BudgetModule.updateRunway(currentUser, sum, buffer);
-                renderBudgetView();
+                renderCurrentView();
             });
         }
         if (runwayBufferRange) {
@@ -1890,7 +2024,7 @@
                 const sum = Number(runwaySumInput ? runwaySumInput.value : 20000) || 0;
                 const buffer = Number(runwayBufferRange.value) || 0;
                 window.BudgetModule.updateRunway(currentUser, sum, buffer);
-                renderBudgetView();
+                renderCurrentView();
             });
         }
 
@@ -1906,7 +2040,7 @@
             btnReviewBudget.addEventListener('click', () => {
                 const res = window.BudgetModule.reviewBudget(currentUser);
                 showToast(res.message, res.reviewed ? 'success' : 'info');
-                renderBudgetView();
+                renderCurrentView();
             });
         }
 
@@ -2089,7 +2223,21 @@
             document.getElementById('taskFormModal').reset();
             document.getElementById('taskEditId').value = '';
             document.getElementById('taskModalTitle').textContent = 'Add New Task';
-            document.getElementById('taskDueDateInput').value = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${y}-${m}-${d}`;
+
+            const dueDateInput = document.getElementById('taskDueDateInput');
+            if (dueDateInput) {
+                dueDateInput.min = todayStr;
+                dueDateInput.value = todayStr;
+            }
+            const dueTimeInput = document.getElementById('taskDueTimeInput');
+            if (dueTimeInput) {
+                dueTimeInput.value = '';
+            }
             openModal('taskModalOverlay');
         },
         openEditTaskModal(taskId) {
@@ -2098,7 +2246,26 @@
             document.getElementById('taskEditId').value = task.id;
             document.getElementById('taskTitleInput').value = task.title;
             document.getElementById('taskDescInput').value = task.description || '';
-            document.getElementById('taskDueDateInput').value = task.dueDate || '';
+
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${y}-${m}-${d}`;
+
+            const dueDateInput = document.getElementById('taskDueDateInput');
+            if (dueDateInput) {
+                dueDateInput.min = todayStr;
+                dueDateInput.value = task.dueDate ? String(task.dueDate).split('T')[0] : '';
+            }
+            const dueTimeInput = document.getElementById('taskDueTimeInput');
+            if (dueTimeInput) {
+                let timeVal = task.dueTime || '';
+                if (!timeVal && task.dueDate && String(task.dueDate).includes('T')) {
+                    timeVal = String(task.dueDate).split('T')[1].substring(0, 5);
+                }
+                dueTimeInput.value = timeVal;
+            }
             document.getElementById('taskPriorityInput').value = task.priority;
             document.getElementById('taskCategoryInput').value = task.category;
             document.getElementById('taskModalTitle').textContent = 'Edit Task';
@@ -2106,7 +2273,12 @@
         },
         openAddEventModal(presetDate) {
             document.getElementById('eventFormModal').reset();
-            document.getElementById('eventDateInput').value = presetDate || new Date().toISOString().split('T')[0];
+            const todayStr = getLocalTodayDateString();
+            const dateInput = document.getElementById('eventDateInput');
+            if (dateInput) {
+                dateInput.min = todayStr;
+                dateInput.value = (presetDate && presetDate >= todayStr) ? presetDate : todayStr;
+            }
             openModal('eventModalOverlay');
         },
         deleteEvent(eventId) {

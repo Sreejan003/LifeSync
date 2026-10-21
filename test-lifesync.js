@@ -80,17 +80,33 @@ assert(window.AuthSystem.getCurrentUser().email === 'google.student@gmail.com', 
 // Switch back to testUser for subsequent module tests
 window.AuthSystem.signIn({ email: 'alex@lifesync.edu', password: 'Password123!' });
 
-// 2. Storage & Seed Data Initialization
+// 2. Storage & Clean Account Verification (Production Default)
 window.TasksModule.init(testUser);
 window.CalendarModule.init(testUser);
 window.BudgetModule.init(testUser);
 window.WellnessModule.init(testUser);
 window.ProfileModule.init(testUser);
 
-assert(window.TasksModule.getTasks().length > 0, 'TasksModule initialized with user seed tasks');
-assert(window.CalendarModule.getEvents().length > 0, 'CalendarModule initialized with user seed events');
-assert(window.BudgetModule.getBudget().transactions.length > 0, 'BudgetModule initialized with seed transactions');
-assert(window.WellnessModule.getWellness().entries.length > 0, 'WellnessModule initialized with seed check-ins');
+assert(window.TasksModule.getTasks().length === 0, 'New user starts with 0 tasks');
+assert(window.CalendarModule.getEvents().length === 0, 'New user starts with 0 events');
+assert(window.BudgetModule.getBudget().transactions.length === 0, 'New user starts with 0 transactions');
+assert(window.WellnessModule.getWellness().entries.length === 0, 'New user starts with 0 wellness entries');
+assert(window.WellnessModule.getWellness().streak === 0, 'New user starts with 0 wellness streak');
+assert(window.ProfileModule.getProfile().xp === 0, 'New user starts with 0 XP');
+assert(!window.ProfileModule.getProfile().university, 'New user starts with empty university field');
+
+// 2b. Explicit Dev/Demo Seeding
+window.LifeSyncStorage.seedDemoData(testUser);
+window.TasksModule.init(testUser);
+window.CalendarModule.init(testUser);
+window.BudgetModule.init(testUser);
+window.WellnessModule.init(testUser);
+window.ProfileModule.init(testUser);
+
+assert(window.TasksModule.getTasks().length > 0, 'TasksModule initialized with demo tasks on explicit request');
+assert(window.CalendarModule.getEvents().length > 0, 'CalendarModule initialized with demo events on explicit request');
+assert(window.BudgetModule.getBudget().transactions.length > 0, 'BudgetModule initialized with demo transactions on explicit request');
+assert(window.WellnessModule.getWellness().entries.length > 0, 'WellnessModule initialized with demo check-ins on explicit request');
 
 // 3. Task Management
 const initialTaskCount = window.TasksModule.getTasks().length;
@@ -172,16 +188,51 @@ const isoRanked = window.SmartTaskOrganizer.getPrioritizedTasks().find(t => t.id
 assert(isoRanked && !isNaN(isoRanked.daysDiff) && !isNaN(isoRanked.smartScore),
     'Smart Task Organizer parses ISO format dueDate without NaN');
 
-// Verify overdue urgency preservation
+// Verify overdue urgency preservation (using allowPast for test simulation)
 const overdueTask = window.TasksModule.addTask(testUser, {
     title: 'Operating Systems Past Project',
     dueDate: '2020-01-01',
     priority: 'High',
-    category: 'Study'
+    category: 'Study',
+    allowPast: true
 });
 const overdueRanked = window.SmartTaskOrganizer.getPrioritizedTasks().find(t => t.id === overdueTask.id);
 assert(overdueRanked && overdueRanked.reasonType === 'danger' && overdueRanked.reasonTag.includes('Overdue'),
     'Smart Task Organizer preserves danger/Overdue tag even when academic boost matches');
+
+// Test frontend past-date rejection on addTask
+let pastDateRejected = false;
+try {
+    window.TasksModule.addTask(testUser, {
+        title: 'Disallowed Past Task',
+        dueDate: '2020-01-01'
+    });
+} catch (err) {
+    if (err.message === 'You cannot schedule a task in the past. Please select a future date and time.') {
+        pastDateRejected = true;
+    }
+}
+assert(pastDateRejected, 'TasksModule.addTask rejects past dates with friendly error message');
+
+// Test updating existing overdue task without changing date succeeds
+window.TasksModule.updateTask(testUser, overdueTask.id, {
+    title: 'Operating Systems Past Project (Updated Title)'
+});
+assert(window.TasksModule.getTasks().find(t => t.id === overdueTask.id).title.includes('Updated Title'),
+    'Updating existing overdue task title succeeds without breaking overdue date');
+
+// Test rescheduling existing task to a past date is rejected
+let reschedulePastRejected = false;
+try {
+    window.TasksModule.updateTask(testUser, overdueTask.id, {
+        dueDate: '2019-12-31'
+    });
+} catch (err) {
+    if (err.message.includes('You cannot schedule a task in the past')) {
+        reschedulePastRejected = true;
+    }
+}
+assert(reschedulePastRejected, 'TasksModule.updateTask rejects rescheduling to a new past date');
 
 // Clean up test tasks
 window.TasksModule.deleteTask(testUser, isoTask.id);
@@ -264,10 +315,23 @@ assert(Array.isArray(notifs) && notifs.length > 0, 'Real-time notifications deri
 console.log(`   Derived ${notifs.length} active notifications (Reminders/Alerts):`);
 notifs.forEach(n => console.log(`   - [${n.type.toUpperCase()}] ${n.title}: ${n.message}`));
 
+// 9b. Notifications Module API & Browser Behavior Explanation
+assert(typeof window.NotificationsModule.getPermissionState === 'function', 'NotificationsModule exposes getPermissionState()');
+assert(typeof window.NotificationsModule.updateAlertsUI === 'function', 'NotificationsModule exposes updateAlertsUI()');
+assert(typeof window.NotificationsModule.registerPushSubscription === 'function', 'NotificationsModule exposes registerPushSubscription()');
+assert(typeof window.NotificationsModule.explainBrowserBehavior === 'function', 'NotificationsModule exposes explainBrowserBehavior()');
+const explanations = window.NotificationsModule.explainBrowserBehavior();
+assert(explanations.localNotifications && explanations.webPush, 'NotificationsModule explains local vs web push behavior');
+
 // 10. Modal and Overlay Dismissal Verification (Cancel, Cut, Backdrop, Escape)
 const indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const styleCss = fs.readFileSync(path.join(__dirname, 'style.css'), 'utf8');
 const appJs = fs.readFileSync(path.join(__dirname, 'js', 'app.js'), 'utf8');
+
+assert(indexHtml.includes('id="notifBrowserPermBtn"'), 'index.html contains #notifBrowserPermBtn');
+assert(indexHtml.includes('id="taskDueTimeInput"'), 'index.html contains taskDueTimeInput');
+assert(styleCss.includes('.notif-browser-perm-btn.perm-granted'), 'style.css contains perm-granted styling');
+assert(styleCss.includes('.notif-perm-info-text'), 'style.css contains notif-perm-info-text styling');
 
 const modalIds = ['taskModalOverlay', 'eventModalOverlay', 'txModalOverlay', 'billModalOverlay', 'goalModalOverlay', 'budgetSettingsModalOverlay', 'nightSpendModalOverlay'];
 for (const id of modalIds) {

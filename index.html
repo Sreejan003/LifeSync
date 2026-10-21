@@ -96,10 +96,24 @@
                     <!-- Notifications Dropdown -->
                     <div id="notifDropdown" class="notif-dropdown">
                         <div class="notif-dropdown-header">
-                            <h3>Notifications & Reminders</h3>
-                            <span class="notif-badge-pill">Real-time</span>
+                            <div>
+                                <h3>Notifications & Reminders</h3>
+                                <span class="notif-badge-pill">Smart Alerts</span>
+                            </div>
+                            <div class="notif-header-actions">
+                                <button type="button" class="btn-xs-link" onclick="window.NotificationsModule && window.NotificationsModule.markAllRead()" title="Mark all alerts as read">Mark Read</button>
+                                <button type="button" class="btn-xs-link" onclick="window.NotificationsModule && window.NotificationsModule.clearAll()" title="Clear all alerts">Clear</button>
+                            </div>
                         </div>
                         <div id="notifDropdownList" class="notif-dropdown-list"></div>
+                        <div class="notif-dropdown-footer">
+                            <button type="button" id="notifBrowserPermBtn" class="notif-browser-perm-btn" onclick="window.NotificationsModule && window.NotificationsModule.requestBrowserPermission()">
+                                <span>🔔 Enable Desktop Alerts</span>
+                            </button>
+                            <div class="notif-perm-info-text">
+                                <small>Desktop alerts notify you during Pomodoro breaks, task deadlines, and smart reminders while LifeSync is open or running in a background tab. Closed-browser alerts require Web Push.</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -241,7 +255,7 @@
 
                 <!-- Greeting Section -->
                 <div class="dash-greeting-section">
-                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Alex Morgan</span>! 👋
+                    <h1 class="dash-greeting-title">Good Morning, <span id="dashGreetingName">Student</span>! 👋
                     </h1>
                     <p class="dash-greeting-subtitle">Stay organized. Stay focused. You've got this!</p>
                 </div>
@@ -261,7 +275,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Tasks Pending</span>
-                            <div class="metric-value" id="dashStatPendingTasks">7</div>
+                            <div class="metric-value" id="dashStatPendingTasks">0</div>
                             <span class="metric-subtext sub-purple">Keep going!</span>
                         </div>
                     </div>
@@ -277,7 +291,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Tasks Completed</span>
-                            <div class="metric-value" id="dashStatCompletedTasks">12</div>
+                            <div class="metric-value" id="dashStatCompletedTasks">0</div>
                             <span class="metric-subtext sub-green">Great progress!</span>
                         </div>
                     </div>
@@ -295,7 +309,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Upcoming Events</span>
-                            <div class="metric-value" id="dashStatUpcomingEvents">3</div>
+                            <div class="metric-value" id="dashStatUpcomingEvents">0</div>
                             <span class="metric-subtext sub-amber">Stay prepared</span>
                         </div>
                     </div>
@@ -312,8 +326,8 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Today's Focus</span>
-                            <div class="metric-focus-title" id="dashStatFocusTask">DBMS Assignment</div>
-                            <span class="metric-subtext sub-rose" id="dashStatFocusDue">Due Tomorrow</span>
+                            <div class="metric-focus-title" id="dashStatFocusTask">No active tasks</div>
+                            <span class="metric-subtext sub-rose" id="dashStatFocusDue">Enjoy your break!</span>
                         </div>
                     </div>
                 </div>
@@ -371,7 +385,7 @@
                             </div>
                             <div class="dash-budget-header-actions">
                                 <span id="dashBudgetStreakBadge" class="badge-streak-sm"
-                                    title="Budget Review Streak">1.2k</span>
+                                    title="Budget Review Streak">0d</span>
                                 <button type="button" class="panel-header-link link-green"
                                     onclick="window.LifeSyncApp.switchTab('budget')">Open Hub</button>
                             </div>
@@ -380,8 +394,8 @@
                             <!-- Balance & Monthly Allowance Row -->
                             <div class="dash-budget-top-row">
                                 <div>
-                                    <div class="budget-total-balance-label">Available Balance</div>
-                                    <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹10,450</div>
+                                    <div class="budget-total-balance-label">Net Balance</div>
+                                    <div class="budget-total-balance-val" id="dashBudgetBalanceVal">₹0</div>
                                 </div>
                                 <div class="dash-budget-quick-actions">
                                     <button type="button" class="btn-xs-primary"
@@ -393,25 +407,28 @@
                             <div class="budget-in-out-row">
                                 <div class="budget-in-col">
                                     <span class="in-out-label">Income</span>
-                                    <span class="in-out-val" id="dashBudgetIncomeVal">₹ 8,000</span>
+                                    <span class="in-out-val" id="dashBudgetIncomeVal">₹ 0</span>
                                 </div>
                                 <div class="budget-out-col">
                                     <span class="in-out-label">Spent This Month</span>
-                                    <span class="in-out-val" id="dashBudgetExpenseVal">₹ 4,550</span>
+                                    <span class="in-out-val" id="dashBudgetExpenseVal">₹ 0</span>
                                 </div>
                             </div>
                             <div class="budget-meter-track" title="Monthly spending progress">
-                                <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 57%;"></div>
+                                <div id="dashBudgetMeterBar" class="budget-meter-fill" style="width: 0%;"></div>
+                            </div>
+                            <div class="dash-budget-sub-row">
+                                <span>Monthly Remaining: <strong id="dashBudgetRemainingVal">₹0</strong></span>
+                                <span>Limit: <span id="dashBudgetMonthlyLimitVal">₹15,000</span></span>
                             </div>
 
                             <!-- Integrated Feature 1: Late-Night Safe Quick Bar -->
                             <div class="dash-finance-mini-box dash-night-safe-mini">
                                 <div class="mini-box-header">
-                                    <div class="mini-box-title">
+                                    <div class="mini-box-title" onclick="window.LifeSyncApp.switchTabAndBudgetSub('night')" style="cursor: pointer;" title="View Late-Night Safe in Budget Hub">
                                         <span id="dashNightSafeIcon" style="color: #f43f5e;">🌙</span>
-                                        <span>Late - Night Safety</span>
-                                        <strong id="dashNightSafeStatus" class="night-safe-status-pill unlocked">₹350
-                                            Late</strong>
+                                        <span>Late-Night Safe</span>
+                                        <strong id="dashNightSafeStatus" class="night-safe-status-pill unlocked">₹0 Safe</strong>
                                     </div>
                                     <button type="button" id="dashBtnToggleNightSafe" class="btn-xs-toggle locked-mode"
                                         onclick="window.LifeSyncApp.quickNightSafeToggle()">🔒 Lock</button>
@@ -429,27 +446,87 @@
                             <!-- Integrated Feature 2: Upcoming Roommate Bills Quick Alert -->
                             <div class="dash-finance-mini-box dash-bills-mini" id="dashBillsMiniBox">
                                 <div class="mini-box-header">
-                                    <div class="mini-box-title">
+                                    <div class="mini-box-title" onclick="window.LifeSyncApp.switchTabAndBudgetSub('split')" style="cursor: pointer;" title="View Roommate Bills in Budget Hub">
                                         <span class="mini-icon-circle">📅</span>
-                                        <span id="dashNextBillLabel">Due 2025-... (₹200)</span>
-                                        <strong id="dashNextBillTitle">Dorm Wi-Fi Fiber (₹200)</strong>
+                                        <span id="dashNextBillLabel">Roommate Bills:</span>
+                                        <strong id="dashNextBillTitle">All Bills Settled ✓</strong>
                                     </div>
-                                    <button type="button" id="dashBtnPayNextBill" class="btn-xs-action">Paid</button>
+                                    <button type="button" id="dashBtnPayNextBill" class="btn-xs-action" style="display: none;">Paid</button>
                                 </div>
                             </div>
 
                             <!-- Integrated Feature 3: Shared Savings Goal Mini Bar -->
                             <div class="dash-finance-mini-box dash-goal-mini">
                                 <div class="mini-box-header">
-                                    <div class="mini-box-title">
+                                    <div class="mini-box-title" onclick="window.LifeSyncApp.switchTabAndBudgetSub('split')" style="cursor: pointer;" title="View Shared Savings Goal in Budget Hub">
                                         <span class="mini-icon-circle">🍴</span>
-                                        <span id="dashGoalTitle">Textbooks & Stationery Fund</span>
-                                        <strong id="dashGoalPct">56% (₹4.5k)</strong>
+                                        <span id="dashGoalTitle">Shared Savings Goal</span>
+                                        <strong id="dashGoalPct">0%</strong>
                                     </div>
                                     <button type="button" class="btn-xs-link"
                                         onclick="window.LifeSyncApp.openGoalContributionModal()">Add</button>
                                 </div>
+                                <div class="dash-mini-progress">
+                                    <div id="dashGoalMiniBar" class="dash-mini-progress-fill" style="width: 0%;"></div>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pomodoro Focus Timer Dashboard Card -->
+                <div class="dash-panel-card pomodoro-card">
+                    <div class="panel-card-header">
+                        <div class="panel-title-with-icon">
+                            <span class="pomodoro-header-icon">🍅</span>
+                            <h3>Pomodoro Focus Timer</h3>
+                        </div>
+                        <div class="pomodoro-header-actions">
+                            <span id="pomodoroTodayStats" class="pomodoro-stats-badge">0m Focus · 0 Sessions</span>
+                            <div id="pomodoroCycleDots" class="pomodoro-cycle-dots" title="Focus sessions completed toward long break">
+                                <span class="pomo-dot"></span>
+                                <span class="pomo-dot"></span>
+                                <span class="pomo-dot"></span>
+                                <span class="pomo-dot"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-card-content">
+                        <!-- Mode Selectors -->
+                        <div class="pomodoro-modes-bar">
+                            <button type="button" class="pomodoro-mode-btn active" data-pomodoro-mode="focus" onclick="window.PomodoroModule && window.PomodoroModule.setMode('focus')">Focus (25m)</button>
+                            <button type="button" class="pomodoro-mode-btn" data-pomodoro-mode="short_break" onclick="window.PomodoroModule && window.PomodoroModule.setMode('short_break')">Short Break (5m)</button>
+                            <button type="button" class="pomodoro-mode-btn" data-pomodoro-mode="long_break" onclick="window.PomodoroModule && window.PomodoroModule.setMode('long_break')">Long Break (15m)</button>
+                        </div>
+
+                        <!-- Timer Display & Progress -->
+                        <div class="pomodoro-display-wrap">
+                            <div id="pomodoroTimeDisplay" class="pomodoro-timer-digits">25:00</div>
+                            <div class="pomodoro-progress-track">
+                                <div id="pomodoroProgressBar" class="pomodoro-progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Linked Task Association & Auto-Pick -->
+                        <div class="pomodoro-task-row">
+                            <label for="pomodoroTaskSelect" class="pomodoro-task-label">🎯 Focus Target:</label>
+                            <select id="pomodoroTaskSelect" class="pomodoro-task-select" onchange="window.PomodoroModule && window.PomodoroModule.selectTask(this.value)">
+                                <option value="">-- Free Focus (No specific task) --</option>
+                            </select>
+                            <button type="button" class="btn-xs-action pomodoro-auto-pick-btn" onclick="window.PomodoroModule && window.PomodoroModule.autoSelectTopUrgentTask()" title="Auto-select highest urgency task from Smart Task Organizer">⚡ Auto-Pick Top Task</button>
+                        </div>
+
+                        <!-- Timer Controls -->
+                        <div class="pomodoro-controls-row">
+                            <button type="button" id="btnPomodoroToggle" class="btn-pomo-action btn-pomo-start" onclick="window.PomodoroModule && (window.PomodoroModule.getState().status === 'running' ? window.PomodoroModule.pause() : window.PomodoroModule.start())">
+                                <span>▶</span> Start Focus
+                            </button>
+                            <button type="button" id="btnPomodoroReset" class="btn-pomo-secondary" onclick="window.PomodoroModule && window.PomodoroModule.reset()" title="Reset Timer">
+                                <span>↺</span> Reset
+                            </button>
+                            <button type="button" id="btnPomodoroSkip" class="btn-pomo-secondary" onclick="window.PomodoroModule && window.PomodoroModule.skip()" title="Skip to next session">
+                                <span>⏭</span> Skip
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -731,7 +808,7 @@
                         <div class="header-label-row">
                             <span class="page-label">STUDENT FINANCE HUB</span>
                             <span id="budgetStreakPill" class="budget-streak-pill">🔥 <span
-                                    id="budgetStreakCount">12</span> Days Streak</span>
+                                    id="budgetStreakCount">0</span> Days Streak</span>
                         </div>
                         <h1>Budget & Expense Tracker</h1>
                         <p class="subtitle">Runway calculator, peer benchmarks, late-night safe, roommate splits, and
@@ -1569,7 +1646,15 @@
                     <div class="form-group">
                         <label for="taskDueDateInput">Due Date</label>
                         <input type="date" id="taskDueDateInput">
+                        <span class="field-hint" style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; display:block;">Select today or a future date</span>
                     </div>
+                    <div class="form-group">
+                        <label for="taskDueTimeInput">Due Time (Optional)</label>
+                        <input type="time" id="taskDueTimeInput">
+                        <span class="field-hint" style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; display:block;">Must be later today or future</span>
+                    </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label for="taskPriorityInput">Priority</label>
                         <select id="taskPriorityInput">
@@ -1578,16 +1663,16 @@
                             <option value="Low">🟢 Low</option>
                         </select>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="taskCategoryInput">Category</label>
-                    <select id="taskCategoryInput">
-                        <option value="Study">📚 Study</option>
-                        <option value="Assignment">📝 Assignment</option>
-                        <option value="Project">💻 Project</option>
-                        <option value="Exam">🎯 Exam Preparation</option>
-                        <option value="Personal">💜 Personal / Routine</option>
-                    </select>
+                    <div class="form-group">
+                        <label for="taskCategoryInput">Category</label>
+                        <select id="taskCategoryInput">
+                            <option value="Study">📚 Study</option>
+                            <option value="Assignment">📝 Assignment</option>
+                            <option value="Project">💻 Project</option>
+                            <option value="Exam">🎯 Exam Preparation</option>
+                            <option value="Personal">💜 Personal / Routine</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary"
@@ -1867,6 +1952,7 @@
     <script src="js/budget.js"></script>
     <script src="js/wellness.js"></script>
     <script src="js/soothing-games.js"></script>
+    <script src="js/pomodoro.js"></script>
     <script src="js/analytics.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/profile.js"></script>

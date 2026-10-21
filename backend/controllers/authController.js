@@ -74,14 +74,16 @@ async function register(req, res, next) {
 
         const newUser = result.rows[0];
 
-        // Initialize default user profile & budget settings
+        // Initialize default user profile & budget settings with clean starting values
         try {
             await db.query(
-                `INSERT INTO profiles (user_id, name, email) VALUES ($1, $2, $3)`,
+                `INSERT INTO profiles (user_id, name, email, university, major, year_semester, student_id, xp, currency, notifications_enabled)
+                 VALUES ($1, $2, $3, NULL, NULL, NULL, NULL, 0, '₹', 1)`,
                 [newUser.id, newUser.name, newUser.email]
             );
             await db.query(
-                `INSERT INTO budget_settings (user_id) VALUES ($1)`,
+                `INSERT INTO budget_settings (user_id, monthly_budget, runway_sum, runway_buffer_pct, night_safe_limit, night_safe_spent, night_safe_locked)
+                 VALUES ($1, 0, 0, 15, 0, 0, 0)`,
                 [newUser.id]
             );
         } catch (initErr) {

@@ -1,0 +1,36 @@
+{
+  "name": "lifesync",
+  "version": "1.0.0",
+  "description": "LifeSync - Student Productivity & Wellness Web Application",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "test": "node test-lifesync.js && cd backend && npm test",
+    "test:backend": "cd backend && npm test",
+    "test:integration": "node test-lifesync.js",
+    "migrate": "node backend/scripts/migrate.js",
+    "migrate:data": "node backend/scripts/migrate-sqlite-to-pg.js",
+    "backup": "node backend/scripts/backup-sqlite.js"
+  },
+  "keywords": [
+    "lifesync",
+    "student",
+    "productivity",
+    "wellness",
+    "postgresql",
+    "supabase",
+    "express"
+  ],
+  "author": "LifeSync Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "sqlite3": "^6.0.1"
+  }
+}

@@ -340,6 +340,56 @@
             studentId: 'STU-2026-8841',
             currency: '₹',
             notificationsEnabled: true,
+        };
+    }
+
+    /**
+     * Check if optional demo seeding is explicitly enabled (dev/test only, never default in production)
+     */
+    function shouldSeedDemo() {
+        if (typeof window !== 'undefined') {
+            if (window.__LIFESYNC_SEED_DEMO__ === true) return true;
+            try {
+                if (localStorage.getItem('lifesync_enable_demo_seed') === 'true') return true;
+            } catch (e) {}
+        }
+        if (typeof process !== 'undefined' && process.env) {
+            if (process.env.LIFESYNC_SEED_DEMO === 'true') return true;
+            if (process.env.NODE_ENV === 'test') return true;
+        }
+        return false;
+    }
+
+    function getEmptyBudget() {
+        return {
+            monthlyBudget: 15000,
+            runway: { sum: 0, bufferPct: 15 },
+            nightSafe: { limit: 500, spent: 0, locked: false },
+            sharedGoal: { title: 'Semester Savings', target: 5000, saved: 0 },
+            transactions: [],
+            bills: []
+        };
+    }
+
+    function getEmptyWellness() {
+        return {
+            streak: 0,
+            entries: []
+        };
+    }
+
+    function getCleanProfile(user) {
+        return {
+            name: (user && (user.username || user.name)) || '',
+            email: (user && user.email) || '',
+            university: '',
+            major: '',
+            yearSemester: '',
+            studentId: '',
+            currency: '₹',
+            xp: 0,
+            budgetStreak: 0,
+            notificationsEnabled: true,
             defaultView: 'dashboard'
         };
     }
@@ -454,7 +504,7 @@
             const key = getScopedKey('tasks', user);
             const stored = localStorage.getItem(key);
             if (!stored) {
-                const initial = getDefaultTasks();
+                const initial = shouldSeedDemo() ? getDefaultTasks() : [];
                 writeJson(key, initial);
                 return initial;
             }
@@ -490,7 +540,7 @@
             const key = getScopedKey('events', user);
             const stored = localStorage.getItem(key);
             if (!stored) {
-                const initial = getDefaultEvents();
+                const initial = shouldSeedDemo() ? getDefaultEvents() : [];
                 writeJson(key, initial);
                 return initial;
             }
@@ -518,12 +568,12 @@
             const key = getScopedKey('budget', user);
             const stored = localStorage.getItem(key);
             if (!stored) {
-                const initial = getDefaultBudget();
+                const initial = shouldSeedDemo() ? getDefaultBudget() : getEmptyBudget();
                 writeJson(key, initial);
                 return initial;
             }
             const data = readJson(key, {});
-            const defaults = getDefaultBudget();
+            const defaults = shouldSeedDemo() ? getDefaultBudget() : getEmptyBudget();
             return {
                 monthlyBudget: Number(data.monthlyBudget) || defaults.monthlyBudget,
                 runway: { ...defaults.runway, ...(data.runway || {}) },
@@ -594,12 +644,12 @@
             const key = getScopedKey('wellness', user);
             const stored = localStorage.getItem(key);
             if (!stored) {
-                const initial = getDefaultWellness();
+                const initial = shouldSeedDemo() ? getDefaultWellness() : getEmptyWellness();
                 writeJson(key, initial);
                 return initial;
             }
             const data = readJson(key, {});
-            const defaults = getDefaultWellness();
+            const defaults = shouldSeedDemo() ? getDefaultWellness() : getEmptyWellness();
             return {
                 streak: typeof data.streak === 'number' ? data.streak : defaults.streak,
                 entries: Array.isArray(data.entries) ? data.entries : defaults.entries
@@ -627,7 +677,7 @@
         getProfile(user) {
             const key = getScopedKey('profile', user);
             const stored = localStorage.getItem(key);
-            const defaults = getDefaultProfile(user);
+            const defaults = shouldSeedDemo() ? getDefaultProfile(user) : getCleanProfile(user);
             if (!stored) {
                 writeJson(key, defaults);
                 return defaults;
@@ -651,6 +701,27 @@
                 }).catch(e => console.warn('Background profile sync:', e.message));
             }
             return saved;
+        },
+
+        // --- EXPLICIT DEMO SEEDING / CLEANUP HELPERS (Dev & Testing only) ---
+        seedDemoData(user) {
+            if (!user) return;
+            this.saveTasks(user, getDefaultTasks());
+            this.saveEvents(user, getDefaultEvents());
+            this.saveBudget(user, getDefaultBudget());
+            this.saveWellness(user, getDefaultWellness());
+            this.saveProfile(user, getDefaultProfile(user));
+            console.log('🌱 Explicit demo data populated for user:', user.email || user.username);
+        },
+
+        clearUserData(user) {
+            if (!user) return;
+            this.saveTasks(user, []);
+            this.saveEvents(user, []);
+            this.saveBudget(user, getEmptyBudget());
+            this.saveWellness(user, getEmptyWellness());
+            this.saveProfile(user, getCleanProfile(user));
+            console.log('🧹 Clean state restored for user:', user.email || user.username);
         },
 
         // --- BACKEND HYDRATION SYNC ---
@@ -704,41 +775,17 @@
                 if (Array.isArray(backendTx)) {
                     const budget = LifeSyncStorage.getBudget(user);
                     const syncKey = getScopedKey('budget_backend_synced', user);
-                    const hasSynced = localStorage.getItem(syncKey);
-
-                    if (!hasSynced && backendTx.length === 0 && Array.isArray(budget.transactions) && budget.transactions.length > 0) {
-                        // First time backend sync for fresh user: sync initial local seed data to backend
-                        for (const tx of budget.transactions) {
-                            try {
-                                const saved = await window.LifeSyncAPI.createTransaction({
-                                    title: tx.title,
-                                    description: tx.description,
-                                    type: tx.type,
-                                    category: tx.category,
-                                    amount: tx.amount,
-                                    date: tx.date
-                                });
-                                if (saved && saved.id) tx.id = saved.id;
-                            } catch (seedErr) {
-                                console.warn('Initial seed tx sync:', seedErr.message);
-                            }
-                        }
-                        localStorage.setItem(syncKey, '1');
-                        writeJson(getScopedKey('budget', user), budget);
-                    } else {
-                        // Backend is source of truth for transactions
-                        localStorage.setItem(syncKey, '1');
-                        budget.transactions = backendTx.map(t => ({
-                            id: t.id,
-                            title: t.description || t.category,
-                            amount: parseFloat(t.amount) || 0,
-                            type: t.type,
-                            category: t.category,
-                            date: t.date,
-                            description: t.description || ''
-                        }));
-                        writeJson(getScopedKey('budget', user), budget);
-                    }
+                    localStorage.setItem(syncKey, '1');
+                    budget.transactions = backendTx.map(t => ({
+                        id: t.id,
+                        title: t.description || t.category,
+                        amount: parseFloat(t.amount) || 0,
+                        type: t.type,
+                        category: t.category,
+                        date: t.date,
+                        description: t.description || ''
+                    }));
+                    writeJson(getScopedKey('budget', user), budget);
 
                     if (window.BudgetModule && window.BudgetModule.init) {
                         window.BudgetModule.init(user);

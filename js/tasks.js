@@ -23,6 +23,57 @@
         });
     }
 
+    function getLocalTodayString() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function getLocalCurrentTimeString() {
+        const d = new Date();
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        return `${h}:${min}`;
+    }
+
+    /**
+     * Validates whether a scheduled date and optional time is in the future.
+     * Returns: { valid: true } or { valid: false, error: '...' }
+     */
+    function validateTaskDeadline(dueDate, dueTime) {
+        if (!dueDate) return { valid: true };
+
+        const cleanDate = String(dueDate).split('T')[0].trim();
+        if (!cleanDate) return { valid: true };
+
+        const todayStr = getLocalTodayString();
+
+        if (cleanDate < todayStr) {
+            return {
+                valid: false,
+                error: 'You cannot schedule a task in the past. Please select a future date and time.'
+            };
+        }
+
+        if (cleanDate === todayStr) {
+            // If time is provided, validate time is not in past
+            const cleanTime = (dueTime || (String(dueDate).includes('T') ? String(dueDate).split('T')[1].substring(0, 5) : '')).trim();
+            if (cleanTime) {
+                const currentTimeStr = getLocalCurrentTimeString();
+                if (cleanTime < currentTimeStr) {
+                    return {
+                        valid: false,
+                        error: 'You cannot schedule a task in the past. Please select a future date and time.'
+                    };
+                }
+            }
+        }
+
+        return { valid: true };
+    }
+
     const TasksModule = {
         init(user) {
             currentTasks = window.LifeSyncStorage.getTasks(user);
@@ -32,6 +83,8 @@
         getTasks() {
             return currentTasks;
         },
+
+        validateTaskDeadline,
 
         onChange(callback) {
             if (typeof callback === 'function') {
@@ -44,11 +97,20 @@
                 throw new Error('Task title is required.');
             }
 
+            // Validate past date/time unless explicitly bypassed (e.g. historical data seeding)
+            if (!taskData.allowPast && taskData.dueDate) {
+                const validation = validateTaskDeadline(taskData.dueDate, taskData.dueTime);
+                if (!validation.valid) {
+                    throw new Error(validation.error);
+                }
+            }
+
             const newTask = {
                 id: 'tsk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                 title: taskData.title.trim(),
                 description: (taskData.description || '').trim(),
                 dueDate: taskData.dueDate || '',
+                dueTime: taskData.dueTime || '',
                 priority: taskData.priority || 'Medium',
                 category: taskData.category || 'Study',
                 status: taskData.status || 'Pending',
@@ -66,9 +128,23 @@
             const task = currentTasks.find(t => String(t.id) === String(taskId));
             if (!task) throw new Error('Task not found.');
 
+            // Validate deadline if rescheduling into the past
+            if (updates.dueDate !== undefined) {
+                const isDeadlineChanged = (updates.dueDate !== task.dueDate) ||
+                    (updates.dueTime !== undefined && updates.dueTime !== task.dueTime);
+
+                if (isDeadlineChanged && !updates.allowPast && updates.dueDate) {
+                    const validation = validateTaskDeadline(updates.dueDate, updates.dueTime);
+                    if (!validation.valid) {
+                        throw new Error(validation.error);
+                    }
+                }
+                task.dueDate = updates.dueDate;
+            }
+
+            if (updates.dueTime !== undefined) task.dueTime = updates.dueTime;
             if (updates.title !== undefined) task.title = updates.title.trim();
             if (updates.description !== undefined) task.description = updates.description.trim();
-            if (updates.dueDate !== undefined) task.dueDate = updates.dueDate;
             if (updates.priority !== undefined) task.priority = updates.priority;
             if (updates.category !== undefined) task.category = updates.category;
             if (updates.status !== undefined) {

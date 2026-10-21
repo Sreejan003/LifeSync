@@ -340,6 +340,103 @@
                 method: 'PUT',
                 body: data
             });
+        },
+
+        // --- Smart Notifications ---
+        getNotifications(limit = 50) {
+            return request(`/notifications?limit=${limit}`);
+        },
+
+        getUnreadNotificationCount() {
+            return request('/notifications/unread-count');
+        },
+
+        markNotificationRead(id) {
+            return request(`/notifications/${id}/read`, {
+                method: 'PUT'
+            });
+        },
+
+        markAllNotificationsRead() {
+            return request('/notifications/mark-all-read', {
+                method: 'PUT'
+            });
+        },
+
+        deleteNotification(id) {
+            return request(`/notifications/${id}`, {
+                method: 'DELETE'
+            });
+        },
+
+        clearAllNotifications() {
+            return request('/notifications', {
+                method: 'DELETE'
+            });
+        },
+
+        getNotificationPreferences() {
+            return request('/notifications/preferences');
+        },
+
+        updateNotificationPreferences(prefs) {
+            return request('/notifications/preferences', {
+                method: 'PUT',
+                body: prefs
+            });
+        },
+
+        checkNotificationTriggers() {
+            return request('/notifications/check-triggers', {
+                method: 'POST'
+            });
+        },
+
+        getVapidPublicKey() {
+            return request('/notifications/vapid-public-key');
+        },
+
+        subscribePush(subscription) {
+            return request('/notifications/push-subscribe', {
+                method: 'POST',
+                body: { subscription }
+            });
+        },
+
+        unsubscribePush(endpoint) {
+            return request('/notifications/push-unsubscribe', {
+                method: 'POST',
+                body: { endpoint }
+            });
+        },
+
+        sendTestPush() {
+            return request('/notifications/push-test', {
+                method: 'POST'
+            });
+        },
+
+        // --- Pomodoro Focus Timer ---
+        recordPomodoroSession(data) {
+            return request('/pomodoro/session', {
+                method: 'POST',
+                body: data
+            });
+        },
+
+        getPomodoroStats() {
+            return request('/pomodoro/stats');
+        },
+
+        getPomodoroSettings() {
+            return request('/pomodoro/settings');
+        },
+
+        updatePomodoroSettings(settings) {
+            return request('/pomodoro/settings', {
+                method: 'PUT',
+                body: settings
+            });
         }
     };
 
