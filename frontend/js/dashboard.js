@@ -27,6 +27,86 @@
         return `Due in ${diffDays} days`;
     }
 
+    function getLocalDateString(d) {
+        const dateObj = d instanceof Date ? d : new Date(d);
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function recordUserDailyLogin(userId) {
+        if (!userId) return;
+        const todayStr = getLocalDateString(new Date());
+        const storageKey = `lifesync_login_history_${userId}`;
+        let dates = [];
+        try {
+            dates = JSON.parse(localStorage.getItem(storageKey)) || [];
+        } catch (e) {
+            dates = [];
+        }
+        if (!dates.includes(todayStr)) {
+            dates.push(todayStr);
+            if (dates.length > 120) dates = dates.slice(-120);
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(dates));
+            } catch (e) {}
+        }
+    }
+
+    function computeActiveStreak(userId, wellnessSummary) {
+        const today = new Date();
+        const todayStr = getLocalDateString(today);
+        const storageKey = `lifesync_login_history_${userId}`;
+        let dates = [];
+        try {
+            dates = JSON.parse(localStorage.getItem(storageKey)) || [];
+        } catch (e) {
+            dates = [];
+        }
+        const activeDatesSet = new Set(dates);
+        // Current user session is active today
+        activeDatesSet.add(todayStr);
+
+        // Also incorporate mental wellness check-in dates
+        if (wellnessSummary) {
+            if (Array.isArray(wellnessSummary.weeklyDays)) {
+                wellnessSummary.weeklyDays.forEach(d => {
+                    if (d && d.mood && d.date) activeDatesSet.add(d.date);
+                });
+            }
+            if (Array.isArray(wellnessSummary.history)) {
+                wellnessSummary.history.forEach(item => {
+                    if (item && item.date) {
+                        const dStr = item.date instanceof Date 
+                            ? getLocalDateString(item.date) 
+                            : String(item.date).split('T')[0];
+                        if (dStr) activeDatesSet.add(dStr);
+                    }
+                });
+            }
+        }
+
+        // Calculate consecutive streak backwards starting from today
+        let streak = 0;
+        let checkDate = new Date(today);
+        while (true) {
+            const dStr = getLocalDateString(checkDate);
+            if (activeDatesSet.has(dStr)) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+
+        if (wellnessSummary && typeof wellnessSummary.streak === 'number' && wellnessSummary.streak > streak) {
+            streak = wellnessSummary.streak;
+        }
+
+        return { streak: Math.max(1, streak), activeDatesSet };
+    }
+
     const DashboardModule = {
         render(user) {
             if (!user) return;
@@ -296,24 +376,69 @@
             // 8. Study Streak
             const streakSubtitle = document.getElementById('dashStreakSubtitle');
             const streakBubblesContainer = document.getElementById('dashStreakBubbles');
-            const studyStreak = wellnessSummary.streak !== undefined ? wellnessSummary.streak : 0;
-            if (streakSubtitle) {
-                streakSubtitle.textContent = studyStreak > 0 ? `You're on a ${studyStreak}-day streak!` : `Log a mood check-in to start your streak!`;
+            const streakBadge = document.getElementById('dashStreakBadge');
+
+            const userId = (user && (user.id || user.email || user.username)) || 'current_user';
+            recordUserDailyLogin(userId);
+            const { streak: studyStreak, activeDatesSet } = computeActiveStreak(userId, wellnessSummary);
+
+            if (streakBadge) {
+                streakBadge.textContent = `${studyStreak}d`;
             }
+
+            if (streakSubtitle) {
+                if (studyStreak > 1) {
+                    streakSubtitle.textContent = `You're on a ${studyStreak}-day study streak! Keep it going 🔥`;
+                } else {
+                    streakSubtitle.textContent = `Day 1 of your study streak! Great job logging in today 🔥`;
+                }
+            }
+
             if (streakBubblesContainer) {
-                const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                const todayDayIndex = (now.getDay() + 6) % 7; // Monday = 0
-                streakBubblesContainer.innerHTML = days.map((day, idx) => {
-                    const isCompleted = studyStreak > 0 && idx <= todayDayIndex && (todayDayIndex - idx) < studyStreak;
-                    const isToday = idx === todayDayIndex;
+                const dayLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const todayDayIndex = (now.getDay() + 6) % 7; // Monday = 0, Tuesday = 1, ... Sunday = 6
+
+                // Calculate Monday date of the current calendar week
+                const mondayDate = new Date(now);
+                mondayDate.setDate(now.getDate() - todayDayIndex);
+
+                streakBubblesContainer.innerHTML = dayLetters.map((letter, idx) => {
+                    const bubbleDate = new Date(mondayDate);
+                    bubbleDate.setDate(mondayDate.getDate() + idx);
+                    const bubbleDateStr = getLocalDateString(bubbleDate);
+
+                    const isToday = (idx === todayDayIndex);
+                    const isPast = (idx < todayDayIndex);
+
+                    // A day is lit up / completed if:
+                    // 1) It is today (user is logged in right now!)
+                    // 2) User logged in on that past date in activeDatesSet
+                    // 3) Or falls within the consecutive study streak leading up to today
+                    const isCompleted = isToday || activeDatesSet.has(bubbleDateStr) || (isPast && (todayDayIndex - idx) < studyStreak);
+
+                    const bubbleClasses = ['streak-day-bubble'];
+                    if (isCompleted) {
+                        bubbleClasses.push('completed', 'active');
+                    }
+                    if (isToday) {
+                        bubbleClasses.push('current', 'today');
+                    }
+
+                    const tooltip = `${dayNames[idx]} (${bubbleDateStr}): ${isToday ? 'Today (Logged in ✓)' : isCompleted ? 'Active Streak Day ✓' : 'Upcoming'}`;
+
                     return `
-                        <div class="streak-day-bubble ${isCompleted ? 'active' : ''} ${isToday ? 'today' : ''}">
-                            <span class="day-letter">${day}</span>
-                            <span class="day-label">${day}</span>
+                        <div class="${bubbleClasses.join(' ')}" data-day="${dayNames[idx]}" title="${tooltip}">
+                            ${isCompleted ? '<span class="check-mark">✓</span>' : `<span class="day-letter">${letter}</span>`}
+                            <span class="day-label">${letter}</span>
                         </div>
                     `;
                 }).join('');
             }
+        },
+        recordLogin(user) {
+            const uid = (user && (user.id || user.email || user.username)) || 'current_user';
+            recordUserDailyLogin(uid);
         }
     };
 

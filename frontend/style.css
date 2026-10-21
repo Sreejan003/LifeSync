@@ -4230,25 +4230,46 @@ body.dashboard-body {
     align-items: center;
     justify-content: center;
     position: relative;
-    background: #ffffff;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.streak-day-bubble.completed {
-    background: #2563eb;
+.streak-day-bubble .day-letter {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    color: #64748b;
+}
+
+.streak-day-bubble .day-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-top: 1px;
+}
+
+.streak-day-bubble.completed,
+.streak-day-bubble.active {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-color: #2563eb;
     color: #ffffff;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
-.streak-day-bubble.completed .check-mark {
+.streak-day-bubble.completed .check-mark,
+.streak-day-bubble.active .check-mark {
     font-size: 13px;
     font-weight: 800;
     line-height: 1;
+    color: #ffffff;
 }
 
-.streak-day-bubble.completed .day-label {
+.streak-day-bubble.completed .day-label,
+.streak-day-bubble.active .day-label {
     font-size: 9px;
     font-weight: 600;
-    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.95);
     margin-top: 1px;
 }
 
@@ -4258,16 +4279,12 @@ body.dashboard-body {
     background: #ffffff;
 }
 
-.streak-day-bubble.current .day-letter {
-    font-size: 13px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.streak-day-bubble.current .day-label {
-    font-size: 9px;
-    font-weight: 600;
-    margin-top: 1px;
+.streak-day-bubble.completed.current,
+.streak-day-bubble.active.today {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25), 0 4px 14px rgba(37, 99, 235, 0.45);
+    transform: scale(1.06);
+    border: none;
 }
 
 /* =========================================================
@@ -7992,16 +8009,44 @@ body.dashboard-body.dark-theme {
     color: #cbd5e1;
 }
 
-.dark-theme .streak-day-bubble.completed {
-    background: #10b981;
+.dark-theme .streak-day-bubble .day-letter {
+    color: #94a3b8;
+}
+
+.dark-theme .streak-day-bubble .day-label {
+    color: #64748b;
+}
+
+.dark-theme .streak-day-bubble.completed,
+.dark-theme .streak-day-bubble.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     border-color: #10b981;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.dark-theme .streak-day-bubble.completed .check-mark,
+.dark-theme .streak-day-bubble.active .check-mark {
     color: #ffffff;
 }
 
-.dark-theme .streak-day-bubble.current {
+.dark-theme .streak-day-bubble.completed .day-label,
+.dark-theme .streak-day-bubble.active .day-label {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.dark-theme .streak-day-bubble.current:not(.completed) {
     border-color: #6366f1;
     background: rgba(99, 102, 241, 0.2);
     color: #818cf8;
+}
+
+.dark-theme .streak-day-bubble.completed.current,
+.dark-theme .streak-day-bubble.active.today {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 4px 16px rgba(16, 185, 129, 0.55);
+    border-color: #34d399;
+    transform: scale(1.06);
 }
 
 /* Dedicated Sub-Views & General Card Boxes in Dark Mode */
