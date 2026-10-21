@@ -6,7 +6,12 @@
  * to wake up Service Workers and display notifications even when LifeSync is completely closed.
  */
 
-const webpush = require('web-push');
+let webpush;
+try {
+    webpush = require('web-push');
+} catch (e) {
+    webpush = null;
+}
 const db = require('../config/db');
 
 // Configure VAPID credentials
@@ -14,7 +19,7 @@ const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || 'BGZ2QUl6ZcWXQswnjZaz8Vu8
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || 'PujCkI9mXMTztekyPODLa69cWGGrppFk806i0qOOsn4';
 const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:notifications@lifesync.edu';
 
-if (vapidPublicKey && vapidPrivateKey) {
+if (webpush && vapidPublicKey && vapidPrivateKey) {
     try {
         webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
     } catch (e) {

@@ -196,7 +196,7 @@ async function getBudgetSummary(req, res, next) {
         if (!settings) {
             await db.query(
                 `INSERT INTO budget_settings (user_id, monthly_budget, runway_sum, runway_buffer_pct, night_safe_limit, night_safe_spent, night_safe_locked)
-                 VALUES ($1, 0, 0, 15, 0, 0, 0)`,
+                 VALUES ($1, 0, 0, 15, 0, 0, false)`,
                 [userId]
             );
             settingsRes = await db.query('SELECT * FROM budget_settings WHERE user_id = $1', [userId]);
@@ -227,7 +227,8 @@ async function getBudgetSummary(req, res, next) {
                 totalExpenses += amt;
                 categoryExpenses[cat] = (categoryExpenses[cat] || 0) + amt;
 
-                if (t.date && t.date.startsWith(currentMonth)) {
+                const dateStr = t.date instanceof Date ? t.date.toISOString().slice(0, 10) : String(t.date || '');
+                if (dateStr.startsWith(currentMonth)) {
                     spentThisMonth += amt;
                 }
             }
@@ -281,7 +282,7 @@ async function getBudgetSettings(req, res, next) {
         if (resData.rows.length === 0) {
             await db.query(
                 `INSERT INTO budget_settings (user_id, monthly_budget, runway_sum, runway_buffer_pct, night_safe_limit, night_safe_spent, night_safe_locked)
-                 VALUES ($1, 0, 0, 15, 0, 0, 0)`,
+                 VALUES ($1, 0, 0, 15, 0, 0, false)`,
                 [userId]
             );
             resData = await db.query('SELECT * FROM budget_settings WHERE user_id = $1', [userId]);
