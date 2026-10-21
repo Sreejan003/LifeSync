@@ -731,7 +731,12 @@
 
         if (valTotalIncome) valTotalIncome.textContent = '₹' + Math.round(summary.totalIncome).toLocaleString('en-IN');
         if (valTotalExpense) valTotalExpense.textContent = '₹' + Math.round(summary.totalExpense).toLocaleString('en-IN');
-        if (valNetBalance) valNetBalance.textContent = '₹' + Math.round(summary.totalBalance).toLocaleString('en-IN');
+        if (valNetBalance) {
+            const netVal = summary.netBalance !== undefined ? summary.netBalance : summary.totalBalance;
+            const isNegative = netVal < 0;
+            valNetBalance.textContent = (isNegative ? '-₹' : '₹') + Math.abs(Math.round(netVal)).toLocaleString('en-IN');
+            valNetBalance.className = isNegative ? 'expense-text' : 'income-text';
+        }
         if (valMonthlySpent) valMonthlySpent.textContent = '₹' + Math.round(summary.spentThisMonth).toLocaleString('en-IN');
         if (valMonthlyLimit) valMonthlyLimit.textContent = '₹' + Math.round(summary.monthlyBudget).toLocaleString('en-IN');
         if (valRemainingBudget) valRemainingBudget.textContent = '₹' + Math.round(summary.remainingBudget).toLocaleString('en-IN');
@@ -2071,9 +2076,9 @@
                 const runwaySum = Number(document.getElementById('settingRunwaySumInput').value);
                 const runwayBuffer = Number(document.getElementById('settingRunwayBufferInput').value);
 
-                if (monthly > 0) window.BudgetModule.setMonthlyBudget(currentUser, monthly);
-                if (nightLimit > 0) window.BudgetModule.setNightSafeLimit(currentUser, nightLimit);
-                if (runwaySum > 0) window.BudgetModule.updateRunway(currentUser, runwaySum, runwayBuffer !== undefined ? runwayBuffer : 15);
+                if (!isNaN(monthly) && monthly >= 0) window.BudgetModule.setMonthlyBudget(currentUser, monthly);
+                if (!isNaN(nightLimit) && nightLimit >= 0) window.BudgetModule.setNightSafeLimit(currentUser, nightLimit);
+                if (!isNaN(runwaySum) && runwaySum >= 0) window.BudgetModule.updateRunway(currentUser, runwaySum, runwayBuffer !== undefined ? runwayBuffer : 15);
 
                 showToast('Budget settings updated successfully! ✨', 'success');
                 closeModal('budgetSettingsModalOverlay');
@@ -2420,11 +2425,17 @@
             const nightInput = document.getElementById('settingNightLimitInput');
             const runwaySum = document.getElementById('settingRunwaySumInput');
             const runwayBuffer = document.getElementById('settingRunwayBufferInput');
-            if (monthlyInput) monthlyInput.value = budget.monthlyBudget || 15000;
-            if (nightInput) nightInput.value = (budget.nightSafe && budget.nightSafe.limit) || 500;
-            if (runwaySum) runwaySum.value = (budget.runway && budget.runway.sum) || 20000;
-            if (runwayBuffer) runwayBuffer.value = (budget.runway && budget.runway.bufferPct) !== undefined ? budget.runway.bufferPct : 15;
+            if (monthlyInput) monthlyInput.value = (budget.monthlyBudget !== undefined && budget.monthlyBudget !== null) ? budget.monthlyBudget : 15000;
+            if (nightInput) nightInput.value = (budget.nightSafe && budget.nightSafe.limit !== undefined) ? budget.nightSafe.limit : 500;
+            if (runwaySum) runwaySum.value = (budget.runway && budget.runway.sum !== undefined) ? budget.runway.sum : 20000;
+            if (runwayBuffer) runwayBuffer.value = (budget.runway && budget.runway.bufferPct !== undefined) ? budget.runway.bufferPct : 15;
             openModal('budgetSettingsModalOverlay');
+            setTimeout(() => {
+                if (monthlyInput) {
+                    monthlyInput.focus();
+                    monthlyInput.select();
+                }
+            }, 80);
         },
         handleResetBudgetData() {
             if (confirm('Are you sure you want to reset all budget and expense data to defaults?')) {

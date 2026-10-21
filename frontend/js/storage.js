@@ -834,26 +834,48 @@
                     }
                 }
 
-                // Fetch budget summary and transactions
-                const backendTx = await window.LifeSyncAPI.getTransactions();
-                if (Array.isArray(backendTx)) {
-                    const budget = LifeSyncStorage.getBudget(user);
-                    const syncKey = getScopedKey('budget_backend_synced', user);
-                    localStorage.setItem(syncKey, '1');
-                    budget.transactions = backendTx.map(t => ({
-                        id: t.id,
-                        title: t.description || t.category,
-                        amount: parseFloat(t.amount) || 0,
-                        type: t.type,
-                        category: t.category,
-                        date: t.date,
-                        description: t.description || ''
-                    }));
-                    writeJson(getScopedKey('budget', user), budget);
+                // Fetch budget settings and transactions
+                try {
+                    const [backendTx, backendSettings] = await Promise.all([
+                        window.LifeSyncAPI.getTransactions().catch(() => null),
+                        window.LifeSyncAPI.getBudgetSettings().catch(() => null)
+                    ]);
 
-                    if (window.BudgetModule && window.BudgetModule.init) {
-                        window.BudgetModule.init(user);
+                    const budget = LifeSyncStorage.getBudget(user);
+                    let budgetModified = false;
+
+                    if (backendSettings && (backendSettings.monthly_budget !== undefined || backendSettings.monthlyBudget !== undefined)) {
+                        const rawMb = backendSettings.monthly_budget !== undefined ? backendSettings.monthly_budget : backendSettings.monthlyBudget;
+                        const mb = parseFloat(rawMb);
+                        if (!isNaN(mb) && mb >= 0) {
+                            budget.monthlyBudget = mb;
+                            budgetModified = true;
+                        }
                     }
+
+                    if (Array.isArray(backendTx)) {
+                        const syncKey = getScopedKey('budget_backend_synced', user);
+                        localStorage.setItem(syncKey, '1');
+                        budget.transactions = backendTx.map(t => ({
+                            id: t.id,
+                            title: t.description || t.category,
+                            amount: parseFloat(t.amount) || 0,
+                            type: t.type,
+                            category: t.category,
+                            date: t.date,
+                            description: t.description || ''
+                        }));
+                        budgetModified = true;
+                    }
+
+                    if (budgetModified) {
+                        writeJson(getScopedKey('budget', user), budget);
+                        if (window.BudgetModule && window.BudgetModule.init) {
+                            window.BudgetModule.init(user);
+                        }
+                    }
+                } catch (bErr) {
+                    console.info('Budget sync notice:', bErr.message);
                 }
             } catch (err) {
                 console.info('Backend hydration notice: Backend sync unavailable or skipped (' + err.message + '). Continuing in local storage mode.');

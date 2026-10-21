@@ -5039,6 +5039,42 @@ body.dashboard-body {
     border: 1px solid rgba(112, 72, 232, 0.2);
 }
 
+.clickable-budget-box {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    position: relative;
+}
+
+.clickable-budget-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(112, 72, 232, 0.16);
+    border-color: rgba(112, 72, 232, 0.45);
+}
+
+.btn-stat-edit {
+    font-size: 11px;
+    font-weight: 700;
+    color: #7048e8;
+    background: rgba(112, 72, 232, 0.1);
+    border: 1px solid rgba(112, 72, 232, 0.25);
+    padding: 2px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+
+.btn-stat-edit:hover {
+    background: #7048e8;
+    color: #ffffff;
+    border-color: #7048e8;
+    transform: scale(1.05);
+}
+
+.net-balance-formula {
+    color: var(--text-secondary);
+}
+
 .box-label {
     font-size: 11px;
     font-weight: 750;
@@ -8114,6 +8150,23 @@ body.dashboard-body.dark-theme {
 .dark-theme .budget-stat-box.highlight-box {
     background: linear-gradient(135deg, rgba(99, 59, 245, 0.2), rgba(154, 82, 244, 0.1));
     border-color: rgba(139, 92, 246, 0.3);
+}
+
+.dark-theme .clickable-budget-box:hover {
+    box-shadow: 0 10px 24px rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.6);
+}
+
+.dark-theme .btn-stat-edit {
+    color: #c4b5fd;
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.dark-theme .btn-stat-edit:hover {
+    background: #8b5cf6;
+    color: #ffffff;
+    border-color: #8b5cf6;
 }
 
 .dark-theme .transaction-row {

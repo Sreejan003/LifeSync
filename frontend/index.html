@@ -854,12 +854,19 @@
                             <span class="box-label">Total Expenses</span>
                             <strong id="budgetValTotalExpense" class="expense-text"></strong>
                         </div>
-                        <div class="budget-stat-box">
+                        <div class="budget-stat-box" id="cardNetBalance"
+                            title="Net Balance = Total Income + Monthly Allowance − Total Expenses">
                             <span class="box-label">Net Balance</span>
                             <strong id="budgetValNetBalance"></strong>
+                            <small class="net-balance-formula" style="font-size: 10.5px; opacity: 0.85; display: block; margin-top: 2px;">(Income + Allowance − Expenses)</small>
                         </div>
-                        <div class="budget-stat-box highlight-box">
-                            <span class="box-label">Remaining Monthly Budget</span>
+                        <div class="budget-stat-box highlight-box clickable-budget-box" id="cardRemainingBudget"
+                            onclick="window.LifeSyncApp.openBudgetSettingsModal()"
+                            title="Click to change your Monthly Spending Limit / Allowance">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="box-label">Remaining Monthly Budget</span>
+                                <button type="button" class="btn-stat-edit" title="Change Monthly Allowance" onclick="event.stopPropagation(); window.LifeSyncApp.openBudgetSettingsModal();">✏️ Change</button>
+                            </div>
                             <strong id="budgetValRemainingBudget"></strong>
                             <small>Limit: <span id="budgetValMonthlyLimit"></span> (Spent: <span
                                     id="budgetValMonthlySpent"></span>)</small>
@@ -1869,24 +1876,24 @@
             </div>
             <form id="budgetSettingsForm">
                 <div class="form-group">
-                    <label for="settingMonthlyBudgetInput">Monthly Spending Limit (₹) *</label>
-                    <input type="number" id="settingMonthlyBudgetInput" min="1000" step="500" placeholder="Monthly Limit"
+                    <label for="settingMonthlyBudgetInput">Monthly Allowance / Budget Limit (₹) *</label>
+                    <input type="number" id="settingMonthlyBudgetInput" min="0" step="any" placeholder="Monthly Allowance / Limit"
                         required>
-                    <small class="form-hint">Maximum targeted expenses per month.</small>
+                    <small class="form-hint">Monthly allowance / spending limit used in your remaining budget and net balance calculations.</small>
                 </div>
                 <div class="form-group">
                     <label for="settingNightLimitInput">Late-Night Curfew Safety Limit (₹) *</label>
-                    <input type="number" id="settingNightLimitInput" min="50" step="50" placeholder="Curfew Limit" required>
+                    <input type="number" id="settingNightLimitInput" min="0" step="any" placeholder="Curfew Limit" required>
                     <small class="form-hint">Night spend cap active after 10 PM.</small>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="settingRunwaySumInput">Semester Living Fund (₹)</label>
-                        <input type="number" id="settingRunwaySumInput" min="1000" step="1000" placeholder="Living Fund">
+                        <input type="number" id="settingRunwaySumInput" min="0" step="any" placeholder="Living Fund">
                     </div>
                     <div class="form-group">
                         <label for="settingRunwayBufferInput">Safety Buffer (%)</label>
-                        <input type="number" id="settingRunwayBufferInput" min="0" max="40" step="1" placeholder="Buffer %">
+                        <input type="number" id="settingRunwayBufferInput" min="0" max="100" step="1" placeholder="Buffer %">
                     </div>
                 </div>
                 <div class="modal-actions" style="justify-content: space-between;">

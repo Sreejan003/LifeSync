@@ -120,8 +120,8 @@
         },
 
         setMonthlyBudget(user, limit) {
-            const num = Number(limit);
-            if (num > 0) {
+            const num = parseFloat(limit);
+            if (!isNaN(num) && num >= 0) {
                 currentBudget.monthlyBudget = num;
                 window.LifeSyncStorage.saveBudget(user, currentBudget);
                 this.syncWithBudgetBuddy();
@@ -130,8 +130,8 @@
         },
 
         setNightSafeLimit(user, limit) {
-            const num = Number(limit);
-            if (num > 0) {
+            const num = parseFloat(limit);
+            if (!isNaN(num) && num >= 0) {
                 if (!currentBudget.nightSafe) {
                     currentBudget.nightSafe = { limit: 500, spent: 0, locked: false, lastResetDate: new Date().toISOString().split('T')[0] };
                 }
@@ -143,13 +143,13 @@
         },
 
         setBudgetSettings(user, settings) {
-            if (settings.monthlyBudget) {
-                const mb = Number(settings.monthlyBudget);
-                if (mb > 0) currentBudget.monthlyBudget = mb;
+            if (settings.monthlyBudget !== undefined && settings.monthlyBudget !== null) {
+                const mb = parseFloat(settings.monthlyBudget);
+                if (!isNaN(mb) && mb >= 0) currentBudget.monthlyBudget = mb;
             }
-            if (settings.nightSafeLimit) {
-                const nsl = Number(settings.nightSafeLimit);
-                if (nsl > 0) {
+            if (settings.nightSafeLimit !== undefined && settings.nightSafeLimit !== null) {
+                const nsl = parseFloat(settings.nightSafeLimit);
+                if (!isNaN(nsl) && nsl >= 0) {
                     if (!currentBudget.nightSafe) {
                         currentBudget.nightSafe = { limit: 500, spent: 0, locked: false, lastResetDate: new Date().toISOString().split('T')[0] };
                     }
@@ -408,10 +408,12 @@
                 categorySpending[tx.category] = (categorySpending[tx.category] || 0) + amt;
             });
 
-            const monthlyBudget = currentBudget.monthlyBudget || 15000;
+            const monthlyBudget = (currentBudget.monthlyBudget !== undefined && currentBudget.monthlyBudget !== null) ? Number(currentBudget.monthlyBudget) : 15000;
             const remainingBudget = Math.max(0, monthlyBudget - spentThisMonth);
-            const budgetUsagePct = Math.min(100, Math.round((spentThisMonth / monthlyBudget) * 100));
-            const totalBalance = totalIncome - totalExpense;
+            const budgetUsagePct = monthlyBudget > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyBudget) * 100)) : 0;
+            // Formula: Net balance is sum of total income + monthly allowance minus expenses
+            const netBalance = (totalIncome + monthlyBudget) - totalExpense;
+            const totalBalance = netBalance;
 
             // Compute bills summary
             const bills = currentBudget.bills || [];
@@ -423,12 +425,14 @@
                 totalIncome,
                 totalExpense,
                 totalBalance,
+                netBalance,
                 monthlyBudget,
+                monthlyAllowance: monthlyBudget,
                 spentThisMonth,
                 remainingBudget,
                 budgetUsagePct,
                 isWarning: budgetUsagePct >= 80 && budgetUsagePct < 100,
-                isExceeded: spentThisMonth > monthlyBudget,
+                isExceeded: monthlyBudget > 0 && spentThisMonth > monthlyBudget,
                 categorySpending,
                 runway: currentBudget.runway || { sum: 20000, bufferPct: 15 },
                 nightSafe: currentBudget.nightSafe || { limit: 500, spent: 0, locked: false },
