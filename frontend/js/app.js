@@ -1227,8 +1227,10 @@
         // Mobile sidebar toggling
         const menuBtn = document.getElementById('btnMobileMenu');
         const backdrop = document.getElementById('appBackdrop');
+        const closeBtn = document.getElementById('btnSidebarClose');
         if (menuBtn) menuBtn.addEventListener('click', openMobileSidebar);
         if (backdrop) backdrop.addEventListener('click', closeMobileSidebar);
+        if (closeBtn) closeBtn.addEventListener('click', closeMobileSidebar);
 
         // Notification Bell
         const notifBtn = document.getElementById('btnNotificationTrigger');
@@ -2460,6 +2462,8 @@
             openModal('billModalOverlay');
         },
         handleNotifClick,
+        openMobileSidebar,
+        closeMobileSidebar,
         openModal,
         closeModal,
         closeAllModals,
