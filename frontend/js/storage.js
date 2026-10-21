@@ -733,40 +733,104 @@
             try {
                 // Fetch tasks from backend
                 const backendTasks = await window.LifeSyncAPI.getTasks();
-                if (Array.isArray(backendTasks) && backendTasks.length > 0) {
-                    const mapped = backendTasks.map(t => ({
-                        id: t.id,
-                        title: t.title,
-                        description: t.description || '',
-                        dueDate: t.deadline || '',
-                        priority: t.priority,
-                        category: t.category,
-                        status: t.status,
-                        createdAt: t.created_at,
-                        completedAt: t.completed_at
-                    }));
-                    writeJson(getScopedKey('tasks', user), mapped);
-                    if (window.TasksModule && window.TasksModule.init) {
-                        window.TasksModule.init(user);
+                if (Array.isArray(backendTasks)) {
+                    const localTasks = LifeSyncStorage.getTasks(user);
+                    const taskSyncKey = getScopedKey('tasks_backend_synced', user);
+                    const hasSyncedTasks = localStorage.getItem(taskSyncKey);
+
+                    if (!hasSyncedTasks && backendTasks.length === 0 && Array.isArray(localTasks) && localTasks.length > 0) {
+                        for (const t of localTasks) {
+                            try {
+                                const created = await window.LifeSyncAPI.createTask({
+                                    title: t.title,
+                                    category: t.category,
+                                    deadline: t.dueDate,
+                                    priority: t.priority,
+                                    status: t.status,
+                                    description: t.description
+                                });
+                                if (created && created.id) t.id = created.id;
+                            } catch (e) {
+                                console.warn('Seed task sync notice:', e.message);
+                            }
+                        }
+                        localStorage.setItem(taskSyncKey, '1');
+                        writeJson(getScopedKey('tasks', user), localTasks);
+                    } else if (backendTasks.length > 0) {
+                        const mappedBackend = backendTasks.map(t => ({
+                            id: t.id,
+                            title: t.title,
+                            description: t.description || '',
+                            dueDate: t.deadline || '',
+                            priority: t.priority,
+                            category: t.category,
+                            status: t.status,
+                            createdAt: t.created_at,
+                            completedAt: t.completed_at
+                        }));
+
+                        const localUnsynced = localTasks.filter(lt =>
+                            typeof lt.id === 'string' && lt.id.startsWith('tsk_') &&
+                            !mappedBackend.some(bt => bt.title.trim().toLowerCase() === lt.title.trim().toLowerCase())
+                        );
+
+                        const mergedTasks = [...mappedBackend, ...localUnsynced];
+                        writeJson(getScopedKey('tasks', user), mergedTasks);
+                        localStorage.setItem(taskSyncKey, '1');
+                        if (window.TasksModule && window.TasksModule.init) {
+                            window.TasksModule.init(user);
+                        }
                     }
                 }
 
                 // Fetch events from backend
                 const backendEvents = await window.LifeSyncAPI.getEvents();
-                if (Array.isArray(backendEvents) && backendEvents.length > 0) {
-                    const mapped = backendEvents.map(e => ({
-                        id: e.id,
-                        title: e.title,
-                        date: e.date,
-                        time: e.time,
-                        category: e.event_type,
-                        priority: 'Medium',
-                        description: e.description || '',
-                        hasReminder: Boolean(e.reminder)
-                    }));
-                    writeJson(getScopedKey('events', user), mapped);
-                    if (window.CalendarModule && window.CalendarModule.init) {
-                        window.CalendarModule.init(user);
+                if (Array.isArray(backendEvents)) {
+                    const localEvents = LifeSyncStorage.getEvents(user);
+                    const eventSyncKey = getScopedKey('events_backend_synced', user);
+                    const hasSyncedEvents = localStorage.getItem(eventSyncKey);
+
+                    if (!hasSyncedEvents && backendEvents.length === 0 && Array.isArray(localEvents) && localEvents.length > 0) {
+                        for (const ev of localEvents) {
+                            try {
+                                const created = await window.LifeSyncAPI.createEvent({
+                                    title: ev.title,
+                                    date: ev.date,
+                                    time: ev.time,
+                                    category: ev.category,
+                                    description: ev.description,
+                                    reminder: ev.hasReminder
+                                });
+                                if (created && created.id) ev.id = created.id;
+                            } catch (e) {
+                                console.warn('Seed event sync notice:', e.message);
+                            }
+                        }
+                        localStorage.setItem(eventSyncKey, '1');
+                        writeJson(getScopedKey('events', user), localEvents);
+                    } else if (backendEvents.length > 0) {
+                        const mappedEvents = backendEvents.map(e => ({
+                            id: e.id,
+                            title: e.title,
+                            date: e.date,
+                            time: e.time,
+                            category: e.event_type,
+                            priority: 'Medium',
+                            description: e.description || '',
+                            hasReminder: Boolean(e.reminder)
+                        }));
+
+                        const localUnsyncedEvents = localEvents.filter(le =>
+                            typeof le.id === 'string' && le.id.startsWith('evt_') &&
+                            !mappedEvents.some(be => be.title.trim().toLowerCase() === le.title.trim().toLowerCase() && be.date === le.date)
+                        );
+
+                        const mergedEvents = [...mappedEvents, ...localUnsyncedEvents];
+                        writeJson(getScopedKey('events', user), mergedEvents);
+                        localStorage.setItem(eventSyncKey, '1');
+                        if (window.CalendarModule && window.CalendarModule.init) {
+                            window.CalendarModule.init(user);
+                        }
                     }
                 }
 

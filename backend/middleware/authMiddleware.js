@@ -6,8 +6,7 @@
  */
 
 const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'lifesync_super_secret_jwt_key_2026_student_dev';
+const { JWT_SECRET } = require('../config/jwt');
 
 function authMiddleware(req, res, next) {
     const authHeader = req.headers['authorization'] || req.headers['Authorization'];

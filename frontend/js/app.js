@@ -661,6 +661,7 @@
                                 ${isTask ? `
                                     <button class="btn-sm-action" onclick="window.LifeSyncApp.handleQuickTaskToggle('${item.id}')">✓ Mark Done</button>
                                 ` : `
+                                    <button class="btn-icon-soft" title="Edit Event" onclick="window.LifeSyncApp.openEditEventModal('${item.id}')">✏️</button>
                                     <button class="btn-icon-soft btn-icon-danger" title="Delete Event" onclick="window.LifeSyncApp.deleteEvent('${item.id}')">🗑️</button>
                                 `}
                             </div>
@@ -895,9 +896,9 @@
         }
 
         // 6. Late-Night Safe (Overview + Dedicated View)
-        const night = budgetState.nightSafe || { limit: 500, spent: 120, locked: false };
+        const night = budgetState.nightSafe || { limit: 500, spent: 0, locked: false };
         const nightRemaining = Math.max(0, night.limit - night.spent);
-        const nightSpentPct = Math.min(100, Math.round((night.spent / night.limit) * 100));
+        const nightSpentPct = night.limit > 0 ? Math.min(100, Math.round((night.spent / night.limit) * 100)) : 0;
 
         // Overview night widget
         const nightSafeLimit = document.getElementById('budgetNightSafeLimit');
@@ -940,10 +941,10 @@
         calculateBillSplit();
 
         // Shared Goal
-        const goal = budgetState.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 };
+        const goal = budgetState.sharedGoal || { title: '', current: 0, target: 0, etaWeeks: 0 };
         const goalCurrent = Number(goal.current) || 0;
-        const goalTarget = Number(goal.target) || 8000;
-        const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
+        const goalTarget = Number(goal.target) || 0;
+        const goalPct = goalTarget > 0 ? Math.min(100, Math.round((goalCurrent / goalTarget) * 100)) : 0;
         const goalRemaining = Math.max(0, goalTarget - goalCurrent);
 
         const goalTitleDisplay = document.getElementById('goalTitleDisplay');
@@ -954,12 +955,12 @@
         const goalEtaDisplay = document.getElementById('goalEtaDisplay');
         const goalRemainingDisplay = document.getElementById('goalRemainingDisplay');
 
-        if (goalTitleDisplay) goalTitleDisplay.textContent = goal.title;
+        if (goalTitleDisplay) goalTitleDisplay.textContent = goal.title || '';
         if (goalCurrentDisplay) goalCurrentDisplay.textContent = '₹' + goalCurrent.toLocaleString('en-IN');
         if (goalTargetDisplay) goalTargetDisplay.textContent = '₹' + goalTarget.toLocaleString('en-IN');
         if (goalProgressBar) goalProgressBar.style.width = `${goalPct}%`;
         if (goalPctDisplay) goalPctDisplay.textContent = `${goalPct}%`;
-        if (goalEtaDisplay) goalEtaDisplay.textContent = `${goal.etaWeeks || 4} weeks`;
+        if (goalEtaDisplay) goalEtaDisplay.textContent = goal.etaWeeks ? `${goal.etaWeeks} weeks` : '--';
         if (goalRemainingDisplay) goalRemainingDisplay.textContent = '₹' + goalRemaining.toLocaleString('en-IN');
 
         // Dedicated Bills Grid
@@ -1912,11 +1913,13 @@
             liveDueTimeInput.addEventListener('input', enforceLiveFutureSchedule);
         }
 
-        // Calendar Event Form Modal
+        // Calendar Event Form Modal (Add / Edit Schedule Event)
         const eventForm = document.getElementById('eventFormModal');
         if (eventForm) {
             eventForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                const editIdEl = document.getElementById('eventEditId');
+                const editId = editIdEl ? editIdEl.value.trim() : '';
                 const title = document.getElementById('eventTitleInput').value;
                 const date = document.getElementById('eventDateInput').value;
                 const time = document.getElementById('eventTimeInput').value;
@@ -1930,12 +1933,20 @@
                 }
 
                 try {
-                    window.CalendarModule.addEvent(currentUser, {
-                        title, date, time, category, priority, description: desc, hasReminder: true
-                    });
-                    showToast('Event / Exam added to schedule! 📅', 'success');
+                    if (editId) {
+                        window.CalendarModule.updateEvent(currentUser, editId, {
+                            title, date, time, category, priority, description: desc, location: desc, hasReminder: true
+                        });
+                        showToast('Schedule event updated! 📅', 'success');
+                    } else {
+                        window.CalendarModule.addEvent(currentUser, {
+                            title, date, time, category, priority, description: desc, location: desc, hasReminder: true
+                        });
+                        showToast('Event / Exam added to schedule! 📅', 'success');
+                    }
                     closeModal('eventModalOverlay');
                     renderCalendarView();
+                    renderCurrentView();
                     updateNotifications();
                 } catch (err) {
                     showToast(err.message, 'error');
@@ -2272,7 +2283,14 @@
             openModal('taskModalOverlay');
         },
         openAddEventModal(presetDate) {
-            document.getElementById('eventFormModal').reset();
+            const form = document.getElementById('eventFormModal');
+            if (form) form.reset();
+            const editIdEl = document.getElementById('eventEditId');
+            if (editIdEl) editIdEl.value = '';
+            const titleEl = document.getElementById('eventModalTitle');
+            if (titleEl) titleEl.textContent = 'Add Schedule Event / Exam';
+            const submitBtn = document.getElementById('eventSubmitBtn');
+            if (submitBtn) submitBtn.textContent = 'Add to Schedule';
             const todayStr = getLocalTodayDateString();
             const dateInput = document.getElementById('eventDateInput');
             if (dateInput) {
@@ -2281,11 +2299,39 @@
             }
             openModal('eventModalOverlay');
         },
+        openEditEventModal(eventOrId) {
+            const allEvts = window.CalendarModule ? window.CalendarModule.getEvents() : [];
+            const evt = typeof eventOrId === 'object' && eventOrId ? eventOrId : allEvts.find(e => String(e.id) === String(eventOrId));
+            if (!evt) return;
+
+            const editIdEl = document.getElementById('eventEditId');
+            if (editIdEl) editIdEl.value = evt.id;
+            const titleInput = document.getElementById('eventTitleInput');
+            if (titleInput) titleInput.value = evt.title || '';
+            const dateInput = document.getElementById('eventDateInput');
+            if (dateInput) dateInput.value = evt.date || new Date().toISOString().split('T')[0];
+            const timeInput = document.getElementById('eventTimeInput');
+            if (timeInput) timeInput.value = evt.time || '10:00';
+            const catInput = document.getElementById('eventCategoryInput');
+            if (catInput) catInput.value = evt.category || 'Study';
+            const prioInput = document.getElementById('eventPriorityInput');
+            if (prioInput) prioInput.value = evt.priority || 'Medium';
+            const descInput = document.getElementById('eventDescInput');
+            if (descInput) descInput.value = evt.description || evt.location || '';
+
+            const titleEl = document.getElementById('eventModalTitle');
+            if (titleEl) titleEl.textContent = 'Edit Schedule Event';
+            const submitBtn = document.getElementById('eventSubmitBtn');
+            if (submitBtn) submitBtn.textContent = 'Save Changes';
+
+            openModal('eventModalOverlay');
+        },
         deleteEvent(eventId) {
             if (confirm('Delete this scheduled event?')) {
                 window.CalendarModule.deleteEvent(currentUser, eventId);
                 showToast('Event removed from schedule.', 'info');
                 renderCalendarView();
+                renderCurrentView();
                 updateNotifications();
             }
         },

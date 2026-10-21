@@ -9,24 +9,12 @@ const emailService = require('../services/emailService');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'lifesync_super_secret_jwt_key_2026_student_dev';
-const JWT_EXPIRES_IN = '7d';
-
-/**
- * Generate cryptographically signed JWT token
- */
-function generateToken(user) {
-    return jwt.sign(
-        {
-            id: user.id,
-            email: user.email,
-            name: user.name
-        },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
-    );
-}
+const {
+    JWT_SECRET,
+    generateToken,
+    generatePasswordResetToken,
+    verifyPasswordResetToken
+} = require('../config/jwt');
 
 /**
  * POST /api/auth/register
@@ -64,31 +52,28 @@ async function register(req, res, next) {
         const hashedPassword = await bcrypt.hash(password, salt);
         const avatarLetter = trimmedName.charAt(0).toUpperCase() || 'S';
 
-        // Insert new user
-        const result = await db.query(
-            `INSERT INTO users (name, email, password, avatar_letter)
-             VALUES ($1, $2, $3, $4)
-             RETURNING id, name, email, avatar_letter, created_at`,
-            [trimmedName, normalizedEmail, hashedPassword, avatarLetter]
-        );
-
-        const newUser = result.rows[0];
-
-        // Initialize default user profile & budget settings with clean starting values
-        try {
-            await db.query(
-                `INSERT INTO profiles (user_id, name, email, university, major, year_semester, student_id, xp, currency, notifications_enabled)
-                 VALUES ($1, $2, $3, NULL, NULL, NULL, NULL, 0, '₹', 1)`,
-                [newUser.id, newUser.name, newUser.email]
+        // Insert new user, profile, and default budget atomically in a transaction
+        const newUser = await db.transaction(async (tx) => {
+            const result = await tx.query(
+                `INSERT INTO users (name, email, password, avatar_letter)
+                 VALUES ($1, $2, $3, $4)
+                 RETURNING id, name, email, avatar_letter, created_at`,
+                [trimmedName, normalizedEmail, hashedPassword, avatarLetter]
             );
-            await db.query(
-                `INSERT INTO budget_settings (user_id, monthly_budget, runway_sum, runway_buffer_pct, night_safe_limit, night_safe_spent, night_safe_locked)
-                 VALUES ($1, 0, 0, 15, 0, 0, 0)`,
-                [newUser.id]
+
+            const user = result.rows[0];
+
+            await tx.query(
+                `INSERT INTO profiles (user_id, name, email) VALUES ($1, $2, $3)`,
+                [user.id, user.name, user.email]
             );
-        } catch (initErr) {
-            console.warn('Initial profile/settings seed notice:', initErr.message);
-        }
+            await tx.query(
+                `INSERT INTO budget_settings (user_id) VALUES ($1)`,
+                [user.id]
+            );
+
+            return user;
+        });
 
         const token = generateToken(newUser);
 
@@ -185,41 +170,119 @@ async function getMe(req, res, next) {
  */
 async function googleAuth(req, res, next) {
     try {
-        const { email, name } = req.body;
-        const googleEmail = (email && email.trim()) ? email.trim().toLowerCase() : 'student.google@gmail.com';
-        const googleName = (name && name.trim()) ? name.trim() : 'Google Student';
-        const avatarLetter = googleName.charAt(0).toUpperCase() || 'G';
+        const { credential, idToken, accessToken } = req.body;
+        const googleToken = credential || idToken;
 
-        let result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [googleEmail]);
+        if (!googleToken && !accessToken) {
+            return res.status(401).json({
+                error: 'Authentication failed: A valid Google credential or access token is required.'
+            });
+        }
+
+        let verifiedEmail = null;
+        let verifiedName = null;
+        let verifiedPicture = null;
+
+        // 1. Verify Google ID Token / GIS credential with Google tokeninfo
+        if (googleToken) {
+            try {
+                const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(googleToken)}`);
+                if (!googleRes.ok) {
+                    return res.status(401).json({ error: 'Invalid Google OAuth ID token.' });
+                }
+                const tokenInfo = await googleRes.json();
+
+                // Verify audience if configured
+                const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+                if (expectedClientId && tokenInfo.aud && tokenInfo.aud !== expectedClientId) {
+                    return res.status(401).json({ error: 'Google OAuth token audience mismatch.' });
+                }
+
+                if (!tokenInfo.email || tokenInfo.email_verified === 'false' || tokenInfo.email_verified === false) {
+                    return res.status(401).json({ error: 'Unverified Google email address.' });
+                }
+
+                verifiedEmail = tokenInfo.email.trim().toLowerCase();
+                verifiedName = tokenInfo.name ? tokenInfo.name.trim() : verifiedEmail.split('@')[0];
+                verifiedPicture = tokenInfo.picture || null;
+            } catch (err) {
+                console.error('Google ID token verification failed:', err.message);
+                return res.status(401).json({ error: 'Failed to verify Google token with Google servers.' });
+            }
+        } else if (accessToken) {
+            // 2. Verify Google Access Token with Google userinfo
+            try {
+                const userinfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                if (!userinfoRes.ok) {
+                    return res.status(401).json({ error: 'Invalid Google access token.' });
+                }
+                const profile = await userinfoRes.json();
+                if (!profile.email || profile.email_verified === false) {
+                    return res.status(401).json({ error: 'Unverified Google email address.' });
+                }
+
+                verifiedEmail = profile.email.trim().toLowerCase();
+                verifiedName = profile.name ? profile.name.trim() : verifiedEmail.split('@')[0];
+                verifiedPicture = profile.picture || null;
+            } catch (err) {
+                console.error('Google userinfo verification failed:', err.message);
+                return res.status(401).json({ error: 'Failed to verify Google access token with Google servers.' });
+            }
+        }
+
+        if (!verifiedEmail) {
+            return res.status(401).json({ error: 'No verified email returned from Google identity service.' });
+        }
+
+        const avatarLetter = (verifiedName ? verifiedName.charAt(0) : 'G').toUpperCase();
+
+        let result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [verifiedEmail]);
         let user;
+        let isNewUser = false;
 
         if (result.rows.length === 0) {
-            // Create user with randomized high-entropy password
-            const tempPass = await bcrypt.hash('GoogleOAuth_' + Math.random().toString(36), 10);
-            const insertResult = await db.query(
-                `INSERT INTO users (name, email, password, avatar_letter)
-                 VALUES ($1, $2, $3, $4)
-                 RETURNING id, name, email, avatar_letter, created_at`,
-                [googleName, googleEmail, tempPass, avatarLetter]
-            );
-            user = insertResult.rows[0];
-            try {
-                await db.query('INSERT INTO profiles (user_id, name, email) VALUES ($1, $2, $3)', [user.id, user.name, user.email]);
-                await db.query('INSERT INTO budget_settings (user_id) VALUES ($1)', [user.id]);
-            } catch (e) {}
+            isNewUser = true;
+            // Create user atomically with high-entropy cryptographic password
+            const tempPass = await bcrypt.hash('GoogleOAuth_' + Math.random().toString(36) + Date.now(), 10);
+            user = await db.transaction(async (tx) => {
+                const insertResult = await tx.query(
+                    `INSERT INTO users (name, email, password, avatar_letter)
+                     VALUES ($1, $2, $3, $4)
+                     RETURNING id, name, email, avatar_letter, created_at`,
+                    [verifiedName, verifiedEmail, tempPass, avatarLetter]
+                );
+                const created = insertResult.rows[0];
+                await tx.query('INSERT INTO profiles (user_id, name, email) VALUES ($1, $2, $3)', [created.id, created.name, created.email]);
+                await tx.query('INSERT INTO budget_settings (user_id) VALUES ($1)', [created.id]);
+                return created;
+            });
         } else {
             user = result.rows[0];
+            if (verifiedName && user.name !== verifiedName) {
+                try {
+                    await db.query('UPDATE users SET name = $1, avatar_letter = $2 WHERE id = $3', [verifiedName, avatarLetter, user.id]);
+                    user.name = verifiedName;
+                    user.avatar_letter = avatarLetter;
+                } catch (e) {}
+            }
         }
 
         const token = generateToken(user);
         return res.status(200).json({
             message: 'Google login successful.',
+            isNewUser: isNewUser,
+            needsProfileSetup: isNewUser,
             user: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 avatarLetter: user.avatar_letter || avatarLetter,
-                isGoogleUser: true
+                picture: verifiedPicture,
+                isGoogleUser: true,
+                isNewUser: isNewUser,
+                needsProfileSetup: isNewUser
             },
             token
         });
@@ -227,7 +290,6 @@ async function googleAuth(req, res, next) {
         next(err);
     }
 }
-
 
 /**
  * POST /api/auth/forgot-password
@@ -242,7 +304,7 @@ async function forgotPassword(req, res, next) {
         const normalizedEmail = email.trim().toLowerCase();
         const result = await db.query('SELECT id, name, email FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
 
-        // Security best practice: Always return 200 to prevent user enumeration
+        // Security best practice: Always return 200 with uniform message to prevent user enumeration
         if (result.rows.length === 0) {
             return res.status(200).json({
                 message: 'If an account matches that email, reset instructions have been dispatched.'
@@ -250,13 +312,12 @@ async function forgotPassword(req, res, next) {
         }
 
         const user = result.rows[0];
-        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5000';
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+        const clientUrl = process.env.CLIENT_URL || (host ? `${proto}://${host}` : 'http://localhost:5000');
 
-        const resetToken = jwt.sign(
-            { userId: user.id, email: user.email, type: 'pwd_reset' },
-            JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+        // Isolated password reset token
+        const resetToken = generatePasswordResetToken(user);
 
         const resetUrl = `${clientUrl}/auth.html?token=${resetToken}&tab=reset`;
 
@@ -266,9 +327,9 @@ async function forgotPassword(req, res, next) {
             resetUrl
         });
 
+        // Response does not leak user's email or identity confirmation
         return res.status(200).json({
-            message: 'Password reset instructions have been dispatched successfully.',
-            email: user.email
+            message: 'If an account matches that email, reset instructions have been dispatched.'
         });
     } catch (err) {
         next(err);
@@ -291,7 +352,7 @@ async function resetPassword(req, res, next) {
 
         let decoded;
         try {
-            decoded = jwt.verify(token, JWT_SECRET);
+            decoded = verifyPasswordResetToken(token);
         } catch (jwtErr) {
             return res.status(401).json({ error: 'Invalid or expired password reset link. Please request a new one.' });
         }

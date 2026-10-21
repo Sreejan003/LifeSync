@@ -12,8 +12,8 @@
     let currentBudget = {
         monthlyBudget: 15000,
         runway: { sum: 20000, bufferPct: 15 },
-        nightSafe: { limit: 500, spent: 120, locked: false, lastResetDate: new Date().toISOString().split('T')[0] },
-        sharedGoal: { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 },
+        nightSafe: { limit: 500, spent: 0, locked: false, lastResetDate: new Date().toISOString().split('T')[0] },
+        sharedGoal: { title: '', current: 0, target: 0, etaWeeks: 0 },
         transactions: [],
         bills: []
     };
@@ -356,16 +356,18 @@
         // --- TWO-WAY SYNC WITH STANDALONE BUDGETBUDDY ---
         syncWithBudgetBuddy() {
             try {
+                const activeUser = window.AuthSystem && typeof window.AuthSystem.getCurrentUser === 'function' ? window.AuthSystem.getCurrentUser() : null;
+                const activeName = (activeUser && (activeUser.username || activeUser.name)) || 'Student';
                 const buddyData = {
                     profile: {
-                        name: 'Ananya',
-                        streak: 12,
+                        name: activeName,
+                        streak: currentBudget.streak || 0,
                         lastReviewDate: null,
-                        xp: 450
+                        xp: (activeUser && activeUser.xp) || 0
                     },
-                    runway: currentBudget.runway || { sum: 18000, bufferPct: 15 },
-                    nightSafe: currentBudget.nightSafe || { limit: 350, spent: 112, locked: false },
-                    sharedGoal: currentBudget.sharedGoal || { title: 'Emergency deposit', current: 6400, target: 10000, etaWeeks: 6 },
+                    runway: currentBudget.runway || { sum: 0, bufferPct: 15 },
+                    nightSafe: currentBudget.nightSafe || { limit: 500, spent: 0, locked: false },
+                    sharedGoal: currentBudget.sharedGoal || { title: '', current: 0, target: 0, etaWeeks: 0 },
                     bills: (currentBudget.bills || []).map(b => ({
                         id: b.id,
                         title: b.title,
@@ -430,7 +432,7 @@
                 categorySpending,
                 runway: currentBudget.runway || { sum: 20000, bufferPct: 15 },
                 nightSafe: currentBudget.nightSafe || { limit: 500, spent: 0, locked: false },
-                sharedGoal: currentBudget.sharedGoal || { title: 'Emergency / Tech Fund', current: 4500, target: 8000, etaWeeks: 4 },
+                sharedGoal: currentBudget.sharedGoal || { title: '', current: 0, target: 0, etaWeeks: 0 },
                 bills,
                 unpaidBillsCount: unpaidBills.length,
                 unpaidBillsTotalShare,

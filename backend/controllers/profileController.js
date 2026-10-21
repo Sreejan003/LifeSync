@@ -37,13 +37,13 @@ async function updateProfile(req, res, next) {
         const current = currentRes.rows[0] || {};
 
         const updatedName = name !== undefined ? name.trim() : (current.name || req.user.name);
-        const updatedUni = university !== undefined ? (university ? university.trim() : null) : (current.university || null);
-        const updatedMajor = major !== undefined ? (major ? major.trim() : null) : (current.major || null);
-        const updatedYrSem = yearSemester !== undefined ? (yearSemester ? yearSemester.trim() : null) : (current.year_semester || null);
-        const updatedStuId = studentId !== undefined ? (studentId ? studentId.trim() : null) : (current.student_id || null);
+        const updatedUni = university !== undefined ? (university ? university.trim() : '') : (current.university || '');
+        const updatedMajor = major !== undefined ? (major ? major.trim() : '') : (current.major || '');
+        const updatedYrSem = yearSemester !== undefined ? (yearSemester ? yearSemester.trim() : '') : (current.year_semester || '');
+        const updatedStuId = studentId !== undefined ? (studentId ? studentId.trim() : '') : (current.student_id || '');
         const updatedCurr = currency !== undefined ? currency : (current.currency || '₹');
         const updatedXp = xp !== undefined ? parseInt(xp, 10) : (current.xp !== undefined && current.xp !== null ? current.xp : 0);
-        const updatedNotif = notificationsEnabled !== undefined ? (Boolean(notificationsEnabled) ? 1 : 0) : (current.notifications_enabled !== undefined ? current.notifications_enabled : 1);
+        const updatedNotif = notificationsEnabled !== undefined ? Boolean(notificationsEnabled) : (current.notifications_enabled !== undefined ? Boolean(current.notifications_enabled) : true);
 
         // Also update name in users table if name is updated
         if (name && name.trim()) {

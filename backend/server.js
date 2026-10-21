@@ -2,7 +2,7 @@
  * LifeSync REST API Server (backend/server.js)
  * -------------------------------------------------------------
  * Main entrypoint for LifeSync backend application.
- * Serves REST endpoints under /api/* and hosts frontend static assets.
+ * Serves REST endpoints under /api/*
  */
 
 require('dotenv').config();
@@ -31,14 +31,31 @@ const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5000';
 
 // CORS configuration
+const allowedOrigins = [
+    CLIENT_URL,
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()) : [])
+].filter(Boolean);
+
 const corsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl, postman) or matching origin
-        if (!origin || origin === CLIENT_URL || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            callback(null, true);
-        } else {
-            callback(null, true); // Permissive for college project demo & deployed frontends
+        // Allow requests with no origin (such as mobile apps, curl, postman, server-to-server)
+        if (!origin) {
+            return callback(null, true);
         }
+
+        // In non-production environments, allow local development addresses
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+            return callback(null, true);
+        }
+
+        // Match against explicitly configured client URLs
+        const isAllowed = allowedOrigins.some(allowed => origin.toLowerCase() === allowed.toLowerCase());
+        if (isAllowed) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`CORS policy: Access denied for origin ${origin}`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -48,10 +65,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve frontend static files from repository root
-const frontendPath = path.join(__dirname, '..');
-app.use(express.static(frontendPath));
 
 // API Routes
 app.use('/api/health', healthRoutes);
@@ -65,15 +78,12 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/pomodoro', pomodoroRoutes);
 
-// Fallback middleware to serve index.html for frontend client routes
-app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api/')) {
-        return res.sendFile(path.join(frontendPath, 'index.html'));
-    }
+// 404 handler for undefined routes
+app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: `API route ${req.method} ${req.path} not found.` });
     }
-    next();
+    res.status(404).json({ error: 'Not found' });
 });
 
 // Global Error Handler

@@ -90,7 +90,7 @@
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                        <span id="notifBadge" class="notif-badge">3</span>
+                        <span id="notifBadge" class="notif-badge" style="display:none;">0</span>
                     </button>
 
                     <!-- Notifications Dropdown -->
@@ -121,7 +121,7 @@
                 <div class="user-pill-header" onclick="window.LifeSyncApp.switchTab('profile')" title="Student Profile">
                     <div class="user-avatar-circle">
                         <!-- Dynamic letter avatar — populated by renderHeader() from authenticated user data -->
-                        <span id="userAvatarLetter" class="avatar-letter-fallback" style="display:flex;">A</span>
+                        <span id="userAvatarLetter" class="avatar-letter-fallback" style="display:flex;"></span>
                     </div>
                 </div>
             </div>
@@ -349,7 +349,7 @@
                                 <h3>Today's Schedule</h3>
                             </div>
                             <button type="button" class="panel-header-link link-purple"
-                                onclick="window.LifeSyncApp.switchTab('calendar')">View Calendar</button>
+                                onclick="window.LifeSyncApp.switchTab('calendar')">Calendar →</button>
                         </div>
                         <div id="dashTodayScheduleTimeline" class="schedule-timeline-container">
                             <!-- Injected by DashboardModule -->
@@ -563,19 +563,8 @@
                             </div>
                         </div>
                         <div class="streak-content">
-                            <p class="streak-subtitle" id="dashStreakSubtitle">You're on a 5-day streak!</p>
-                            <div class="streak-bubbles-row" id="dashStreakBubbles">
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
-                                        class="day-label">M</span></div>
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
-                                        class="day-label">T</span></div>
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
-                                        class="day-label">W</span></div>
-                                <div class="streak-day-bubble completed"><span class="check-mark">✓</span><span
-                                        class="day-label">T</span></div>
-                                <div class="streak-day-bubble current"><span class="day-letter">F</span><span
-                                        class="day-label">F</span></div>
-                            </div>
+                            <p class="streak-subtitle" id="dashStreakSubtitle"></p>
+                            <div class="streak-bubbles-row" id="dashStreakBubbles"></div>
                         </div>
                     </div>
                 </div>
@@ -604,19 +593,19 @@
                 <!-- Stats summary pills -->
                 <div class="tasks-metrics-row">
                     <div class="task-metric-card">
-                        <span class="metric-num" id="taskCountTotal">0</span>
+                        <span class="metric-num" id="taskCountTotal"></span>
                         <span class="metric-label">Total Tasks</span>
                     </div>
                     <div class="task-metric-card">
-                        <span class="metric-num" id="taskCountPending">0</span>
+                        <span class="metric-num" id="taskCountPending"></span>
                         <span class="metric-label">Pending</span>
                     </div>
                     <div class="task-metric-card">
-                        <span class="metric-num" id="taskCountCompleted">0</span>
+                        <span class="metric-num" id="taskCountCompleted"></span>
                         <span class="metric-label">Completed</span>
                     </div>
                     <div class="task-metric-card overdue-card">
-                        <span class="metric-num" id="taskCountOverdue">0</span>
+                        <span class="metric-num" id="taskCountOverdue"></span>
                         <span class="metric-label">Overdue</span>
                     </div>
                 </div>
@@ -714,7 +703,7 @@
                 <!-- Ranked Task List Header -->
                 <div class="smart-list-header">
                     <h3>📋 Prioritized Task Queue</h3>
-                    <span class="smart-badge" id="smartTotalBadge">0 tasks</span>
+                    <span class="smart-badge" id="smartTotalBadge"></span>
                 </div>
 
                 <!-- Ranked Task List -->
@@ -751,7 +740,7 @@
                         <!-- Month Navigation Header -->
                         <div class="cal-month-nav">
                             <button type="button" id="btnCalPrevMonth" class="btn-cal-arrow">←</button>
-                            <h2 id="calMonthYear">September 2026</h2>
+                            <h2 id="calMonthYear">Calendar</h2>
                             <div class="cal-nav-right-actions">
                                 <button type="button" id="btnCalToday" class="btn-sm-secondary">Today</button>
                                 <button type="button" id="btnCalNextMonth" class="btn-cal-arrow">→</button>
@@ -858,21 +847,21 @@
                     <div class="budget-metrics-grid">
                         <div class="budget-stat-box">
                             <span class="box-label">Total Income</span>
-                            <strong id="budgetValTotalIncome" class="income-text">₹0</strong>
+                            <strong id="budgetValTotalIncome" class="income-text"></strong>
                         </div>
                         <div class="budget-stat-box">
                             <span class="box-label">Total Expenses</span>
-                            <strong id="budgetValTotalExpense" class="expense-text">₹0</strong>
+                            <strong id="budgetValTotalExpense" class="expense-text"></strong>
                         </div>
                         <div class="budget-stat-box">
                             <span class="box-label">Net Balance</span>
-                            <strong id="budgetValNetBalance">₹0</strong>
+                            <strong id="budgetValNetBalance"></strong>
                         </div>
                         <div class="budget-stat-box highlight-box">
                             <span class="box-label">Remaining Monthly Budget</span>
-                            <strong id="budgetValRemainingBudget">₹0</strong>
-                            <small>Limit: <span id="budgetValMonthlyLimit">₹15,000</span> (Spent: <span
-                                    id="budgetValMonthlySpent">₹0</span>)</small>
+                            <strong id="budgetValRemainingBudget"></strong>
+                            <small>Limit: <span id="budgetValMonthlyLimit"></span> (Spent: <span
+                                    id="budgetValMonthlySpent"></span>)</small>
                         </div>
                     </div>
 
@@ -882,7 +871,7 @@
                     <div class="budget-progress-section card-box">
                         <div class="budget-labels-row">
                             <span>Monthly Spending Progress</span>
-                            <span id="budgetUsagePctLabel">0%</span>
+                            <span id="budgetUsagePctLabel"></span>
                         </div>
                         <div class="progress-track">
                             <div id="budgetViewUsageBar" class="progress-fill" style="width:0%;"></div>
@@ -917,8 +906,8 @@
                                     <!-- Dynamic 4-Month Bars rendered by JS -->
                                 </div>
                                 <div class="runway-foot-stats">
-                                    <div>Secured: <strong id="dashRunwayTotalVal">₹20,000</strong></div>
-                                    <div>Safe Monthly Cap: <strong id="dashRunwayCapVal">₹4,250</strong></div>
+                                    <div>Secured: <strong id="dashRunwayTotalVal"></strong></div>
+                                    <div>Safe Monthly Cap: <strong id="dashRunwayCapVal"></strong></div>
                                 </div>
                             </div>
 
@@ -935,8 +924,8 @@
                                 <p class="night-safe-text">Prevent impulsive late-night food ordering. Protects your
                                     wallet after 10 PM.</p>
                                 <div class="night-safe-stat-row">
-                                    <div>Safe Limit: <strong id="budgetNightSafeLimit">₹500</strong></div>
-                                    <div>Available: <strong id="budgetNightSafeRemaining">₹380</strong></div>
+                                    <div>Safe Limit: <strong id="budgetNightSafeLimit"></strong></div>
+                                    <div>Available: <strong id="budgetNightSafeRemaining"></strong></div>
                                 </div>
                                 <div class="night-quick-spend-row">
                                     <button type="button" class="btn-quick-chip"
@@ -965,7 +954,7 @@
                             </div>
                             <div class="runway-kpi-badge">
                                 <span class="kpi-title">Monthly Safe Cap</span>
-                                <strong id="runwayKpiCap">₹4,250</strong>
+                                <strong id="runwayKpiCap"></strong>
                             </div>
                         </div>
 
@@ -975,7 +964,7 @@
                                 <label for="runwaySumInput">Total Available Allowance / Savings (₹)</label>
                                 <div class="input-with-symbol">
                                     <span>₹</span>
-                                    <input type="number" id="runwaySumInput" min="1000" step="500" value="20000">
+                                    <input type="number" id="runwaySumInput" min="0" step="500" placeholder="0">
                                 </div>
                                 <small>Total funds in bank for this 4-month semester</small>
                             </div>
@@ -994,19 +983,19 @@
                         <div class="runway-results-grid">
                             <div class="runway-metric-box">
                                 <span class="box-label">Total Cash</span>
-                                <strong id="runwayResultTotal">₹20,000</strong>
+                                <strong id="runwayResultTotal"></strong>
                             </div>
                             <div class="runway-metric-box">
                                 <span class="box-label">Emergency Buffer</span>
-                                <strong id="runwayResultBuffer">₹3,000</strong>
+                                <strong id="runwayResultBuffer"></strong>
                             </div>
                             <div class="runway-metric-box highlight-purple">
                                 <span class="box-label">Usable Living Fund</span>
-                                <strong id="runwayResultUsable">₹17,000</strong>
+                                <strong id="runwayResultUsable"></strong>
                             </div>
                             <div class="runway-metric-box highlight-green">
                                 <span class="box-label">Safe Monthly Allowance</span>
-                                <strong id="runwayResultMonthly">₹4,250</strong>
+                                <strong id="runwayResultMonthly"></strong>
                             </div>
                         </div>
 
@@ -1069,25 +1058,25 @@
                         <div class="night-stats-grid">
                             <div class="night-stat-item">
                                 <span class="box-label">Tonight's Limit</span>
-                                <strong id="nightDedicatedLimit">₹500</strong>
+                                <strong id="nightDedicatedLimit"></strong>
                             </div>
                             <div class="night-stat-item">
                                 <span class="box-label">Spent Tonight</span>
-                                <strong id="nightDedicatedSpent">₹120</strong>
+                                <strong id="nightDedicatedSpent"></strong>
                             </div>
                             <div class="night-stat-item highlight-item">
                                 <span class="box-label">Safe Remaining</span>
-                                <strong id="nightDedicatedRemaining">₹380</strong>
+                                <strong id="nightDedicatedRemaining"></strong>
                             </div>
                         </div>
 
                         <div class="night-progress-wrap">
                             <div class="budget-labels-row">
                                 <span>Tonight's Spend Allowance Usage</span>
-                                <span id="nightDedicatedUsagePct">24%</span>
+                                <span id="nightDedicatedUsagePct"></span>
                             </div>
                             <div class="progress-track">
-                                <div id="nightDedicatedBar" class="progress-fill progress-night" style="width: 24%;">
+                                <div id="nightDedicatedBar" class="progress-fill progress-night" style="width: 0%;">
                                 </div>
                             </div>
                         </div>
@@ -1134,16 +1123,16 @@
                             <div class="splitter-inputs-row">
                                 <div class="form-group">
                                     <label for="calcBillAmount">Total Bill (₹)</label>
-                                    <input type="number" id="calcBillAmount" min="1" placeholder="1200" value="1200">
+                                    <input type="number" id="calcBillAmount" min="1" placeholder="e.g. 1200">
                                 </div>
                                 <div class="form-group">
                                     <label for="calcBillPeople">Split Between (People)</label>
-                                    <input type="number" id="calcBillPeople" min="1" max="20" value="3">
+                                    <input type="number" id="calcBillPeople" min="1" max="20" placeholder="e.g. 3">
                                 </div>
                             </div>
                             <div class="splitter-result-box">
                                 <span>Each Person Owes:</span>
-                                <strong id="calcBillPerPerson">₹400</strong>
+                                <strong id="calcBillPerPerson"></strong>
                             </div>
                             <button type="button" class="btn-secondary" style="width:100%; margin-top:12px;"
                                 onclick="window.LifeSyncApp.convertSplitToBill()">+ Save as Shared Bill</button>
@@ -1154,23 +1143,23 @@
                             <div class="panel-header">
                                 <div>
                                     <span class="box-label">SAVINGS TARGET</span>
-                                    <h3 id="goalTitleDisplay">Emergency Deposit / Tech Fund</h3>
+                                    <h3 id="goalTitleDisplay"></h3>
                                 </div>
                                 <button type="button" class="btn-link-action"
                                     onclick="window.LifeSyncApp.openGoalContributionModal()">+ Add Funds</button>
                             </div>
                             <div class="goal-amount-row">
-                                <strong id="goalCurrentDisplay">₹4,500</strong>
-                                <span class="goal-target-sub">Target: <span id="goalTargetDisplay">₹8,000</span></span>
+                                <strong id="goalCurrentDisplay"></strong>
+                                <span class="goal-target-sub">Target: <span id="goalTargetDisplay"></span></span>
                             </div>
                             <div class="progress-track" style="margin: 12px 0;">
-                                <div id="goalProgressBar" class="progress-fill progress-emerald" style="width: 56%;">
+                                <div id="goalProgressBar" class="progress-fill progress-emerald" style="width: 0%;">
                                 </div>
                             </div>
                             <div class="goal-meta-row">
-                                <span>Progress: <strong id="goalPctDisplay">56%</strong></span>
-                                <span>ETA: <strong id="goalEtaDisplay">4 weeks</strong></span>
-                                <span>Remaining: <strong id="goalRemainingDisplay">₹3,500</strong></span>
+                                <span>Progress: <strong id="goalPctDisplay"></strong></span>
+                                <span>ETA: <strong id="goalEtaDisplay"></strong></span>
+                                <span>Remaining: <strong id="goalRemainingDisplay"></strong></span>
                             </div>
                         </div>
                     </div>
@@ -1205,7 +1194,7 @@
                             semesters.</p>
                     </div>
                     <div class="wellness-streak-badge">
-                        <span id="wellnessStreakVal">5 Days 🔥</span>
+                        <span id="wellnessStreakVal"></span>
                     </div>
                 </div>
 
@@ -1274,8 +1263,8 @@
                             <h3>7-Day Wellness Overview</h3>
                         </div>
                         <div class="wellness-averages">
-                            <span>Tracked: <strong id="wellnessDaysTrackedVal">0/7</strong></span>
-                            <span>Average Mood: <strong id="wellnessAvgScoreVal">--</strong></span>
+                            <span>Tracked: <strong id="wellnessDaysTrackedVal"></strong></span>
+                            <span>Average Mood: <strong id="wellnessAvgScoreVal"></strong></span>
                         </div>
                     </div>
                     <div id="wellnessChartGrid" class="wellness-chart-bars"></div>
@@ -1356,9 +1345,9 @@
                         <div class="scramble-wrapper">
                             <div class="scramble-header">
                                 <span class="box-label">WORD UNSCRAMBLE</span>
-                                <span id="scrambleStreakVal" class="scramble-streak-pill">Streak: 0 🔥</span>
+                                <span id="scrambleStreakVal" class="scramble-streak-pill"></span>
                             </div>
-                            <p id="scrambleClueText" class="scramble-clue-desc">Inhale peace, exhale tension and study fatigue.</p>
+                            <p id="scrambleClueText" class="scramble-clue-desc"></p>
                             
                             <!-- Answer Slots -->
                             <div id="scrambleAnswerSlots" class="scramble-slots-row"></div>
@@ -1381,7 +1370,7 @@
                         <div class="riddle-card-wrapper">
                             <div class="riddle-icon">🤔</div>
                             <h4 class="riddle-title">Daily Mindful Brain Teaser</h4>
-                            <p id="riddleQuestionText" class="riddle-question">"I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"</p>
+                            <p id="riddleQuestionText" class="riddle-question"></p>
                             <div id="riddleAnswerText" class="riddle-answer-box hidden"></div>
                             <div class="riddle-actions">
                                 <button type="button" id="btnRevealRiddleAnswer" class="btn-sm-game btn-game-primary">👁️ Reveal Answer</button>
@@ -1401,7 +1390,7 @@
                             </div>
                             <div class="breathing-meta">
                                 <p id="breathingCounterText" class="breathing-counter">4s Inhale • 7s Hold • 8s Exhale</p>
-                                <span id="breathingCyclesCompletedVal" class="breathing-badge">Cycles Completed: 0 🧘</span>
+                                <span id="breathingCyclesCompletedVal" class="breathing-badge"></span>
                             </div>
                             <div class="breathing-controls">
                                 <button type="button" id="btnToggleBreathing" class="btn-primary" style="padding:10px 24px;">▶️ Begin Breathing Exercise</button>
@@ -1438,10 +1427,10 @@
                     <div class="card-box">
                         <h3>📋 Productivity Performance</h3>
                         <div class="analytics-rate-row">
-                            <div class="rate-large" id="analyticsProdRate">0%</div>
+                            <div class="rate-large" id="analyticsProdRate"></div>
                             <div class="rate-desc">
-                                <div>Tasks Completed: <strong id="analyticsProdCompleted">0</strong></div>
-                                <div>Overdue Count: <strong id="analyticsProdOverdue" class="expense-text">0</strong>
+                                <div>Tasks Completed: <strong id="analyticsProdCompleted"></strong></div>
+                                <div>Overdue Count: <strong id="analyticsProdOverdue" class="expense-text"></strong>
                                 </div>
                             </div>
                         </div>
@@ -1453,9 +1442,9 @@
                     <div class="card-box">
                         <h3>💰 Financial Breakdown</h3>
                         <div class="fin-ratios-row">
-                            <div>Total Income: <strong id="analyticsFinIncome" class="income-text">₹0</strong></div>
-                            <div>Total Expenses: <strong id="analyticsFinExpense" class="expense-text">₹0</strong></div>
-                            <div>Budget Used: <strong id="analyticsFinUsage">0%</strong></div>
+                            <div>Total Income: <strong id="analyticsFinIncome" class="income-text"></strong></div>
+                            <div>Total Expenses: <strong id="analyticsFinExpense" class="expense-text"></strong></div>
+                            <div>Budget Used: <strong id="analyticsFinUsage"></strong></div>
                         </div>
                         <h4 class="sub-heading-chart">Expenses by Category</h4>
                         <div id="analyticsFinCategories" class="cat-progress-list"></div>
@@ -1478,8 +1467,8 @@
 
                 <div class="profile-layout-grid">
                     <div class="card-box profile-badge-card">
-                        <div id="profileAvatarLetter" class="avatar-large">S</div>
-                        <h2 id="profileDisplayNameCard">Student</h2>
+                        <div id="profileAvatarLetter" class="avatar-large"></div>
+                        <h2 id="profileDisplayNameCard"></h2>
                         <span class="student-pill-tag">ACTIVE STUDENT</span>
                     </div>
 
@@ -1501,23 +1490,23 @@
                                 <div class="form-group">
                                     <label for="profileUniInput">University / Institute</label>
                                     <input type="text" id="profileUniInput"
-                                        placeholder="National Institute of Technology">
+                                        placeholder="University or College">
                                 </div>
                                 <div class="form-group">
                                     <label for="profileMajorInput">Major / Degree</label>
                                     <input type="text" id="profileMajorInput"
-                                        placeholder="Computer Science & Engineering">
+                                        placeholder="Degree or Field of Study">
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="profileYearInput">Year & Semester</label>
-                                    <input type="text" id="profileYearInput" placeholder="3rd Year / 5th Semester">
+                                    <input type="text" id="profileYearInput" placeholder="Current Year / Semester">
                                 </div>
                                 <div class="form-group">
                                     <label for="profileStudentIdInput">Student ID / Roll No</label>
-                                    <input type="text" id="profileStudentIdInput" placeholder="STU-2026-8841">
+                                    <input type="text" id="profileStudentIdInput" placeholder="Student ID / Roll No">
                                 </div>
                             </div>
 
@@ -1693,6 +1682,7 @@
                     title="Close dialog" aria-label="Close dialog">&times;</button>
             </div>
             <form id="eventFormModal">
+                <input type="hidden" id="eventEditId">
                 <div class="form-group">
                     <label for="eventTitleInput">Event Title / Subject *</label>
                     <input type="text" id="eventTitleInput" placeholder="e.g. Midterm Examination / Chemistry Lab"
@@ -1705,7 +1695,7 @@
                     </div>
                     <div class="form-group">
                         <label for="eventTimeInput">Time</label>
-                        <input type="time" id="eventTimeInput" value="10:00">
+                        <input type="time" id="eventTimeInput">
                     </div>
                 </div>
                 <div class="form-row">
@@ -1736,7 +1726,7 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary"
                         onclick="window.LifeSyncApp.closeModal('eventModalOverlay')">Cancel</button>
-                    <button type="submit" class="btn-primary">Add to Schedule</button>
+                    <button type="submit" id="eventSubmitBtn" class="btn-primary">Add to Schedule</button>
                 </div>
             </form>
         </div>
@@ -1823,7 +1813,7 @@
                     </div>
                     <div class="form-group">
                         <label for="billSplitInput">Split Ways (People) *</label>
-                        <input type="number" id="billSplitInput" min="1" max="20" value="3" required>
+                        <input type="number" id="billSplitInput" min="1" max="20" placeholder="e.g. 2" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -1879,23 +1869,23 @@
             <form id="budgetSettingsForm">
                 <div class="form-group">
                     <label for="settingMonthlyBudgetInput">Monthly Spending Limit (₹) *</label>
-                    <input type="number" id="settingMonthlyBudgetInput" min="1000" step="500" placeholder="15000"
+                    <input type="number" id="settingMonthlyBudgetInput" min="1000" step="500" placeholder="Monthly Limit"
                         required>
                     <small class="form-hint">Maximum targeted expenses per month.</small>
                 </div>
                 <div class="form-group">
                     <label for="settingNightLimitInput">Late-Night Curfew Safety Limit (₹) *</label>
-                    <input type="number" id="settingNightLimitInput" min="50" step="50" placeholder="500" required>
+                    <input type="number" id="settingNightLimitInput" min="50" step="50" placeholder="Curfew Limit" required>
                     <small class="form-hint">Night spend cap active after 10 PM.</small>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="settingRunwaySumInput">Semester Living Fund (₹)</label>
-                        <input type="number" id="settingRunwaySumInput" min="1000" step="1000" placeholder="20000">
+                        <input type="number" id="settingRunwaySumInput" min="1000" step="1000" placeholder="Living Fund">
                     </div>
                     <div class="form-group">
                         <label for="settingRunwayBufferInput">Safety Buffer (%)</label>
-                        <input type="number" id="settingRunwayBufferInput" min="0" max="40" step="1" placeholder="15">
+                        <input type="number" id="settingRunwayBufferInput" min="0" max="40" step="1" placeholder="Buffer %">
                     </div>
                 </div>
                 <div class="modal-actions" style="justify-content: space-between;">
@@ -1943,6 +1933,7 @@
     <div class="toast-container"></div>
 
     <!-- Application JavaScript Layer -->
+    <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/storage.js"></script>

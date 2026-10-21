@@ -6,7 +6,7 @@ const BACKEND_KEY = "budget_buddy_app_data";
 
 const DEFAULT_STATE = {
   profile: {
-    name: "Ananya",
+    name: "Student",
     streak: 12,
     lastReviewDate: null,
     xp: 450

@@ -39,13 +39,25 @@ if (databaseUrl) {
     });
 
     console.log('📦 Using PostgreSQL database connection.');
+} else if (isProduction) {
+    // In production without DATABASE_URL, fail loudly at startup
+    console.error('❌ FATAL: DATABASE_URL environment variable is not set.');
+    console.error('   Set DATABASE_URL to a PostgreSQL connection string in your Vercel/Render environment variables.');
+    process.exit(1);
 } else {
-    // SQLite connection
-    const sqlite3 = require('sqlite3').verbose();
-    dbDriver = 'sqlite';
-    const dbPath = path.join(__dirname, '..', 'lifesync.db');
-    sqliteDb = new sqlite3.Database(dbPath);
-    console.log(`📦 Using local SQLite database at: ${dbPath}`);
+    // Local / Offline: try SQLite, fail gracefully if not compiled
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        dbDriver = 'sqlite';
+        const dbPath = path.join(__dirname, '..', 'lifesync.db');
+        sqliteDb = new sqlite3.Database(dbPath);
+        console.log(`📦 Using local SQLite database at: ${dbPath}`);
+    } catch (e) {
+        console.error('❌ sqlite3 is not available and DATABASE_URL is not set.');
+        console.error('   For local dev: run `npm install` inside the backend folder.');
+        console.error('   For production: set DATABASE_URL in your environment variables.');
+        process.exit(1);
+    }
 }
 
 /**
@@ -106,6 +118,8 @@ async function initDatabase() {
     const idType = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const timestampType = isPg ? 'TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP' : 'DATETIME DEFAULT CURRENT_TIMESTAMP';
     const numericType = isPg ? 'NUMERIC(10, 2)' : 'REAL';
+    const boolDefault = isPg ? 'false' : '0';
+    const boolTrue = isPg ? 'true' : '1';
 
     // 1. Users Table
     await query(`
@@ -145,7 +159,7 @@ async function initDatabase() {
             date DATE NOT NULL,
             time VARCHAR(10) DEFAULT '09:00',
             event_type VARCHAR(50) DEFAULT 'Study',
-            reminder BOOLEAN DEFAULT 0,
+            reminder BOOLEAN DEFAULT ${boolDefault},
             created_at ${timestampType}
         );
     `);
@@ -173,7 +187,7 @@ async function initDatabase() {
             runway_buffer_pct INTEGER DEFAULT 15,
             night_safe_limit ${numericType} DEFAULT 0,
             night_safe_spent ${numericType} DEFAULT 0,
-            night_safe_locked BOOLEAN DEFAULT 0
+            night_safe_locked BOOLEAN DEFAULT ${boolDefault}
         );
     `);
 
@@ -197,13 +211,13 @@ async function initDatabase() {
             user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
             name VARCHAR(100),
             email VARCHAR(255),
-            university VARCHAR(255) DEFAULT NULL,
-            major VARCHAR(255) DEFAULT NULL,
-            year_semester VARCHAR(100) DEFAULT NULL,
-            student_id VARCHAR(100) DEFAULT NULL,
+            university VARCHAR(255) DEFAULT '',
+            major VARCHAR(255) DEFAULT '',
+            year_semester VARCHAR(100) DEFAULT '',
+            student_id VARCHAR(100) DEFAULT '',
             currency VARCHAR(10) DEFAULT '₹',
             xp INTEGER DEFAULT 0,
-            notifications_enabled BOOLEAN DEFAULT 1
+            notifications_enabled BOOLEAN DEFAULT ${boolTrue}
         );
     `);
 
@@ -214,7 +228,7 @@ async function initDatabase() {
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             puzzle_id VARCHAR(100),
             difficulty VARCHAR(20) DEFAULT 'medium',
-            is_completed BOOLEAN DEFAULT 0,
+            is_completed BOOLEAN DEFAULT ${boolDefault},
             time_seconds INTEGER DEFAULT 0,
             mistakes_count INTEGER DEFAULT 0,
             hints_used INTEGER DEFAULT 0,
@@ -256,7 +270,7 @@ async function initDatabase() {
             message TEXT NOT NULL,
             category VARCHAR(50) DEFAULT 'task',
             priority VARCHAR(20) DEFAULT 'medium',
-            is_read BOOLEAN DEFAULT 0,
+            is_read BOOLEAN DEFAULT ${boolDefault},
             action_link VARCHAR(255),
             dedupe_key VARCHAR(255),
             created_at ${timestampType}
@@ -269,12 +283,12 @@ async function initDatabase() {
             user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
             quiet_hours_start VARCHAR(5) DEFAULT '22:00',
             quiet_hours_end VARCHAR(5) DEFAULT '07:00',
-            email_alerts BOOLEAN DEFAULT 0,
-            browser_alerts BOOLEAN DEFAULT 1,
-            task_reminders BOOLEAN DEFAULT 1,
-            exam_alerts BOOLEAN DEFAULT 1,
-            budget_warnings BOOLEAN DEFAULT 1,
-            wellness_prompts BOOLEAN DEFAULT 1,
+            email_alerts BOOLEAN DEFAULT ${boolDefault},
+            browser_alerts BOOLEAN DEFAULT ${boolTrue},
+            task_reminders BOOLEAN DEFAULT ${boolTrue},
+            exam_alerts BOOLEAN DEFAULT ${boolTrue},
+            budget_warnings BOOLEAN DEFAULT ${boolTrue},
+            wellness_prompts BOOLEAN DEFAULT ${boolTrue},
             updated_at ${timestampType}
         );
     `);
@@ -287,7 +301,7 @@ async function initDatabase() {
             task_id INTEGER REFERENCES tasks(id) ON DELETE SET NULL,
             mode VARCHAR(20) DEFAULT 'focus',
             duration_minutes INTEGER DEFAULT 25,
-            completed BOOLEAN DEFAULT 1,
+            completed BOOLEAN DEFAULT ${boolTrue},
             started_at ${timestampType},
             completed_at ${timestampType}
         );
@@ -301,8 +315,8 @@ async function initDatabase() {
             short_break INTEGER DEFAULT 5,
             long_break INTEGER DEFAULT 15,
             sessions_until_long_break INTEGER DEFAULT 4,
-            auto_start_breaks BOOLEAN DEFAULT 0,
-            sound_enabled BOOLEAN DEFAULT 1,
+            auto_start_breaks BOOLEAN DEFAULT ${boolDefault},
+            sound_enabled BOOLEAN DEFAULT ${boolTrue},
             updated_at ${timestampType}
         );
     `);
@@ -349,8 +363,49 @@ async function closeDatabase() {
     }
 }
 
+/**
+ * Execute a series of operations atomically within a database transaction.
+ * @param {Function} callback - async (tx) => Promise<any>
+ * @returns {Promise<any>}
+ */
+async function transaction(callback) {
+    if (dbDriver === 'pg') {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const txWrapper = {
+                query: (text, params = []) => client.query(text, params).then(res => ({
+                    rows: res.rows || [],
+                    rowCount: res.rowCount || 0
+                }))
+            };
+            const result = await callback(txWrapper);
+            await client.query('COMMIT');
+            return result;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    }
+
+    // SQLite transaction
+    await query('BEGIN TRANSACTION');
+    try {
+        const txWrapper = { query };
+        const result = await callback(txWrapper);
+        await query('COMMIT');
+        return result;
+    } catch (err) {
+        await query('ROLLBACK');
+        throw err;
+    }
+}
+
 module.exports = {
     query,
+    transaction,
     initDatabase,
     closeDatabase,
     getDriver: () => dbDriver

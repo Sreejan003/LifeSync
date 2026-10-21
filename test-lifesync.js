@@ -34,8 +34,18 @@ global.document = {
     getElementById: () => null
 };
 
+function resolveAssetPath(...relativeParts) {
+    const frontendPath = path.join(__dirname, 'frontend', ...relativeParts);
+    if (fs.existsSync(frontendPath)) return frontendPath;
+    const rootPath = path.join(__dirname, ...relativeParts);
+    if (fs.existsSync(rootPath)) return rootPath;
+    return frontendPath;
+}
+
 // Load all scripts in order
-const jsDir = path.join(__dirname, '..', 'LifeSync', 'js');
+const jsDir = fs.existsSync(path.join(__dirname, 'frontend', 'js'))
+    ? path.join(__dirname, 'frontend', 'js')
+    : (fs.existsSync(path.join(__dirname, 'js')) ? path.join(__dirname, 'js') : path.join(__dirname, '..', 'LifeSync', 'js'));
 require(path.join(jsDir, 'auth.js'));
 require(path.join(jsDir, 'storage.js'));
 require(path.join(jsDir, 'tasks.js'));
@@ -324,9 +334,9 @@ const explanations = window.NotificationsModule.explainBrowserBehavior();
 assert(explanations.localNotifications && explanations.webPush, 'NotificationsModule explains local vs web push behavior');
 
 // 10. Modal and Overlay Dismissal Verification (Cancel, Cut, Backdrop, Escape)
-const indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const styleCss = fs.readFileSync(path.join(__dirname, 'style.css'), 'utf8');
-const appJs = fs.readFileSync(path.join(__dirname, 'js', 'app.js'), 'utf8');
+const indexHtml = fs.readFileSync(resolveAssetPath('index.html'), 'utf8');
+const styleCss = fs.readFileSync(resolveAssetPath('style.css'), 'utf8');
+const appJs = fs.readFileSync(resolveAssetPath('js', 'app.js'), 'utf8');
 
 assert(indexHtml.includes('id="notifBrowserPermBtn"'), 'index.html contains #notifBrowserPermBtn');
 assert(indexHtml.includes('id="taskDueTimeInput"'), 'index.html contains taskDueTimeInput');
@@ -363,8 +373,8 @@ assert(styleCss.includes('.user-avatar-circle'), 'style.css contains .user-avata
 console.log('✓ PASS: Profile photo removed and verified; clean monogram avatar displayed');
 
 // 13. Dynamic Data Validation (No Hardcoded Fallbacks or Static Names)
-const storageJs = fs.readFileSync(path.join(__dirname, 'js', 'storage.js'), 'utf8');
-const dashboardJs = fs.readFileSync(path.join(__dirname, 'js', 'dashboard.js'), 'utf8');
+const storageJs = fs.readFileSync(resolveAssetPath('js', 'storage.js'), 'utf8');
+const dashboardJs = fs.readFileSync(resolveAssetPath('js', 'dashboard.js'), 'utf8');
 
 assert(!indexHtml.includes('>Ananya<'), 'Hardcoded Ananya name removed from index.html greeting');
 assert(!dashboardJs.includes("'Ananya'"), 'Hardcoded Ananya fallback removed from dashboard.js');
@@ -390,8 +400,8 @@ assert(styleCss.includes('.search-badge-category') && styleCss.includes('.search
 console.log('✓ PASS: Universal Global Search ("Search anything ...") verified across pages, actions, tasks, calendar, budget, and wellness');
 
 // 16. Auth Page Responsiveness & Dedicated Forgot Password Section
-const authHtml = fs.readFileSync(path.join(__dirname, 'auth.html'), 'utf8');
-const authPageJs = fs.readFileSync(path.join(__dirname, 'js', 'auth-page.js'), 'utf8');
+const authHtml = fs.readFileSync(resolveAssetPath('auth.html'), 'utf8');
+const authPageJs = fs.readFileSync(resolveAssetPath('js', 'auth-page.js'), 'utf8');
 
 assert(authHtml.includes('id="forgotPasswordSection"'), 'auth.html contains dedicated forgotPasswordSection');
 assert(authHtml.includes('id="btnBackToSignIn"'), 'auth.html contains btnBackToSignIn');
@@ -403,7 +413,38 @@ assert(styleCss.includes('.forgot-header-wrap'), 'style.css includes .forgot-hea
 assert(styleCss.includes('.btn-icon-back'), 'style.css includes .btn-icon-back');
 assert(styleCss.includes('@media (max-width: 900px)') && styleCss.includes('.auth-right-panel'), 'style.css includes responsive breakpoint for tablet/mobile');
 assert(styleCss.includes('@media (max-width: 480px)'), 'style.css includes mobile breakpoint for 480px');
-console.log('✓ PASS: Dedicated Forgot Password section and responsive auth layout verified');
+// 17. Today's Schedule Customization & Total Hardcoded Value Elimination
+assert(!indexHtml.includes('>Alex Morgan<'), 'Hardcoded Alex Morgan removed from index.html');
+assert(!indexHtml.includes('>DBMS Assignment<'), 'Hardcoded DBMS Assignment removed from index.html');
+assert(!indexHtml.includes('id="btnDashAddTodayEvent"'), 'btnDashAddTodayEvent button removed from Today Schedule header');
+assert(indexHtml.includes('id="eventEditId"'), 'eventModalOverlay includes eventEditId hidden input');
+assert(indexHtml.includes('id="eventSubmitBtn"'), 'eventModalOverlay includes eventSubmitBtn');
+assert(appJs.includes('openEditEventModal'), 'app.js implements openEditEventModal');
+assert(!dashboardJs.includes("time: '09:00 AM', title: 'DBMS Lecture'"), 'dashboard.js removed hardcoded fallback demo schedule');
+assert(dashboardJs.includes('openEditEventModal'), 'dashboard.js timeline allows editing today events');
+assert(dashboardJs.includes('deleteEvent'), 'dashboard.js timeline allows deleting today events');
+assert(!authHtml.includes('alex@university.edu'), 'auth.html removed hardcoded alex@university.edu placeholder');
+assert(!authHtml.includes('demo / developer accounts:'), 'auth.html removed demo accounts text');
+
+// Test CalendarModule updateEvent functionality
+const testEvt = window.CalendarModule.addEvent(testUser, {
+    title: 'Original Lecture',
+    date: '2026-10-01',
+    time: '10:00 AM',
+    category: 'Study',
+    priority: 'Medium',
+    description: 'Old room'
+});
+const updatedEvt = window.CalendarModule.updateEvent(testUser, testEvt.id, {
+    title: 'Updated Workshop',
+    time: '02:00 PM',
+    description: 'New Hall 3'
+});
+assert(updatedEvt.title === 'Updated Workshop', 'CalendarModule successfully updated event title');
+assert(updatedEvt.time === '02:00 PM', 'CalendarModule successfully updated event time');
+assert(updatedEvt.description === 'New Hall 3', 'CalendarModule successfully updated event description');
+window.CalendarModule.deleteEvent(testUser, testEvt.id);
+console.log('✓ PASS: Today Schedule customization and hardcoded value elimination fully verified');
 
 // 17. Soothing Games & Mindful Break Verification
 assert(window.SoothingGamesModule && typeof window.SoothingGamesModule.init === 'function', 'SoothingGamesModule initialized with public API');
@@ -424,8 +465,8 @@ assert(styleCss.includes('.sudoku-grid') && styleCss.includes('.sudoku-cell'), '
 assert(styleCss.includes('.breathing-orb') && styleCss.includes('.letter-tile'), 'style.css contains 4-7-8 Breathing and Scramble styles');
 assert(styleCss.includes('.dark-theme .wellness-games-card'), 'style.css contains dark-theme styling for soothing games');
 
-const mentalWellnessHtml = fs.readFileSync(path.join(__dirname, 'MentalWellness', 'MentalWellness.html'), 'utf8');
-const mentalWellnessCss = fs.readFileSync(path.join(__dirname, 'MentalWellness', 'MentalWellness.css'), 'utf8');
+const mentalWellnessHtml = fs.readFileSync(resolveAssetPath('MentalWellness', 'MentalWellness.html'), 'utf8');
+const mentalWellnessCss = fs.readFileSync(resolveAssetPath('MentalWellness', 'MentalWellness.css'), 'utf8');
 assert(mentalWellnessHtml.includes('id="wellnessGamesSection"'), 'MentalWellness.html contains #wellnessGamesSection');
 assert(mentalWellnessHtml.includes('soothing-games.js'), 'MentalWellness.html includes soothing-games.js');
 assert(mentalWellnessCss.includes('.wellness-games-card'), 'MentalWellness.css contains .wellness-games-card');
@@ -437,7 +478,7 @@ console.log('✓ PASS: Soothing Games (Zen Sudoku, Word Scramble, Mindful Riddle
     const db = require('./backend/config/db');
     const gamesController = require('./backend/controllers/wellnessGamesController');
     const authMiddleware = require('./backend/middleware/authMiddleware');
-    const apiJs = fs.readFileSync(path.join(__dirname, 'js', 'api.js'), 'utf8');
+    const apiJs = fs.readFileSync(resolveAssetPath('js', 'api.js'), 'utf8');
 
     // 18a. Verify LifeSyncAPI client methods in js/api.js
     assert(apiJs.includes('getWellnessGamesSummary()'), 'js/api.js exposes getWellnessGamesSummary()');

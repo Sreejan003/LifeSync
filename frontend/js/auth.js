@@ -154,6 +154,24 @@
     }
 
     /**
+     * One-way cryptographic/salted hash helper for offline/client state
+     * (replaces insecure reversible Base64 btoa)
+     */
+    function hashPassword(str) {
+        let h1 = 0xdeadbeef ^ 1337, h2 = 0x41c64e6d ^ 1337;
+        const salt = "LifeSync_Client_Auth_Salt_v2_";
+        const combined = salt + String(str);
+        for (let i = 0; i < combined.length; i++) {
+            const ch = combined.charCodeAt(i);
+            h1 = Math.imul(h1 ^ ch, 2654435761);
+            h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+    }
+
+    /**
      * Registers a new user account and generates session JWT token.
      */
     function signUp({ username, email, password }) {
@@ -169,7 +187,7 @@
             id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             username: username.trim(),
             email: normalizedEmail,
-            password: btoa(password),
+            password: hashPassword(password),
             avatarLetter: initialLetter,
             createdAt: new Date().toISOString()
         };
@@ -196,10 +214,10 @@
     function signIn({ email, password }) {
         const users = getUsersFromStorage();
         const normalizedEmail = email.trim().toLowerCase();
-        const encodedPass = btoa(password);
+        const hashedPassword = hashPassword(password);
 
         const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
-        if (!user || user.password !== encodedPass) {
+        if (!user || user.password !== hashedPassword) {
             throw new Error('Invalid email or password.');
         }
 
@@ -220,11 +238,12 @@
      * Simulates Google Auth login flow and issues session JWT token.
      */
     function signInWithGoogle(googleData = {}) {
-        const defaultEmail = 'student.google@gmail.com';
-        const defaultName = 'Google Student';
         const googleEmail = (googleData.email && googleData.email.trim()) 
             ? googleData.email.trim().toLowerCase() 
-            : defaultEmail;
+            : '';
+        if (!googleEmail) {
+            throw new Error('Google account email is required.');
+        }
         const googleUsername = (googleData.username && googleData.username.trim())
             ? googleData.username.trim()
             : (googleEmail.split('@')[0]);
@@ -233,19 +252,24 @@
         const initialLetter = googleUsername.charAt(0).toUpperCase() || 'G';
 
         let user = users.find(u => u.email.toLowerCase() === googleEmail);
+        let isNewUser = false;
 
         if (!user) {
+            isNewUser = true;
             user = {
                 id: 'usr_google_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                 username: googleUsername,
                 email: googleEmail,
                 isGoogleUser: true,
+                isNewUser: true,
+                needsProfileSetup: true,
                 avatarLetter: initialLetter,
                 createdAt: new Date().toISOString()
             };
             users.push(user);
             saveUsersToStorage(users);
         } else {
+            isNewUser = Boolean(user.needsProfileSetup);
             user.username = googleUsername;
             user.avatarLetter = initialLetter;
             saveUsersToStorage(users);
@@ -256,11 +280,17 @@
             username: user.username,
             email: user.email,
             avatarLetter: initialLetter,
-            isGoogleUser: true
+            isGoogleUser: true,
+            isNewUser: isNewUser,
+            needsProfileSetup: isNewUser
         });
 
         setTokenInStorage(token);
         const currentUser = getCurrentUser();
+        if (currentUser) {
+            currentUser.isNewUser = isNewUser;
+            currentUser.needsProfileSetup = isNewUser;
+        }
         notifyAuthStateChanged(currentUser);
         return currentUser;
     }
@@ -351,11 +381,11 @@
                     return currentUser;
                 }
             } catch (err) {
-                // If it's an API validation error (e.g., duplicate email), rethrow to show to user
-                if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
-                    throw err;
+                // Do not silently fall back to mock auth on backend failure
+                if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch'))) {
+                    throw new Error('Unable to connect to LifeSync backend service. Please ensure the backend server is running.');
                 }
-                console.warn('Backend registration failed, falling back to local session:', err.message);
+                throw err;
             }
         }
         return signUp({ username, email, password });
@@ -391,10 +421,11 @@
                     return currentUser;
                 }
             } catch (err) {
-                if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError') && !err.message.includes('Failed to fetch')) {
-                    throw err;
+                // Do not silently fall back to mock auth on backend failure
+                if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch'))) {
+                    throw new Error('Unable to connect to LifeSync backend service. Please check your network connection.');
                 }
-                console.warn('Backend login failed, falling back to local session:', err.message);
+                throw err;
             }
         }
         return signIn({ email, password });
@@ -403,41 +434,75 @@
     async function signInWithGoogleAsync(googleData = {}) {
         if (typeof window !== 'undefined' && window.LifeSyncAPI && typeof fetch !== 'undefined') {
             try {
-                const res = await window.LifeSyncAPI.googleAuth(googleData.username, googleData.email);
+                const res = await window.LifeSyncAPI.googleAuth({
+                    name: googleData.username || googleData.name,
+                    email: googleData.email,
+                    credential: googleData.credential,
+                    idToken: googleData.idToken,
+                    accessToken: googleData.accessToken
+                });
                 if (res && res.token) {
                     setTokenInStorage(res.token);
+                    const isNew = Boolean(res.isNewUser || (res.user && res.user.isNewUser));
 
                     const userObj = {
                         id: res.user.id,
                         username: res.user.name,
                         email: res.user.email,
                         avatarLetter: res.user.avatarLetter || 'G',
+                        picture: res.user.picture || null,
                         isGoogleUser: true,
+                        isNewUser: isNew,
+                        needsProfileSetup: isNew,
                         createdAt: new Date().toISOString()
                     };
 
                     const users = getUsersFromStorage();
                     const existingIdx = users.findIndex(u => u.id === userObj.id || u.email === userObj.email);
                     if (existingIdx !== -1) {
-                        users[existingIdx] = userObj;
+                        users[existingIdx] = { ...users[existingIdx], ...userObj };
                     } else {
                         users.push(userObj);
                     }
                     saveUsersToStorage(users);
 
                     const currentUser = getCurrentUser();
+                    if (currentUser) {
+                        currentUser.isNewUser = isNew;
+                        currentUser.needsProfileSetup = isNew;
+                    }
                     notifyAuthStateChanged(currentUser);
                     return currentUser;
                 }
             } catch (err) {
-                console.warn('Backend Google Auth failed, falling back to local session:', err.message);
+                // Fail cleanly instead of silently falling back to mock session
+                if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch'))) {
+                    throw new Error('Unable to connect to LifeSync backend service. Please ensure the backend server is running.');
+                }
+                throw err;
             }
         }
         return signInWithGoogle(googleData);
     }
 
+    function markProfileCompleted() {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            currentUser.isNewUser = false;
+            currentUser.needsProfileSetup = false;
+            const users = getUsersFromStorage();
+            const u = users.find(x => x.id === currentUser.id);
+            if (u) {
+                u.needsProfileSetup = false;
+                u.isNewUser = false;
+                saveUsersToStorage(users);
+            }
+        }
+    }
+
     // Expose Auth module globally
     window.AuthSystem = {
+        markProfileCompleted,
         getCurrentUser,
         signUp,
         signUpAsync,

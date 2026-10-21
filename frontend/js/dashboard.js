@@ -40,9 +40,13 @@
             if (currentHour >= 12 && currentHour < 17) greetingWord = 'Good Afternoon';
             else if (currentHour >= 17) greetingWord = 'Good Evening';
 
-            const displayName = (user && (user.username || user.name) && user.username !== 'Student') ? (user.username || user.name) : 'Student';
+            const displayName = (user && (user.username || user.name) && user.username !== 'Student') ? (user.username || user.name) : ((user && (user.username || user.name)) || 'Student');
             if (greetingEl) {
-                greetingEl.innerHTML = `${greetingWord}, <span id="dashGreetingName">${escapeHtml(displayName)}</span>! 👋`;
+                if (displayName) {
+                    greetingEl.innerHTML = `${greetingWord}, <span id="dashGreetingName">${escapeHtml(displayName)}</span>! 👋`;
+                } else {
+                    greetingEl.innerHTML = `${greetingWord}! 👋`;
+                }
             } else if (greetingNameEl) {
                 greetingNameEl.textContent = displayName;
             }
@@ -73,7 +77,7 @@
             if (statUpcoming) statUpcoming.textContent = upcomingEvents.length;
 
             // Today's focus: Top task
-            const focusTask = prioritizedTasks.length > 0 ? prioritizedTasks[0] : allTasks.find(t => t.status !== 'Completed');
+            const focusTask = prioritizedTasks.length > 0 ? prioritizedTasks[0] : (allTasks.find(t => t.status !== 'Completed') || allTasks[0]);
             if (focusTask) {
                 if (statFocusTask) statFocusTask.textContent = focusTask.title;
                 if (statFocusDue) statFocusDue.textContent = formatDueText(focusTask.dueDate);
@@ -88,39 +92,44 @@
                 const todayStr = new Date().toISOString().split('T')[0];
                 const todayEvents = allEvents.filter(e => e.date === todayStr);
 
-                // Clean empty schedule state if no events for today
                 if (todayEvents.length === 0) {
                     scheduleTimelineEl.innerHTML = `
-                        <div class="timeline-empty-state" style="padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
-                            <div style="font-size: 24px; margin-bottom: 6px;">📅</div>
-                            <strong>No events scheduled for today</strong>
-                            <p style="margin: 4px 0 10px; font-size: 12px; color: var(--text-muted);">Stay ahead by planning your classes and study sessions.</p>
-                            <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.switchTab('calendar')">+ Add Event</button>
+                        <div class="schedule-empty-state" style="padding: 28px 16px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
+                            <div style="font-size: 28px; margin-bottom: 8px;">📅</div>
+                            <strong style="color: var(--text-primary); font-size: 14px;">No events scheduled for today</strong>
+                            <p style="margin: 6px 0 12px; font-size: 12px; color: var(--text-muted);">Add your classes, exams, or study sessions to stay on track.</p>
+                            <button type="button" class="btn-xs-primary" onclick="window.LifeSyncApp.openAddEventModal('${todayStr}')">+ Add Event for Today</button>
                         </div>
                     `;
                 } else {
+                    // Sort today's events chronologically by time
+                    todayEvents.sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'));
+
                     const dotColors = ['#818cf8', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
 
                     scheduleTimelineEl.innerHTML = `
                         <div class="timeline-track-list">
-                            ${todayEvents.slice(0, 4).map((evt, idx) => {
+                            ${todayEvents.map((evt, idx) => {
                                 const dotColor = dotColors[idx % dotColors.length];
                                 const locationText = evt.location || evt.description || 'Campus';
                                 return `
-                                    <div class="timeline-row-item" onclick="window.LifeSyncApp.switchTab('calendar')">
+                                    <div class="timeline-row-item interactive-schedule-row" title="Click to edit event" onclick="window.LifeSyncApp.openEditEventModal('${evt.id}')">
                                         <div class="timeline-time-col">${escapeHtml(evt.time || '10:00 AM')}</div>
                                         <div class="timeline-node-col">
                                             <div class="timeline-node-dot" style="background-color: ${dotColor};"></div>
-                                            ${idx < todayEvents.slice(0, 4).length - 1 ? '<div class="timeline-node-line"></div>' : ''}
+                                            ${idx < todayEvents.length - 1 ? '<div class="timeline-node-line"></div>' : ''}
                                         </div>
                                         <div class="timeline-content-col">
                                             <div class="timeline-event-title">${escapeHtml(evt.title)}</div>
                                             <div class="timeline-event-location">${escapeHtml(locationText)}</div>
                                         </div>
+                                        <div class="timeline-actions-col">
+                                            <button type="button" class="btn-schedule-mini" title="Edit Event" onclick="event.stopPropagation(); window.LifeSyncApp.openEditEventModal('${evt.id}')">✏️</button>
+                                            <button type="button" class="btn-schedule-mini btn-schedule-delete" title="Delete Event" onclick="event.stopPropagation(); window.LifeSyncApp.deleteEvent('${evt.id}')">🗑️</button>
+                                        </div>
                                     </div>
                                 `;
                             }).join('')}
-                        </div>
                     `;
                 }
             }
@@ -187,7 +196,7 @@
             const spentThisMonth = Number(budgetSummary.spentThisMonth !== undefined ? budgetSummary.spentThisMonth : totalExpense);
             const monthlyLimit = Number(budgetSummary.monthlyBudget) || 15000;
             const remainingBudget = Number(budgetSummary.remainingBudget !== undefined ? budgetSummary.remainingBudget : Math.max(0, monthlyLimit - spentThisMonth));
-            const budgetStreak = (profile && profile.budgetStreak !== undefined) ? profile.budgetStreak : 0;
+            const budgetStreak = (budgetSummary && budgetSummary.streak !== undefined) ? budgetSummary.streak : ((profile && (profile.budgetStreak !== undefined ? profile.budgetStreak : profile.streak)) || 0);
 
             if (budgetBalanceVal) {
                 const formatted = Math.abs(Math.round(totalBalance)).toLocaleString('en-IN');
@@ -201,14 +210,14 @@
             if (dashBudgetStreakBadge) dashBudgetStreakBadge.textContent = `${budgetStreak}d`;
 
             if (budgetMeterBar) {
-                const pct = monthlyLimit > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyLimit) * 100)) : 0;
+                const pct = budgetSummary.budgetUsagePct !== undefined ? budgetSummary.budgetUsagePct : (monthlyLimit > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyLimit) * 100)) : 0);
                 budgetMeterBar.style.width = `${pct}%`;
                 budgetMeterBar.style.background = pct >= 100 ? '#db4665' : pct >= 80 ? '#f5a623' : '#10b981';
             }
 
             // Feature 1: Late-Night Safe Widget on Dashboard
             const night = budgetSummary.nightSafe || { limit: 0, spent: 0, locked: false };
-            const nightRemaining = Math.max(0, (night.limit || 0) - (night.spent || 0));
+            const nightRemaining = Math.max(0, (Number(night.limit) || 0) - (Number(night.spent) || 0));
             const dashNightSafeIcon = document.getElementById('dashNightSafeIcon');
             const dashNightSafeStatus = document.getElementById('dashNightSafeStatus');
             const dashBtnToggleNightSafe = document.getElementById('dashBtnToggleNightSafe');
@@ -229,15 +238,15 @@
             }
 
             // Feature 2: Upcoming Roommate Bills on Dashboard
-            const nextBill = budgetSummary.nextDueBill || null;
+            const nextBill = budgetSummary.nextDueBill || (budgetSummary.bills && budgetSummary.bills.find(b => !b.paid)) || null;
             const dashNextBillLabel = document.getElementById('dashNextBillLabel');
             const dashNextBillTitle = document.getElementById('dashNextBillTitle');
             const dashBtnPayNextBill = document.getElementById('dashBtnPayNextBill');
 
             if (nextBill) {
-                const share = Math.round(nextBill.amount / (nextBill.split || 1));
-                if (dashNextBillLabel) dashNextBillLabel.textContent = `Due ${nextBill.date || 'Soon'} (₹${share})`;
-                if (dashNextBillTitle) dashNextBillTitle.textContent = `${escapeHtml(nextBill.title)} (₹${share})`;
+                const share = Math.round((Number(nextBill.amount) || 0) / (Number(nextBill.split) || 1));
+                if (dashNextBillLabel) dashNextBillLabel.textContent = `Due ${nextBill.date || 'Soon'} (₹${share}):`;
+                if (dashNextBillTitle) dashNextBillTitle.textContent = `${escapeHtml(nextBill.title || 'Bill')} (₹${share})`;
                 if (dashBtnPayNextBill) {
                     dashBtnPayNextBill.style.display = 'inline-block';
                     dashBtnPayNextBill.textContent = 'Paid';
@@ -262,8 +271,8 @@
                 const goalCurrent = Number(goal.current !== undefined ? goal.current : goal.saved) || 0;
                 const goalTarget = Number(goal.target);
                 const goalPct = Math.min(100, Math.round((goalCurrent / goalTarget) * 100));
-                if (dashGoalTitle) dashGoalTitle.textContent = escapeHtml(goal.title);
-                if (dashGoalPct) dashGoalPct.textContent = `${goalPct}% (₹${goalCurrent.toLocaleString('en-IN')})`;
+                if (dashGoalTitle) dashGoalTitle.textContent = escapeHtml(goal.title || 'Shared Savings Goal');
+                if (dashGoalPct) dashGoalPct.textContent = `${goalPct}% (₹${Math.round(goalCurrent).toLocaleString('en-IN')})`;
                 if (dashGoalMiniBar) dashGoalMiniBar.style.width = `${goalPct}%`;
             } else {
                 if (dashGoalTitle) dashGoalTitle.textContent = 'Shared Savings Goal';
@@ -286,9 +295,24 @@
 
             // 8. Study Streak
             const streakSubtitle = document.getElementById('dashStreakSubtitle');
-            const streakCount = wellnessSummary.streak || 0;
+            const streakBubblesContainer = document.getElementById('dashStreakBubbles');
+            const studyStreak = wellnessSummary.streak !== undefined ? wellnessSummary.streak : 0;
             if (streakSubtitle) {
-                streakSubtitle.textContent = streakCount > 0 ? `You're on a ${streakCount}-day streak!` : 'Start your daily streak today!';
+                streakSubtitle.textContent = studyStreak > 0 ? `You're on a ${studyStreak}-day streak!` : `Log a mood check-in to start your streak!`;
+            }
+            if (streakBubblesContainer) {
+                const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                const todayDayIndex = (now.getDay() + 6) % 7; // Monday = 0
+                streakBubblesContainer.innerHTML = days.map((day, idx) => {
+                    const isCompleted = studyStreak > 0 && idx <= todayDayIndex && (todayDayIndex - idx) < studyStreak;
+                    const isToday = idx === todayDayIndex;
+                    return `
+                        <div class="streak-day-bubble ${isCompleted ? 'active' : ''} ${isToday ? 'today' : ''}">
+                            <span class="day-letter">${day}</span>
+                            <span class="day-label">${day}</span>
+                        </div>
+                    `;
+                }).join('');
             }
         }
     };
