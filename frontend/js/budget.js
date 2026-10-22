@@ -411,8 +411,8 @@
             const monthlyBudget = (currentBudget.monthlyBudget !== undefined && currentBudget.monthlyBudget !== null) ? Number(currentBudget.monthlyBudget) : 15000;
             const remainingBudget = Math.max(0, monthlyBudget - spentThisMonth);
             const budgetUsagePct = monthlyBudget > 0 ? Math.min(100, Math.round((spentThisMonth / monthlyBudget) * 100)) : 0;
-            // Formula: Net balance is sum of total income + monthly allowance minus expenses
-            const netBalance = (totalIncome + monthlyBudget) - totalExpense;
+            // Net balance formula: total income minus total expenses
+            const netBalance = totalIncome - totalExpense;
             const totalBalance = netBalance;
 
             // Compute bills summary

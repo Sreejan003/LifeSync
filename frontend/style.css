@@ -7097,13 +7097,33 @@ body.dashboard-body {
 }
 
 .smart-task-title {
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 700;
     color: var(--text-main);
     margin-bottom: 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.35;
+}
+
+.custom-checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.custom-checkbox-wrap input {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    accent-color: #633bf5;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.custom-checkbox-wrap input:hover {
+    transform: scale(1.08);
 }
 
 .smart-task-meta {
@@ -11855,6 +11875,10 @@ html, body {
 }
 
 /* ── 2. Mobile Brand & Drawer Controls (Desktop defaults) ────────────────── */
+.mobile-bottom-nav {
+    display: none;
+}
+
 .mobile-topbar-brand {
     display: none;
     align-items: center;
@@ -12409,5 +12433,234 @@ html, body {
 
     .mobile-nav-btn .mob-icon {
         font-size: 22px !important;
+    }
+}
+
+/* ── 6. Mobile & Small Screen Polish for Smart Organizer & Calendar ──────── */
+@media (max-width: 600px) {
+    /* Smart Task Organizer View Header */
+    #view-smart .view-header {
+        margin-bottom: 16px !important;
+        gap: 12px !important;
+    }
+
+    #view-smart .view-header h1 {
+        font-size: 22px !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.3px !important;
+    }
+
+    #view-smart .view-header .subtitle {
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
+    #view-smart .view-header button,
+    #view-smart .view-header > button {
+        width: 100% !important;
+        min-height: 42px !important;
+        justify-content: center !important;
+        font-size: 13.5px !important;
+    }
+
+    /* Top Priority Right Now Card */
+    .smart-top-banner {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 16px 14px !important;
+        border-radius: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    .smart-top-banner .smart-top-icon {
+        font-size: 26px !important;
+    }
+
+    .smart-top-banner .smart-top-info {
+        width: 100% !important;
+    }
+
+    .smart-top-title {
+        font-size: 15.5px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        line-height: 1.35 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .smart-top-meta {
+        gap: 6px !important;
+    }
+
+    .smart-top-banner button {
+        width: 100% !important;
+        justify-content: center !important;
+        min-height: 42px !important;
+        font-size: 13.5px !important;
+        border-radius: 12px !important;
+        margin-top: 4px !important;
+    }
+
+    /* List Header */
+    .smart-list-header {
+        margin-bottom: 12px !important;
+        padding: 0 2px !important;
+    }
+
+    .smart-list-header h3 {
+        font-size: 15px !important;
+    }
+
+    .smart-task-list {
+        gap: 12px !important;
+    }
+
+    /* Prioritized Task Row Card */
+    .smart-task-row {
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        gap: 10px 12px !important;
+        padding: 14px 12px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .smart-rank-badge {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 11px !important;
+        flex-shrink: 0 !important;
+        margin-top: 2px !important;
+    }
+
+    .custom-checkbox-wrap {
+        flex-shrink: 0 !important;
+        margin-top: 3px !important;
+    }
+
+    .smart-task-info {
+        flex: 1 1 calc(100% - 85px) !important;
+        min-width: 0 !important;
+    }
+
+    .smart-task-title {
+        white-space: normal !important;
+        word-break: break-word !important;
+        font-size: 14.5px !important;
+        line-height: 1.35 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .smart-task-meta {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .smart-task-meta span {
+        font-size: 10.5px !important;
+        padding: 2px 7px !important;
+    }
+
+    .smart-urgency-bar-wrap {
+        height: 5px !important;
+        margin-top: 4px !important;
+    }
+
+    /* Bottom metrics and actions line inside the card */
+    .smart-score-col {
+        order: 3 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin-left: 0 !important;
+        padding-top: 4px !important;
+    }
+
+    .smart-score-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 11px !important;
+        border-width: 2px !important;
+    }
+
+    .smart-score-label {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .smart-task-row .task-actions-btns {
+        order: 4 !important;
+        margin-left: auto !important;
+        display: flex !important;
+        gap: 8px !important;
+        padding-top: 2px !important;
+    }
+
+    .smart-task-row .btn-icon-soft {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        font-size: 15px !important;
+    }
+
+    /* Calendar Day Item Card */
+    .day-item-card {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 14px !important;
+    }
+
+    .day-item-actions {
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        width: 100% !important;
+        border-top: 1px solid rgba(112, 72, 232, 0.08) !important;
+        padding-top: 10px !important;
+    }
+
+    .dark-theme .day-item-actions {
+        border-top-color: rgba(255, 255, 255, 0.06) !important;
+    }
+
+    .cal-days-grid {
+        gap: 4px !important;
+    }
+
+    .cal-day-cell {
+        min-height: 44px !important;
+        padding: 4px 2px !important;
+        font-size: 13px !important;
+    }
+
+    .modal-dialog {
+        margin: 10px !important;
+        width: calc(100% - 20px) !important;
+    }
+}
+
+/* ── 7. Extra Small Mobile (<380px) Optimization ─────────────────────────── */
+@media (max-width: 380px) {
+    .smart-task-row {
+        padding: 12px 10px !important;
+        gap: 8px !important;
+    }
+
+    .smart-task-info {
+        flex: 1 1 calc(100% - 75px) !important;
+    }
+
+    .smart-top-banner {
+        padding: 12px 10px !important;
+    }
+
+    .smart-top-title {
+        font-size: 14px !important;
     }
 }

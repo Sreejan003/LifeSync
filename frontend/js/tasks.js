@@ -154,6 +154,9 @@
                 } else if (updates.status !== 'Completed') {
                     task.completedAt = null;
                 }
+                if (updates.status === 'Completed' && window.NotificationsModule && window.NotificationsModule.removeTaskNotifications) {
+                    window.NotificationsModule.removeTaskNotifications(taskId, task.title);
+                }
             }
 
             window.LifeSyncStorage.saveTasks(user, currentTasks);
@@ -174,6 +177,9 @@
             } else {
                 task.status = 'Completed';
                 task.completedAt = new Date().toISOString();
+                if (window.NotificationsModule && window.NotificationsModule.removeTaskNotifications) {
+                    window.NotificationsModule.removeTaskNotifications(taskId, task.title);
+                }
             }
 
             window.LifeSyncStorage.saveTasks(user, currentTasks);
@@ -185,10 +191,14 @@
         },
 
         deleteTask(user, taskId) {
+            const task = currentTasks.find(t => String(t.id) === String(taskId));
             currentTasks = currentTasks.filter(t => String(t.id) !== String(taskId));
             window.LifeSyncStorage.saveTasks(user, currentTasks);
             if (window.LifeSyncStorage && window.LifeSyncStorage.deleteTask) {
                 window.LifeSyncStorage.deleteTask(user, taskId);
+            }
+            if (window.NotificationsModule && window.NotificationsModule.removeTaskNotifications) {
+                window.NotificationsModule.removeTaskNotifications(taskId, task ? task.title : '');
             }
             notifyChange();
         },

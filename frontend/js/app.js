@@ -103,6 +103,20 @@
             });
         }
 
+        // Listen for calendar event changes to ensure calendar and smart organizer views update synchronously
+        if (window.CalendarModule && window.CalendarModule.onChange) {
+            window.CalendarModule.onChange(() => {
+                if (currentTab === 'calendar') {
+                    renderCalendarView();
+                }
+                renderSmartOrganizerView();
+                if (window.DashboardModule && currentUser) {
+                    window.DashboardModule.render(currentUser);
+                }
+                updateNotifications();
+            });
+        }
+
         // Asynchronously sync latest data from REST backend
         if (window.LifeSyncStorage && window.LifeSyncStorage.syncFromBackend) {
             window.LifeSyncStorage.syncFromBackend(currentUser).then(() => {
@@ -316,10 +330,11 @@
         const notifListEl = document.getElementById('notifDropdownList');
 
         const notifications = window.NotificationsModule ? window.NotificationsModule.getNotifications() : [];
+        const unreadCount = window.NotificationsModule ? window.NotificationsModule.getUnreadCount() : notifications.length;
 
         if (notifBadge) {
-            if (notifications.length > 0) {
-                notifBadge.textContent = notifications.length;
+            if (unreadCount > 0) {
+                notifBadge.textContent = unreadCount;
                 notifBadge.style.display = 'inline-flex';
             } else {
                 notifBadge.style.display = 'none';
@@ -660,6 +675,7 @@
                             <div class="day-item-actions">
                                 ${isTask ? `
                                     <button class="btn-sm-action" onclick="window.LifeSyncApp.handleQuickTaskToggle('${item.id}')">✓ Mark Done</button>
+                                    <button class="btn-icon-soft btn-icon-danger" title="Remove Task from Calendar" onclick="window.LifeSyncApp.deleteTask('${item.id}')">🗑️</button>
                                 ` : `
                                     <button class="btn-icon-soft" title="Edit Event" onclick="window.LifeSyncApp.openEditEventModal('${item.id}')">✏️</button>
                                     <button class="btn-icon-soft btn-icon-danger" title="Delete Event" onclick="window.LifeSyncApp.deleteEvent('${item.id}')">🗑️</button>
@@ -2139,6 +2155,20 @@
             }
         });
 
+        // Mobile drawer toggles
+        const btnMobileMenu = document.getElementById('btnMobileMenu');
+        if (btnMobileMenu) {
+            btnMobileMenu.addEventListener('click', openMobileSidebar);
+        }
+        const btnSidebarClose = document.getElementById('btnSidebarClose');
+        if (btnSidebarClose) {
+            btnSidebarClose.addEventListener('click', closeMobileSidebar);
+        }
+        const appBackdrop = document.getElementById('appBackdrop');
+        if (appBackdrop) {
+            appBackdrop.addEventListener('click', closeMobileSidebar);
+        }
+
         // Listen for bfcache page restorations
         window.addEventListener('pageshow', (e) => {
             if (e.persisted) {
@@ -2151,6 +2181,35 @@
                 }
             }
         });
+    }
+
+    // Mobile Sidebar Drawer Helpers
+    function openMobileSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const backdrop = document.getElementById('appBackdrop');
+        if (sidebar) {
+            sidebar.classList.add('mobile-open');
+            sidebar.classList.add('show');
+        }
+        if (backdrop) {
+            backdrop.classList.add('show');
+            backdrop.classList.add('active');
+            backdrop.style.display = 'block';
+        }
+    }
+
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const backdrop = document.getElementById('appBackdrop');
+        if (sidebar) {
+            sidebar.classList.remove('mobile-open');
+            sidebar.classList.remove('show');
+        }
+        if (backdrop) {
+            backdrop.classList.remove('show');
+            backdrop.classList.remove('active');
+            backdrop.style.display = 'none';
+        }
     }
 
     // Modal Helpers

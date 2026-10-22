@@ -427,30 +427,47 @@
         }
     }
 
-    function syncEventToBackend(event) {
-        if (typeof window === 'undefined' || !window.LifeSyncAPI || typeof fetch === 'undefined') return;
+    function syncEventToBackend(event, user) {
+        if (!event || typeof window === 'undefined' || !window.LifeSyncAPI || typeof fetch === 'undefined') return;
         const token = window.LifeSyncAPI.getToken();
         if (!token) return;
+
+        const cleanDate = event.date ? String(event.date).split('T')[0] : '';
+        const eventType = event.category || event.event_type || 'Study';
 
         if (typeof event.id === 'number' || (typeof event.id === 'string' && !event.id.startsWith('evt_'))) {
             window.LifeSyncAPI.updateEvent(event.id, {
                 title: event.title,
                 description: event.description,
-                date: event.date,
+                date: cleanDate,
                 time: event.time,
-                event_type: event.category || event.event_type,
-                reminder: event.hasReminder || event.reminder
+                event_type: eventType,
+                reminder: Boolean(event.hasReminder || event.reminder)
             }).catch(e => console.warn('Background event update sync:', e.message));
         } else {
             window.LifeSyncAPI.createEvent({
                 title: event.title,
                 description: event.description,
-                date: event.date,
+                date: cleanDate,
                 time: event.time,
-                event_type: event.category || event.event_type,
-                reminder: event.hasReminder || event.reminder
+                event_type: eventType,
+                reminder: Boolean(event.hasReminder || event.reminder)
             }).then(saved => {
-                if (saved && saved.id) event.id = saved.id;
+                if (saved && saved.id) {
+                    const oldId = event.id;
+                    event.id = saved.id;
+                    event.date = cleanDate;
+                    if (user) {
+                        const key = getScopedKey('events', user);
+                        const list = readJson(key, []);
+                        const target = list.find(e => String(e.id) === String(oldId) || (e.title === event.title && String(e.date).split('T')[0] === cleanDate));
+                        if (target) {
+                            target.id = saved.id;
+                            target.date = cleanDate;
+                            writeJson(key, list);
+                        }
+                    }
+                }
             }).catch(e => console.warn('Background event create sync:', e.message));
         }
     }
@@ -558,7 +575,9 @@
             const key = getScopedKey('events', user);
             const saved = writeJson(key, events);
             if (Array.isArray(events) && events.length > 0) {
-                syncEventToBackend(events[events.length - 1]);
+                events.forEach(ev => {
+                    syncEventToBackend(ev, user);
+                });
             }
             return saved;
         },
@@ -786,51 +805,55 @@
                 // Fetch events from backend
                 const backendEvents = await window.LifeSyncAPI.getEvents();
                 if (Array.isArray(backendEvents)) {
-                    const localEvents = LifeSyncStorage.getEvents(user);
+                    const localEvents = LifeSyncStorage.getEvents(user) || [];
                     const eventSyncKey = getScopedKey('events_backend_synced', user);
-                    const hasSyncedEvents = localStorage.getItem(eventSyncKey);
 
-                    if (!hasSyncedEvents && backendEvents.length === 0 && Array.isArray(localEvents) && localEvents.length > 0) {
-                        for (const ev of localEvents) {
-                            try {
-                                const created = await window.LifeSyncAPI.createEvent({
-                                    title: ev.title,
-                                    date: ev.date,
-                                    time: ev.time,
-                                    category: ev.category,
-                                    description: ev.description,
-                                    reminder: ev.hasReminder
-                                });
-                                if (created && created.id) ev.id = created.id;
-                            } catch (e) {
-                                console.warn('Seed event sync notice:', e.message);
+                    const mappedEvents = backendEvents.map(e => ({
+                        id: e.id,
+                        title: e.title,
+                        date: e.date ? String(e.date).split('T')[0] : '',
+                        time: e.time,
+                        category: e.event_type || e.category || 'Study',
+                        priority: 'Medium',
+                        description: e.description || '',
+                        hasReminder: Boolean(e.reminder)
+                    }));
+
+                    const localUnsyncedEvents = localEvents.filter(le => {
+                        const leDate = le.date ? String(le.date).split('T')[0] : '';
+                        return typeof le.id === 'string' && le.id.startsWith('evt_') &&
+                            !mappedEvents.some(be => be.title.trim().toLowerCase() === le.title.trim().toLowerCase() && be.date === leDate);
+                    });
+
+                    // Sync any unsynced local events to backend
+                    for (const ev of localUnsyncedEvents) {
+                        try {
+                            const cleanDate = ev.date ? String(ev.date).split('T')[0] : '';
+                            const created = await window.LifeSyncAPI.createEvent({
+                                title: ev.title,
+                                date: cleanDate,
+                                time: ev.time,
+                                category: ev.category,
+                                description: ev.description,
+                                reminder: Boolean(ev.hasReminder)
+                            });
+                            if (created && created.id) {
+                                ev.id = created.id;
+                                ev.date = cleanDate;
                             }
+                        } catch (e) {
+                            console.warn('Local event sync notice:', e.message);
                         }
-                        localStorage.setItem(eventSyncKey, '1');
-                        writeJson(getScopedKey('events', user), localEvents);
-                    } else if (backendEvents.length > 0) {
-                        const mappedEvents = backendEvents.map(e => ({
-                            id: e.id,
-                            title: e.title,
-                            date: e.date,
-                            time: e.time,
-                            category: e.event_type,
-                            priority: 'Medium',
-                            description: e.description || '',
-                            hasReminder: Boolean(e.reminder)
-                        }));
+                    }
 
-                        const localUnsyncedEvents = localEvents.filter(le =>
-                            typeof le.id === 'string' && le.id.startsWith('evt_') &&
-                            !mappedEvents.some(be => be.title.trim().toLowerCase() === le.title.trim().toLowerCase() && be.date === le.date)
-                        );
+                    const mergedEvents = mappedEvents.length > 0 || localUnsyncedEvents.length > 0 
+                        ? [...mappedEvents, ...localUnsyncedEvents]
+                        : localEvents;
 
-                        const mergedEvents = [...mappedEvents, ...localUnsyncedEvents];
-                        writeJson(getScopedKey('events', user), mergedEvents);
-                        localStorage.setItem(eventSyncKey, '1');
-                        if (window.CalendarModule && window.CalendarModule.init) {
-                            window.CalendarModule.init(user);
-                        }
+                    writeJson(getScopedKey('events', user), mergedEvents);
+                    localStorage.setItem(eventSyncKey, '1');
+                    if (window.CalendarModule && window.CalendarModule.init) {
+                        window.CalendarModule.init(user);
                     }
                 }
 

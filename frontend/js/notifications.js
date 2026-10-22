@@ -282,10 +282,41 @@
         return [];
     }
 
+    let clearedNotifIds = new Set();
+    let readNotifIds = new Set();
+
+    function loadNotifState() {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                const storedCleared = localStorage.getItem('lifesync_notifs_cleared_ids');
+                if (storedCleared) {
+                    clearedNotifIds = new Set(JSON.parse(storedCleared));
+                }
+                const storedRead = localStorage.getItem('lifesync_notifs_read_ids');
+                if (storedRead) {
+                    readNotifIds = new Set(JSON.parse(storedRead));
+                }
+            }
+        } catch (e) {}
+    }
+    loadNotifState();
+
+    function persistNotifState() {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('lifesync_notifs_cleared_ids', JSON.stringify([...clearedNotifIds]));
+                localStorage.setItem('lifesync_notifs_read_ids', JSON.stringify([...readNotifIds]));
+            }
+        } catch (e) {}
+    }
+
     /**
      * Mark single notification as read
      */
     async function markRead(notificationId) {
+        readNotifIds.add(String(notificationId));
+        persistNotifState();
+
         // Update local state
         const target = serverNotifications.find(n => String(n.id) === String(notificationId));
         if (target) {
@@ -314,6 +345,12 @@
         serverNotifications.forEach(n => { n.is_read = 1; });
         serverUnreadCount = 0;
 
+        const currentList = getRawNotifications();
+        currentList.forEach(n => {
+            readNotifIds.add(String(n.id));
+        });
+        persistNotifState();
+
         if (window.LifeSyncAPI && window.LifeSyncAPI.markAllNotificationsRead) {
             try {
                 await window.LifeSyncAPI.markAllNotificationsRead();
@@ -331,8 +368,13 @@
      * Clear all notifications
      */
     async function clearAll() {
+        const currentList = getRawNotifications();
+        currentList.forEach(n => {
+            clearedNotifIds.add(String(n.id));
+        });
         serverNotifications = [];
         serverUnreadCount = 0;
+        persistNotifState();
 
         if (window.LifeSyncAPI && window.LifeSyncAPI.clearAllNotifications) {
             try {
@@ -348,9 +390,53 @@
     }
 
     /**
-     * Unified notification retrieval (Derived state + Server notifications)
+     * Remove all notifications and reminders related to a specific task
      */
-    function getNotifications() {
+    function removeTaskNotifications(taskId, taskTitle) {
+        if (!taskId) return;
+        const sId = String(taskId);
+        clearedNotifIds.add('notif_overdue_' + sId);
+        clearedNotifIds.add('notif_duetoday_' + sId);
+        clearedNotifIds.add(sId);
+        persistNotifState();
+
+        serverNotifications = serverNotifications.filter(sn => {
+            const matchesId = sn.dedupe_key && (sn.dedupe_key.includes(`task_${sId}`) || sn.dedupe_key.includes(`_${sId}_`));
+            const matchesAction = sn.action_link && sn.action_link.includes(`tasks`);
+            const matchesTitle = taskTitle && sn.message && sn.message.toLowerCase().includes(String(taskTitle).toLowerCase());
+            return !(matchesId || (matchesAction && matchesTitle));
+        });
+
+        if (window.LifeSyncApp && window.LifeSyncApp.updateNotifications) {
+            window.LifeSyncApp.updateNotifications();
+        }
+    }
+
+    /**
+     * Remove all notifications and reminders related to a specific event
+     */
+    function removeEventNotifications(eventId, eventTitle) {
+        if (!eventId) return;
+        const sId = String(eventId);
+        clearedNotifIds.add('notif_evt_' + sId);
+        clearedNotifIds.add(sId);
+        persistNotifState();
+
+        serverNotifications = serverNotifications.filter(sn => {
+            const matchesId = sn.dedupe_key && sn.dedupe_key.includes(`_${sId}_`);
+            const matchesTitle = eventTitle && sn.message && sn.message.toLowerCase().includes(String(eventTitle).toLowerCase());
+            return !(matchesId || matchesTitle);
+        });
+
+        if (window.LifeSyncApp && window.LifeSyncApp.updateNotifications) {
+            window.LifeSyncApp.updateNotifications();
+        }
+    }
+
+    /**
+     * Raw notification retrieval (before filtering by cleared)
+     */
+    function getRawNotifications() {
         const notifications = [];
         const seenTitles = new Set();
         const todayStr = getTodayString();
@@ -360,7 +446,8 @@
             const tasks = window.TasksModule.getTasks();
             tasks.forEach(t => {
                 if (t.status !== 'Completed' && t.dueDate) {
-                    if (t.dueDate < todayStr) {
+                    const cleanDueDate = String(t.dueDate).split('T')[0];
+                    if (cleanDueDate < todayStr) {
                         const title = 'Overdue Task';
                         seenTitles.add(t.title);
                         notifications.push({
@@ -372,7 +459,7 @@
                             targetTab: 'tasks',
                             time: 'Overdue'
                         });
-                    } else if (t.dueDate === todayStr) {
+                    } else if (cleanDueDate === todayStr) {
                         const title = 'Task Due Today';
                         seenTitles.add(t.title);
                         notifications.push({
@@ -395,6 +482,7 @@
             schedule.forEach(item => {
                 if (item.itemType === 'event') {
                     const isExam = (item.category || '').toLowerCase() === 'exam';
+                    const itemDate = String(item.date).split('T')[0];
                     seenTitles.add(item.title);
                     notifications.push({
                         id: 'notif_evt_' + item.id,
@@ -403,7 +491,7 @@
                         title: isExam ? 'Upcoming Exam' : 'Scheduled Event',
                         message: `${item.title} at ${item.time || 'scheduled time'}.`,
                         targetTab: 'calendar',
-                        time: item.date === todayStr ? 'Today' : 'Tomorrow'
+                        time: itemDate === todayStr ? 'Today' : 'Tomorrow'
                     });
                 }
             });
@@ -485,6 +573,25 @@
     }
 
     /**
+     * Unified notification retrieval with cleared and read state handling
+     */
+    function getNotifications() {
+        const raw = getRawNotifications();
+        return raw.filter(n => !clearedNotifIds.has(String(n.id))).map(n => ({
+            ...n,
+            is_read: Boolean(n.is_read || readNotifIds.has(String(n.id)))
+        }));
+    }
+
+    /**
+     * Get unread notification count
+     */
+    function getUnreadCount() {
+        const list = getNotifications();
+        return list.filter(n => !n.is_read).length;
+    }
+
+    /**
      * Periodic background sync with server
      */
     async function syncWithServer() {
@@ -509,6 +616,9 @@
 
     const NotificationsModule = {
         getNotifications,
+        getUnreadCount,
+        removeTaskNotifications,
+        removeEventNotifications,
         fetchServerNotifications,
         syncWithServer,
         markRead,

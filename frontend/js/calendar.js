@@ -28,7 +28,8 @@
 
     const CalendarModule = {
         init(user) {
-            currentEvents = window.LifeSyncStorage.getEvents(user);
+            currentEvents = window.LifeSyncStorage.getEvents(user) || [];
+            notifyChange();
             return currentEvents;
         },
 
@@ -47,10 +48,11 @@
                 throw new Error('Event title and date are required.');
             }
 
+            const cleanDate = eventData.date ? String(eventData.date).split('T')[0] : '';
             const newEvent = {
                 id: 'evt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                 title: eventData.title.trim(),
-                date: eventData.date,
+                date: cleanDate,
                 time: eventData.time || '09:00',
                 category: eventData.category || 'Study',
                 priority: eventData.priority || 'Medium',
@@ -69,7 +71,7 @@
             if (!ev) throw new Error('Event not found.');
 
             if (updates.title !== undefined) ev.title = updates.title.trim();
-            if (updates.date !== undefined) ev.date = updates.date;
+            if (updates.date !== undefined) ev.date = String(updates.date).split('T')[0];
             if (updates.time !== undefined) ev.time = updates.time;
             if (updates.category !== undefined) ev.category = updates.category;
             if (updates.priority !== undefined) ev.priority = updates.priority;
@@ -82,11 +84,15 @@
         },
 
         deleteEvent(user, eventId) {
+            const ev = currentEvents.find(e => String(e.id) === String(eventId));
             currentEvents = currentEvents.filter(e => String(e.id) !== String(eventId));
             if (window.LifeSyncStorage && window.LifeSyncStorage.deleteEvent) {
                 window.LifeSyncStorage.deleteEvent(user, eventId);
             } else {
                 window.LifeSyncStorage.saveEvents(user, currentEvents);
+            }
+            if (window.NotificationsModule && window.NotificationsModule.removeEventNotifications) {
+                window.NotificationsModule.removeEventNotifications(eventId, ev ? ev.title : '');
             }
             notifyChange();
         },
@@ -118,17 +124,19 @@
 
         // Gets all scheduled items (calendar events + task deadlines) for a specific date YYYY-MM-DD
         getItemsForDate(dateStr) {
-            const events = currentEvents.filter(e => e.date === dateStr).map(e => ({
+            const targetDate = String(dateStr).split('T')[0];
+            const events = currentEvents.filter(e => String(e.date).split('T')[0] === targetDate).map(e => ({
                 ...e,
+                date: String(e.date).split('T')[0],
                 itemType: 'event'
             }));
 
             const allTasks = window.TasksModule ? window.TasksModule.getTasks() : [];
-            const taskDeadlines = allTasks.filter(t => t.dueDate === dateStr).map(t => ({
+            const taskDeadlines = allTasks.filter(t => t.dueDate && String(t.dueDate).split('T')[0] === targetDate).map(t => ({
                 id: t.id,
                 title: t.title,
-                date: t.dueDate,
-                time: 'Due 23:59',
+                date: String(t.dueDate).split('T')[0],
+                time: t.dueTime ? `Due ${t.dueTime}` : 'Due 23:59',
                 category: t.category,
                 priority: t.priority,
                 description: t.description,
@@ -147,17 +155,24 @@
             future.setDate(today.getDate() + daysAhead);
             const futureStr = formatDateStr(future);
 
-            const events = currentEvents.filter(e => e.date >= todayStr && e.date <= futureStr).map(e => ({
+            const events = currentEvents.filter(e => {
+                const ed = String(e.date).split('T')[0];
+                return ed >= todayStr && ed <= futureStr;
+            }).map(e => ({
                 ...e,
+                date: String(e.date).split('T')[0],
                 itemType: 'event'
             }));
 
             const allTasks = window.TasksModule ? window.TasksModule.getTasks() : [];
-            const tasks = allTasks.filter(t => t.status !== 'Completed' && t.dueDate && t.dueDate >= todayStr && t.dueDate <= futureStr).map(t => ({
+            const tasks = allTasks.filter(t => {
+                const td = t.dueDate ? String(t.dueDate).split('T')[0] : '';
+                return t.status !== 'Completed' && td && td >= todayStr && td <= futureStr;
+            }).map(t => ({
                 id: t.id,
                 title: t.title,
-                date: t.dueDate,
-                time: 'Deadline',
+                date: String(t.dueDate).split('T')[0],
+                time: t.dueTime ? `Due ${t.dueTime}` : 'Deadline',
                 category: t.category,
                 priority: t.priority,
                 status: t.status,
